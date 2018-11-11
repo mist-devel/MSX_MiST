@@ -2239,7 +2239,7 @@ begin
                             "0011"   & adr(15 downto  0)    when( rom_extd = '1' )else      -- 630000-63BFFF (  48 kB)  Slot3-1
                             "001111" & adr(13 downto  0)    when( rom_free = '1' )else      -- 63C000-63FFFF (  16 kB)  Slot0-3
                             "01"     & KanAdr(17 downto  0) when( rom_kanj = '1' )else      -- 640000-67FFFF ( 256 kB)  Kanji-data (JIS1+JIS2)
-                            null;
+                            (others => '0');
 
     ----------------------------------------------------------------
     -- SD-RAM access
