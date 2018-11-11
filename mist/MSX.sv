@@ -86,8 +86,8 @@ pll pll
 wire reset = status[0] | buttons[1] | ~locked;
 
 //////////////////   MiST I/O   ///////////////////
-wire [15:0] joy_0;
-wire [15:0] joy_1;
+wire  [7:0] joy_0;
+wire  [7:0] joy_1;
 wire  [1:0] buttons;
 wire [31:0] status;
 wire        ypbpr;
@@ -181,6 +181,8 @@ wire [5:0] joya = status[7] ? ~joy_1[5:0] : ~joy_0[5:0];
 wire [5:0] joyb = status[7] ? ~joy_0[5:0] : ~joy_1[5:0];
 wire [5:0] msx_joya;
 wire [5:0] msx_joyb;
+wire       msx_stra;
+wire       msx_strb;
 
 wire       Sd_Ck;
 wire       Sd_Cm;
@@ -192,9 +194,12 @@ reg  [7:0] dipsw;
 
 always @(posedge clk_sys) begin
     dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable, scandoubler_disable, ~status[2]};
-    for (integer i=0; i<5; i++) begin
-        msx_joya[i] <= (joya[i] == 1'b0 ? joya[i] : 1'bZ);
-        msx_joyb[i] <= (joyb[i] == 1'b0 ? joyb[i] : 1'bZ);
+end
+
+always_comb begin
+    for (integer i=0; i<=5; i++) begin
+        msx_joya[i] <= (~joya[i] & ~msx_stra ? joya[i] : 1'bZ);
+        msx_joyb[i] <= (~joyb[i] & ~msx_strb ? joyb[i] : 1'bZ);
     end
 end
 
@@ -223,12 +228,10 @@ emsx_top emsx
 
 //        -- Joystick ports (Port_A, Port_B)
         .pJoyA      ( {msx_joya[5:4], msx_joya[0], msx_joya[1], msx_joya[2], msx_joya[3]} ),
+        .pStra      ( msx_stra ),
         .pJoyB      ( {msx_joyb[5:4], msx_joyb[0], msx_joyb[1], msx_joyb[2], msx_joyb[3]} ),
-//        pJoyA           : inout std_logic_vector(  5 downto 0);
-//        pStrA           : out   std_logic;
-//        pJoyB           : inout std_logic_vector(  5 downto 0);
-//        pStrB           : out   std_logic;
-//
+        .pStrb      ( msx_strb ),
+
 //        -- SD/MMC slot ports
         .pSd_Ck     (Sd_Ck),
         .pSd_Cm     (Sd_Cm),
