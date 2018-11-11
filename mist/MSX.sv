@@ -111,7 +111,7 @@ wire [31:0] img_size;
 wire        ps2_kbd_clk;
 wire        ps2_kbd_data;
 
-mist_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(2000)) mist_io
+mist_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) mist_io
 (
         .clk_sys(clk_sys),
         .CONF_DATA0(CONF_DATA0),
