@@ -356,11 +356,12 @@ begin
                 oFkeys(1) := not oFkeys(1);
               end if;
               Ps2Chg := '1';
-            elsif( Ps2Dat = X"07" and Ps2xE0 = '0' and Ps2xE1 = '0' )then -- F12 make
-              if Ps2brk = '0' then
-                oFkeys(0) := not oFkeys(0);     --  old toggle OnScreenDisplay enable
-              end if;
-              Ps2Chg := '1';
+--          MiST change F12 is OSD, Turbo mode can be selected by OSD
+--            elsif( Ps2Dat = X"07" and Ps2xE0 = '0' and Ps2xE1 = '0' )then -- F12 make
+--              if Ps2brk = '0' then
+--                oFkeys(0) := not oFkeys(0);     --  old toggle OnScreenDisplay enable
+--              end if;
+--              Ps2Chg := '1';
             elsif( Ps2Dat = X"7E" and Ps2xE0 = '0' and Ps2xE1 = '0' )then -- scroll-lock make
               if Ps2brk = '0' then
                 Scro <= not Scro;  -- toggle scroll lock (currently used for CMT switch)
