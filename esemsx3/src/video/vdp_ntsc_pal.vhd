@@ -180,34 +180,27 @@ BEGIN
     END PROCESS;
 
     -- GENERATE H SYNC PULSE
-    -- MiST changes: move hsync left for better centering
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
             FF_HSYNC_N <= '0';
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF( FF_SSTATE = SSTATE_A )THEN
-                IF( (HCOUNTERIN = CLOCKS_PER_LINE-20) OR (HCOUNTERIN = CLOCKS_PER_LINE/2-20) ) THEN -- MiST
---                IF( (HCOUNTERIN = 1) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+1) ) THEN
+                IF( (HCOUNTERIN = 1) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+1) ) THEN
                     FF_HSYNC_N <= '0';                       -- PULSE ON
-                ELSIF( (HCOUNTERIN = 31) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+31) ) THEN -- MiST
---                ELSIF( (HCOUNTERIN = 51) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+51) ) THEN
+                ELSIF( (HCOUNTERIN = 51) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+51) ) THEN
                     FF_HSYNC_N <= '1';                       -- PULSE OFF
                 END IF;
             ELSIF( FF_SSTATE = SSTATE_B )THEN
-                IF( (HCOUNTERIN = CLOCKS_PER_LINE-120+1 ) OR (HCOUNTERIN = CLOCKS_PER_LINE/2-120+1) ) THEN -- MiST
---                IF( (HCOUNTERIN = CLOCKS_PER_LINE-100+1 ) OR (HCOUNTERIN = CLOCKS_PER_LINE/2-100+1) ) THEN
+                IF( (HCOUNTERIN = CLOCKS_PER_LINE-100+1 ) OR (HCOUNTERIN = CLOCKS_PER_LINE/2-100+1) ) THEN
                     FF_HSYNC_N <= '0';                       -- PULSE ON
-                ELSIF( (HCOUNTERIN = CLOCKS_PER_LINE - 20) OR (HCOUNTERIN = CLOCKS_PER_LINE/2-20) ) THEN -- MiST
---                ELSIF( (HCOUNTERIN = 1) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+1) ) THEN
+                ELSIF( (HCOUNTERIN = 1) OR (HCOUNTERIN = CLOCKS_PER_LINE/2+1) ) THEN
                     FF_HSYNC_N <= '1';                       -- PULSE OFF
                 END IF;
             ELSIF( FF_SSTATE = SSTATE_C )THEN
-                IF( HCOUNTERIN = CLOCKS_PER_LINE - 20 )THEN -- MiST
---                IF( HCOUNTERIN = 1 )THEN
+                IF( HCOUNTERIN = 1 )THEN
                     FF_HSYNC_N <= '0';                       -- PULSE ON
-                ELSIF( HCOUNTERIN = 81 )THEN   -- Mist
---                ELSIF( HCOUNTERIN = 101 )THEN
+                ELSIF( HCOUNTERIN = 101 )THEN
                     FF_HSYNC_N <= '1';                       -- PULSE OFF
                 END IF;
             END IF;
