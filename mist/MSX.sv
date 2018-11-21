@@ -63,6 +63,7 @@ parameter CONF_STR = {
 	"O45,Slot2,Empty,MegaSCC+ 2MB,MegaRAM 1MB,MegaRAM 2MB;",    
     "O6,RAM,2048kB,4096kB;",
 	"O7,Swap joysticks,No,Yes;",
+	"O8,VGA Output,CRT,LCD;",
 	"T0,Reset;",
 	"V,v1.0.",`BUILD_DATE
 };
@@ -193,7 +194,7 @@ wire       msx_ps2_kbd_data = (ps2_kbd_data == 1'b0 ? ps2_kbd_data : 1'bZ);
 reg  [7:0] dipsw;
 
 always @(posedge clk_sys) begin
-    dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable, scandoubler_disable, ~status[2]};
+    dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
 end
 
 always_comb begin
