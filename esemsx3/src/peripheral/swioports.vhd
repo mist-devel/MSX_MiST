@@ -70,7 +70,7 @@ entity switched_io_ports is
         swioCmt         : inout std_logic;                                  -- CMT enabler
         LightsMode      : inout std_logic;                                  -- Custom green led states
         Red_sta         : inout std_logic;                                  -- Custom red led state
-        LastRst_sta     : inout std_logic;                                  -- Last reset state         :   0=Cold Reset, 1=Warm Reset (MSX2+) / 1=Cold Reset, 0=Warm Reset (MSXtR)
+        LastRst_sta     : buffer std_logic;                                 -- Last reset state         :   0=Cold Reset, 1=Warm Reset (MSX2+) / 1=Cold Reset, 0=Warm Reset (MSXtR)
         RstReq_sta      : inout std_logic;                                  -- Reset request state      :   0=No, 1=Yes
         Blink_ena       : inout std_logic;                                  -- MegaSD blink led enabler
         pseudoStereo    : inout std_logic;                                  -- RCA-LEFT(red) = External Audio Card / RCA-RIGHT(white) = Internal Sounds
@@ -168,19 +168,20 @@ begin
             "11111111";
 
     ack <=  swio_ack;
+--  =============================================================================================================
+    DefKmap         <=  '1';                    -- Default Keyboard     0=Japanese Layout   1=Non-Japanese Layout
+    ZemmixNeo       <=  '0';                    -- Machine Type         0=1chipMSX          1=Zemmix Neo
+--  =============================================================================================================
 
     process( reset, clk21m )
     begin
-        if( reset = '1' )then
+        if( clk21m'event and clk21m = '1' )then
+          if( reset = '1' )then
 
             swioRESET_n     <=  '1';                    -- End of Reset pulse
             io40_n          <=  "11111111";             -- Override Port $40 after any reboot
             vram_slot_ids   <=  "00010000";             -- Restore VRAM Slot ID after any reboot
             RatioMode       <=  "000";                  -- Restore Pixel Ratio 1:1 for LED Display after any reboot
---          =============================================================================================================
-            DefKmap         <=  '1';                    -- Default Keyboard     0=Japanese Layout   1=Non-Japanese Layout
-            ZemmixNeo       <=  '0';                    -- Machine Type         0=1chipMSX          1=Zemmix Neo
---          =============================================================================================================
             if( warmRESET /= '1' )then
                 -- Cold Reset
                 OFFSET_Y        :=  "0010011";          -- Default Vertical Offset
@@ -226,8 +227,7 @@ begin
                 LastRst_sta     <=  not WarmMSXlogo;    -- Warm state
                 Slot0Mode       <=  Slot0_req;          -- Set Slot-0 state to last required
             end if;
-
-        elsif( clk21m'event and clk21m = '1' )then
+          else
             if( warmRESET /= '0' )then
                 WarmMSXlogo <=  portF4_mode;            -- MSX logo will be Off after a Warm Reset
                 warmRESET   <=  '0';                    -- End of Warm Reset cycle
@@ -925,11 +925,12 @@ begin
                     WarmMSXlogo         <=  not dbo(7);                     -- MSX logo will be Off after a Warm Reset
                 end if;
             end if;
+          end if;
         end if;
     end process;
 
     -- detection of main ack signal
-    process( reset, clk21m )
+    process( reset, clk21m, warmRESET )
     begin
         if( reset = '1' )then
             swio_ack    <= '0';

@@ -550,7 +550,7 @@ architecture RTL of emsx_top is
             swioCmt         : inout std_logic;                              -- CMT enabler
             LightsMode      : inout std_logic;                              -- Custom green led states
             Red_sta         : inout std_logic;                              -- Custom red led state
-            LastRst_sta     : inout std_logic;                              -- Last reset state         :   0=Cold Reset, 1=Warm Reset (MSX2+) / 1=Cold Reset, 0=Warm Reset (MSXtR)
+            LastRst_sta     : buffer std_logic;                             -- Last reset state         :   0=Cold Reset, 1=Warm Reset (MSX2+) / 1=Cold Reset, 0=Warm Reset (MSXtR)
             RstReq_sta      : inout std_logic;                              -- Reset request state      :   0=No, 1=Yes
             Blink_ena       : inout std_logic;                              -- MegaSD blink led enabler
             pseudoStereo    : inout std_logic;                              -- RCA-LEFT(red) = External Audio Card / RCA-RIGHT(white) = Internal Sounds
