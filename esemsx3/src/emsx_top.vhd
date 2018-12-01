@@ -681,7 +681,6 @@ architecture RTL of emsx_top is
 
     -- MSX cartridge slot control signals
     signal  BusDir          : std_logic;
-    signal  iSltSltsl_n     : std_logic;
     signal  iSltRfsh_n      : std_logic;
     signal  iSltMerq_n      : std_logic;
     signal  iSltIorq_n      : std_logic;
@@ -1069,21 +1068,23 @@ begin
     -- logo speed limiter
     process( clk21m )
     begin
-        if( ff_ldbios_n = '0' )then
-            if( LastRst_sta = portF4_mode )then
-                LogoRstCnt <= "11111";                                                  -- 3100ms
-            end if;
-        elsif( clk21m'event and clk21m = '1' )then
+        if( clk21m'event and clk21m = '1' )then
 --          if( w_10hz = '1' and LogoRstCnt /= "00000" and SdPaus = '0' )then           -- dismissed
-            if( w_10hz = '1' and LogoRstCnt /= "00000" )then
+            if( ff_ldbios_n = '0' )then
+                if( LastRst_sta = portF4_mode )then
+                    LogoRstCnt <= "11111";                                                  -- 3100ms
+                    logo_timeout <= "00";
+                end if;
+            elsif( w_10hz = '1' and LogoRstCnt /= "00000" )then
                 LogoRstCnt <= LogoRstCnt - 1;
+                if LogoRstCnt = "10010" then -- 1800ms
+                    logo_timeout <= "01";
+                end if;
+            elsif LogoRstCnt = "00000" then -- 0ms
+                logo_timeout <= "10";
             end if;
         end if;
     end process;
-
-    logo_timeout <= "00" when ( LogoRstCnt = "11111" )else                              -- 3100ms
-                    "01" when ( LogoRstCnt = "10010" )else                              -- 1800ms
-                    "10" when ( LogoRstCnt = "00000" );                                 --    0ms
 
     -- virtual DIP-SW assignment (1/2)
     process( memclk )
@@ -1167,15 +1168,15 @@ begin
     end process;
 
     -- hard reset timer
-    process( pSltRst_n, clk21m )
+    process( clk21m, RstKeyLock )
     begin
-        if( RstKeyLock = '0' )then
+        if( clk21m'event and clk21m = '1' and RstKeyLock = '0' )then
             if( pSltRst_n /= '0' )then
                 HoldRst_ena <= '0';
                 if( HardRst_cnt /= "0011" or HardRst_cnt /= "0010" )then
                     HardRst_cnt <= "0000";
                 end if;
-            elsif( clk21m'event and clk21m = '1' )then
+            else
                 if( HoldRst_ena = '0' )then
                     HardRst_cnt <= "1110";              -- 1500ms hold reset
                     HoldRst_ena <= '1';
@@ -1188,12 +1189,12 @@ begin
 
     process( memclk )
     begin
-        if( HardRst_cnt = "0011" )then                  -- 200ms from "0001"
-            if( w_10hz = '1' and RstSeq /= "00000" )then
-                RstSeq <= (others => '0');
-            end if;
-        elsif( memclk'event and memclk = '1' )then
-            if( ff_mem_seq = "00" and FreeCounter = X"FFFF" and RstSeq /= "11111" )then
+        if( memclk'event and memclk = '1' )then
+			if( HardRst_cnt = "0011" )then                  -- 200ms from "0001"
+				if( w_10hz = '1' and RstSeq /= "00000" )then
+					RstSeq <= (others => '0');
+				end if;
+			elsif( ff_mem_seq = "00" and FreeCounter = X"FFFF" and RstSeq /= "11111" )then
                 RstSeq <= RstSeq + 1;                   -- 3ms (= 65536 / 21.48MHz)
             end if;
         end if;
@@ -1209,9 +1210,19 @@ begin
         end if;
     end process;
 
-    reset       <=  '1' when( pSltRst_n = '0' and RstKeyLock = '0' and HardRst_cnt /= "0001" )else
-                    '1' when( swioRESET_n = '0' or HardRst_cnt = "0011" or HardRst_cnt = "0010" or RstSeq /= "11111" )else
-                    '0';
+	--  Reset synchronizer
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if ( pSltRst_n = '0' and RstKeyLock = '0' and HardRst_cnt /= "0001" ) or
+               ( swioRESET_n = '0' or HardRst_cnt = "0011" or HardRst_cnt = "0010" or RstSeq /= "11111" )
+            then
+                reset <= '1';
+            else
+                reset <= '0';
+            end if;
+        end if;
+    end process;
 
     ----------------------------------------------------------------
     -- Operation mode
@@ -1588,7 +1599,6 @@ begin
 
         if( reset = '1' )then
 
-            iSltSltsl_n     <= '1';
             iSltRfsh_n      <= '1';
             iSltMerq_n      <= '1';
             iSltIorq_n      <= '1';
@@ -1613,7 +1623,7 @@ begin
             iSltAdr         <= pSltAdr;
             iSltDat         <= pSltDat;
 
-            if( iSltSltsl_n = '1' and iSltMerq_n  = '1' and iSltIorq_n = '1' )then
+            if( iSltMerq_n  = '1' and iSltIorq_n = '1' )then
                 iack <= '0';
             elsif( ack = '1' )then
                 iack <= '1';
@@ -1740,10 +1750,10 @@ begin
     ----------------------------------------------------------------
     process( clk21m, reset )
     begin
-        if( reset = '1' )then
-            portF4_bit7 <= not LastRst_sta;
-        elsif( clk21m'event and clk21m = '1' )then
-            if( portF4_req = '1' and wrt = '1' )then
+        if( clk21m'event and clk21m = '1' )then
+			if( reset = '1' )then
+				portF4_bit7 <= not LastRst_sta;
+			elsif( portF4_req = '1' and wrt = '1' )then
                 portF4_bit7 <= dbo(7);
             end if;
         end if;
