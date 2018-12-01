@@ -73,7 +73,7 @@ entity eseps2 is
 
     -- | b7  | b6   | b5   | b4   | b3  | b2  | b1  | b0  |
     -- | SHI | --   | PgUp | PgDn | F9  | F10 | F11 | F12 |
-    Fkeys    : out std_logic_vector(7 downto 0);
+    Fkeys    : buffer std_logic_vector(7 downto 0);
 
     pPs2Clk  : inout std_logic;
     pPs2Dat  : inout std_logic;
@@ -180,6 +180,7 @@ begin
       iKeyCol <= (others => '0');
 
     elsif( clk21m'event and clk21m = '1' )then
+	  oFkeys := Fkeys;
 
       if clkena = '1' then
         -- "Scan table > MSX key-matrix" conversion
