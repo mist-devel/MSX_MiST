@@ -1086,10 +1086,9 @@ begin
         end if;
     end process;
 
-    -- virtual DIP-SW assignment (1/2)
-    process( memclk )
+    process( clk21m )
     begin
-        if( memclk'event and memclk = '0' )then
+        if( clk21m'event and clk21m = '0' )then
             if( FirstBoot_n /= '1' or RstEna = '1' )then
                 if( cpuclk = '0' and clkdiv = "00" and pSltWait_n = '0' )then
                     if( ff_ldbios_n = '0' or logo_timeout = "00" )then                  -- ultra-fast bootstrap
@@ -1131,7 +1130,12 @@ begin
     end process;
 
     -- keyboard layout assignment
-    Kmap        <=  swioKmap        when( w_10hz = '1' );
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if w_10hz = '1' then Kmap <=  swioKmap; end if;
+        end if;
+    end process;
 
     -- cpu clock assignment
     trueClk     <=  -- '1'          when( SdPaus /= '0' )else                                               -- dismissed
@@ -2525,10 +2529,11 @@ begin
             elsif( VideoDLClk = '0' and VideoDHClk = '1' )then
                 RamAck <= '1';
             end if;
+            if VideoDLClk = '0' then
+                vram_page <= vram_slot_ids;
+            end if;
         end if;
     end process;
-
-    vram_page   <= vram_slot_ids when ( VideoDLClk = '0' );
 
     pMemCke     <= '1';
     pMemCs_n    <= SdrCmd(3);
