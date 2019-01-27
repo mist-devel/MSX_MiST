@@ -1378,12 +1378,7 @@ begin
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
---          if( w_10hz = '1' and SdPaus = '0' )then         -- dismissed
-            if( w_10hz = '1' )then                          -- chattering protect
-                ff_dip_req <= not pDip;                     -- convert negative logic to positive logic, and latch
-            else
-                --  hold
-            end if;
+            ff_dip_req <= not pDip;                        -- convert negative logic to positive logic, and latch
         end if;
     end process;
 
