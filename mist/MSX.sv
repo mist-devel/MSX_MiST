@@ -53,7 +53,7 @@ module MSX
     output        SDRAM_CKE
 );
 
-assign LED  = 1'b1;
+assign LED  = ~leds[7];
 
 `include "build_id.v"
 parameter CONF_STR = {
@@ -84,8 +84,6 @@ pll pll
 	.locked(locked)
 );
 
-wire reset = status[0] | buttons[1] | ~locked;
-
 //////////////////   MiST I/O   ///////////////////
 wire  [7:0] joy_0;
 wire  [7:0] joy_1;
@@ -112,13 +110,14 @@ wire [31:0] img_size;
 wire        ps2_kbd_clk;
 wire        ps2_kbd_data;
 
-mist_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) mist_io
+user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
 (
         .clk_sys(clk_sys),
-        .CONF_DATA0(CONF_DATA0),
-        .SPI_SCK(SPI_SCK),
-        .SPI_DI(SPI_DI),
-        .SPI_DO(SPI_DO),
+        .clk_sd(clk_sys),
+        .SPI_SS_IO(CONF_DATA0),
+        .SPI_CLK(SPI_SCK),
+        .SPI_MOSI(SPI_DI),
+        .SPI_MISO(SPI_DO),
 
         .conf_str(CONF_STR),
 
@@ -137,9 +136,9 @@ mist_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) mist_io
         .sd_wr(sd_wr),
         .sd_lba(sd_lba),
         .sd_buff_addr(sd_buff_addr),
-        .sd_buff_din(sd_buff_din),
-        .sd_buff_dout(sd_buff_dout),
-        .sd_buff_wr(sd_buff_wr),
+        .sd_din(sd_buff_din),
+        .sd_dout(sd_buff_dout),
+        .sd_dout_strobe(sd_buff_wr),
 
         .ps2_kbd_clk(ps2_kbd_clk),
         .ps2_kbd_data(ps2_kbd_data),
@@ -192,8 +191,13 @@ wire [3:0] Sd_Dt;
 wire       msx_ps2_kbd_clk = ps2_kbd_clk;
 wire       msx_ps2_kbd_data = (ps2_kbd_data == 1'b0 ? ps2_kbd_data : 1'bZ);
 reg  [7:0] dipsw;
+wire [7:0] leds;
+
+reg reset;
+wire resetW = status[0] | buttons[1] | ~locked;
 
 always @(posedge clk_sys) begin
+	reset <= resetW;
     dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
 end
 
@@ -240,6 +244,7 @@ emsx_top emsx
 
 //        -- DIP switch, Lamp ports
         .pDip       (dipsw),
+		.pLed		(leds),
 
 //        -- Video, Audio/CMT ports
         .pDac_VR    (R_O),      // RGB_Red / Svideo_C
