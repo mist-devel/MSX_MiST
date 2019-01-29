@@ -935,6 +935,7 @@ architecture RTL of emsx_top is
     -- Port F4 device
     signal portF4_req       : std_logic;
     signal portF4_bit7      : std_logic;                                    -- 1=hard reset, 0=soft reset
+    signal portF4_bit7_reg  : std_logic;
 
     -- Mixer
     signal  ff_prepsg       : std_logic_vector(  8 downto 0 );
@@ -1737,13 +1738,13 @@ begin
     ----------------------------------------------------------------
     -- port F4
     ----------------------------------------------------------------
+    portF4_bit7 <= not LastRst_sta when reset = '1' else portF4_bit7_reg;
+
     process( clk21m, reset )
     begin
         if( clk21m'event and clk21m = '1' )then
-			if( reset = '1' )then
-				portF4_bit7 <= not LastRst_sta;
-			elsif( portF4_req = '1' and wrt = '1' )then
-                portF4_bit7 <= dbo(7);
+            if( portF4_req = '1' and wrt = '1' )then
+                portF4_bit7_reg <= dbo(7);
             end if;
         end if;
     end process;
