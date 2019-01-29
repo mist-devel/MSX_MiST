@@ -40,7 +40,7 @@ set_output_delay -clock [get_clocks pll|altpll_component|auto_generated|pll1|clk
 set_output_delay -clock [get_clocks pll|altpll_component|auto_generated|pll1|clk[0]] -min -5 [get_ports {VGA_*}]
 
 set_multicycle_path -to {VGA_*[*]} -setup 2
-set_multicycle_path -to {VGA_*[*]} -hold 2
+set_multicycle_path -to {VGA_*[*]} -hold 1
 
 # SDRAM delays
 set_input_delay -clock [get_clocks {pll|altpll_component|auto_generated|pll1|clk[1]}] -max 6.4 [get_ports SDRAM_DQ[*]]
