@@ -400,24 +400,24 @@ begin
           pPs2Dat <= 'Z';
           Ps2Seq := Ps2Idle;            -- to Idle state
 
-          if( Ps2Seq = Ps2Idle and Ps2Clk(2) = '1' )then
-
-            if( Ps2Dat = X"FA" and Ps2Led = "111101101" )then
-              Ps2Seq := Ps2Txd;         -- Tx data state
-              pPs2Dat <= '0';
-
-              --Ps2Led := (Caps xor Kana xor Paus xor '1') & "00000" & (not Caps) & (not Kana) & Paus;
-              Ps2Led := (Caps xor Kana xor CmtScro xor '1') & "00000" & (not Caps) & (not Kana) & CmtScro;
-              timout := X"FFFF";        -- countdown timeout (18.3ms = 279ns x 65536clk, exceed 1ms)
-
-            elsif( Caps /= Ps2Caps or Kana /= Ps2Kana or CmtScro /= Ps2Scro )then
-              Ps2Seq := Ps2Txd;         -- Tx data state
-              pPs2Dat <= '0';
-              Ps2Led := "111101101";    -- Command EDh
-              timout := X"FFFF";        -- countdown timeout (18.3ms = 279ns x 65536clk, exceed 1ms)
-
-            end if;
-          end if;
+--          if( Ps2Seq = Ps2Idle and Ps2Clk(2) = '1' )then
+--
+--            if( Ps2Dat = X"FA" and Ps2Led = "111101101" )then
+--              Ps2Seq := Ps2Txd;         -- Tx data state
+--              pPs2Dat <= '0';
+--
+--              --Ps2Led := (Caps xor Kana xor Paus xor '1') & "00000" & (not Caps) & (not Kana) & Paus;
+--              Ps2Led := (Caps xor Kana xor CmtScro xor '1') & "00000" & (not Caps) & (not Kana) & CmtScro;
+--              timout := X"FFFF";        -- countdown timeout (18.3ms = 279ns x 65536clk, exceed 1ms)
+--
+--            elsif( Caps /= Ps2Caps or Kana /= Ps2Kana or CmtScro /= Ps2Scro )then
+--              Ps2Seq := Ps2Txd;         -- Tx data state
+--              pPs2Dat <= '0';
+--              Ps2Led := "111101101";    -- Command EDh
+--              timout := X"FFFF";        -- countdown timeout (18.3ms = 279ns x 65536clk, exceed 1ms)
+--
+--            end if;
+--          end if;
 
         else
           timout := timout - 1;         -- countdown timeout
