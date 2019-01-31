@@ -303,12 +303,14 @@ begin
             Ps2Dat := '1' & Ps2Dat(7 downto 1);
             Ps2Cnt := Ps2Cnt + 1;
           elsif( Ps2Seq = Ps2Rxd )then
-            if( Ps2Cnt = "0111" )then
+            if Ps2Cnt(3) = '0' then
+              -- bit 0-7
+              Ps2Dat := pPs2Dat & Ps2Dat(7 downto 1);
+            elsif Ps2Cnt = "1000" then
+              -- skip parity
               Ps2Seq := Ps2Stop;
             end if;
-            Ps2Dat := pPs2Dat & Ps2Dat(7 downto 1);
             Ps2Cnt := Ps2Cnt + 1;
-
           elsif( Ps2Seq = Ps2Stop )then
             Ps2Seq := Ps2Idle;
             if( Ps2Dat = X"AA" )then    -- BAT code (basic assurance test)
