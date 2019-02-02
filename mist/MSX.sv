@@ -110,6 +110,11 @@ wire [31:0] img_size;
 wire        ps2_kbd_clk;
 wire        ps2_kbd_data;
 
+wire  [7:0] mouse_x;
+wire  [7:0] mouse_y;
+wire  [7:0] mouse_flags;
+wire        mouse_strobe;
+
 user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
 (
         .clk_sys(clk_sys),
@@ -142,6 +147,11 @@ user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
 
         .ps2_kbd_clk(ps2_kbd_clk),
         .ps2_kbd_data(ps2_kbd_data),
+
+        .mouse_x(mouse_x),
+        .mouse_y(mouse_y),
+        .mouse_flags(mouse_flags),
+        .mouse_strobe(mouse_strobe),
 
         // unused
         .switches(),
@@ -203,8 +213,57 @@ end
 
 always_comb begin
     for (integer i=0; i<=5; i++) begin
-        msx_joya[i] <= (~joya[i] & ~msx_stra ? joya[i] : 1'bZ);
+        msx_joya[i] <= mouse_en ? (mouse[i] ? 1'bZ : mouse[i]) : (~joya[i] & ~msx_stra ? joya[i] : 1'bZ);
         msx_joyb[i] <= (~joyb[i] & ~msx_strb ? joyb[i] : 1'bZ);
+    end
+end
+
+reg        mouse_en = 0;
+reg  [5:0] mouse;
+
+always @(posedge clk_sys) begin
+
+    reg        stra_d;
+    reg  [8:0] mouse_x_latch;
+    reg  [8:0] mouse_y_latch;
+    reg  [1:0] mouse_state;
+    reg [17:0] mouse_timeout;
+
+    if (reset) begin
+        mouse_en <= 0;
+        mouse_state <= 0;
+    end
+    else if (mouse_strobe) mouse_en <= 1;
+    else if (~&joya) mouse_en <= 0;
+
+    if (mouse_strobe) begin
+        mouse_x_latch <= ~{mouse_flags[4], mouse_x} + 1'd1; //2nd complement of x
+        mouse_y_latch <= {mouse_flags[5], mouse_y};
+    end
+
+    mouse[5:4] <= ~mouse_flags[1:0];
+    if (mouse_en) begin
+        if (mouse_timeout) begin
+            mouse_timeout <= mouse_timeout - 1'd1;
+            if (mouse_timeout == 1) mouse_state <= 0;
+        end
+
+        stra_d <= msx_stra;
+        if (stra_d ^ msx_stra) begin
+            mouse_timeout <= 18'd100000;
+            mouse_state <= mouse_state + 1'd1;
+            case (mouse_state)
+            2'b00: mouse[3:0] <= {mouse_x_latch[5],mouse_x_latch[6],mouse_x_latch[7],mouse_x_latch[8]};
+            2'b01: mouse[3:0] <= {mouse_x_latch[1],mouse_x_latch[2],mouse_x_latch[3],mouse_x_latch[4]};
+            2'b10: mouse[3:0] <= {mouse_y_latch[5],mouse_y_latch[6],mouse_y_latch[7],mouse_y_latch[8]};
+            2'b11:
+            begin
+                mouse[3:0] <= {mouse_y_latch[1],mouse_y_latch[2],mouse_y_latch[3],mouse_y_latch[4]};
+                mouse_x_latch <= 0;
+                mouse_y_latch <= 0;
+            end
+            endcase
+        end
     end
 end
 
