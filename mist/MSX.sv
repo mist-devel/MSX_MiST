@@ -110,8 +110,8 @@ wire [31:0] img_size;
 wire        ps2_kbd_clk;
 wire        ps2_kbd_data;
 
-wire  [7:0] mouse_x;
-wire  [7:0] mouse_y;
+wire  [8:0] mouse_x;
+wire  [8:0] mouse_y;
 wire  [7:0] mouse_flags;
 wire        mouse_strobe;
 
@@ -237,8 +237,8 @@ always @(posedge clk_sys) begin
     else if (~&joya) mouse_en <= 0;
 
     if (mouse_strobe) begin
-        mouse_x_latch <= ~{mouse_flags[4], mouse_x} + 1'd1; //2nd complement of x
-        mouse_y_latch <= {mouse_flags[5], mouse_y};
+        mouse_x_latch <= ~mouse_x + 1'd1; //2nd complement of x
+        mouse_y_latch <= mouse_y;
     end
 
     mouse[5:4] <= ~mouse_flags[1:0];
