@@ -1986,8 +1986,11 @@ begin
                     pDac_VB     <= "0" & VideoB( 5 downto 1 );
                 end if;
                 Reso_v      <= '0';                                 -- Hsync:15kHz
-                pVideoHS_n  <= VideoCS_n;                           -- CSync Enabled
-                pVideoVS_n  <= DACout;                              -- Audio Out (Mono)
+					 -- MiST change
+                pVideoHS_n  <= VideoHS_n;
+                pVideoVS_n  <= VideoVS_n;
+--                pVideoHS_n  <= VideoCS_n;                           -- CSync Enabled
+--                pVideoVS_n  <= DACout;                              -- Audio Out (Mono)
 --              legacy_vga  <= '0';                                 -- behaves like vAllow_n        (for V9938 MSX2 VDP)
 
             when others =>                                          -- VGA / VGA+ 31kHz
