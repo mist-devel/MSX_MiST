@@ -54,8 +54,8 @@ architecture rtl of iplrom is
         X"1D",X"FD",X"3E",X"40",X"32",X"00",X"60",X"21",X"00",X"C0",X"04",X"4D",X"55",X"5D",
 
 --      X"C3",X"86",X"FC",X"38",X"43",      -- loading BIOS from EPCS only
-        X"CD",X"14",X"FE",X"38",X"43",      -- loading BIOS from SD-CARD or EPCS (default)
---      X"CD",X"14",X"FE",X"38",X"FB",      -- loading BIOS from SD-CARD only
+--        X"CD",X"14",X"FE",X"38",X"43",      -- loading BIOS from SD-CARD or EPCS (default)
+      X"CD",X"14",X"FE",X"38",X"FB",      -- loading BIOS from SD-CARD only
 
                           X"21",X"00",X"C0",X"01",X"80",X"00",X"3E",X"46",X"ED",X"B1",X"B7",X"20",X"0C",
         X"86",X"23",X"86",X"D6",X"DB",X"2B",X"20",X"F1",X"48",X"59",X"51",X"37",X"38",X"57",X"06",X"04",
