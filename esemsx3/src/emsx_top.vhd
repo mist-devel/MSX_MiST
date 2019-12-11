@@ -1,4 +1,4 @@
---
+----
 -- emsx_top.vhd
 --   ESE MSX-SYSTEM3 / MSX clone on a Cyclone FPGA (ALTERA)
 --   Revision 1.00
@@ -113,8 +113,9 @@ entity emsx_top is
         pDac_VR         : inout std_logic_vector(  5 downto 0);     -- RGB_Red / Svideo_C
         pDac_VG         : inout std_logic_vector(  5 downto 0);     -- RGB_Grn / Svideo_Y
         pDac_VB         : inout std_logic_vector(  5 downto 0);     -- RGB_Blu / CompositeVideo
-        pDac_SL         : out   std_logic_vector(  5 downto 0);     -- Sound-L
+        pDac_SL         : inout   std_logic_vector(  5 downto 0);     -- Sound-L
         pDac_SR         : inout std_logic_vector(  5 downto 0);     -- Sound-R / CMT
+		  cmtIn			: in std_logic;	-- Nuevo CMT
 
         pVideoHS_n      : out   std_logic;                          -- Csync(RGB15K), HSync(VGA31K)
         pVideoVS_n      : out   std_logic;                          -- Audio(RGB15K), VSync(VGA31K)
@@ -785,7 +786,6 @@ architecture RTL of emsx_top is
     signal  Fkeys           : std_logic_vector(  7 downto 0 );
 
     -- CMT signals
-    signal  CmtIn           : std_logic;
     alias   CmtOut          : std_logic is PpiPortC(5);
 
     -- 1bit sound port signal
@@ -2154,24 +2154,7 @@ begin
                   DACout & "ZZZZ" & DACout;                     -- the DACout setting is used to balance the input line of external slots
 
     -- Cassette Magnetic Tape (CMT) interface
-    process( clk21m )
-    begin
-        if( clk21m'event and clk21m = '1' )then
-            if( CmtScro = '1' and portF4_mode = '0' )then       -- when Scroll Lock is On
-                pDac_SR(5 downto 4) <= "ZZ";
-                pDac_SR(3 downto 1) <= CmtIn & (not CmtIn) & "0";
-                pDac_SR(0)          <= CmtOut;
-                CmtIn               <= pDac_SR(5);
-            else                                                -- when Scroll Lock is Off (default)
-                CmtIn               <= '0';                     -- CMT data input is always '0' on MSX turbo-R
-                if( right_inverse = '0' )then
-                    pDac_SR         <= DACout & "ZZZZ" & DACout;
-                else
-                    pDac_SR         <= not DACout & "ZZZZ" & not DACout;
-                end if;
-            end if;
-        end if;
-    end process;
+	pDac_SR(4) <= cmtIn;
 
     -- SCRLK key
     process( reset, clk21m )

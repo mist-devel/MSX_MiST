@@ -64,6 +64,7 @@ parameter CONF_STR = {
     "O6,RAM,2048kB,4096kB;",
 	"O7,Swap joysticks,No,Yes;",
 	"O8,VGA Output,CRT,LCD;",
+	"O9,Tape sound,OFF,ON;",
 	"T0,Reset;",
 	"V,v1.0.",`BUILD_DATE
 };
@@ -183,7 +184,8 @@ sd_card sd_card
         .sd_sdi(Sd_Cm),
         .sd_sdo(Sd_Dt[0])
 );
-
+wire [5:0] audio_li;
+wire [5:0] audio_ri;
 wire [5:0] audio_l;
 wire [5:0] audio_r;
 
@@ -209,6 +211,11 @@ wire resetW = status[0] | buttons[1] | ~locked;
 always @(posedge clk_sys) begin
 	reset <= resetW;
     dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
+	audio_li <= audio_l;
+	if (status[9]) begin		
+		audio_ri <= audio_r;
+	end	
+		else audio_ri<= audio_l;
 end
 
 always_comb begin
@@ -312,6 +319,7 @@ emsx_top emsx
         .pVideoHS_n (HSync),    // HSync(RGB15K, VGA31K)
         .pVideoVS_n (VSync),    // VSync(RGB15K, VGA31K)
 
+		  .CmtIn			(UART_RX),
         .pDac_SL    (audio_l),
         .pDac_SR    (audio_r)
 );
@@ -365,14 +373,14 @@ assign      VGA_VS = (scandoubler_disable || ypbpr)? 1'b1 : VSync;
 dac dac_l
 (
 	.clk(clk_sys),
-	.audio_in(audio_l),
+	.audio_in(audio_li),
 	.dac_out(AUDIO_L)
 );
 
 dac dac_r
 (
 	.clk(clk_sys),
-	.audio_in(audio_r),
+	.audio_in(audio_ri),
 	.dac_out(AUDIO_R)
 );
 
