@@ -31,9 +31,9 @@ architecture behavior of tb is
 
     component scc_mix_mul
         port(
-            a           : in    std_logic_vector(  8 downto 0 );    -- 9bit ‚Q‚Ì•â”
-            b           : in    std_logic_vector(  2 downto 0 );    -- 3bit ƒoƒCƒiƒŠ
-            c           : out   std_logic_vector( 11 downto 0 )     -- 12bit ‚Q‚Ì•â”
+            a           : in    std_logic_vector(  8 downto 0 );    -- 9bit ï¼’ã®è£œæ•°
+            b           : in    std_logic_vector(  2 downto 0 );    -- 3bit ãƒã‚¤ãƒŠãƒª
+            c           : out   std_logic_vector( 11 downto 0 )     -- 12bit ï¼’ã®è£œæ•°
         );
     end component;
 
@@ -100,7 +100,7 @@ begin
         reset <= '0';
         wait until( clk21m'event and clk21m = '1' );
 
-        -- B800h-B81Fh ”gŒ`İ’è
+        -- B800h-B81Fh æ³¢å½¢è¨­å®š
         adr     <= X"00";       -- B800h
         req     <= '1';
         wrt     <= '1';
@@ -517,7 +517,7 @@ begin
             wait until( clk21m'event and clk21m = '1' );
         end loop;
 
-        --  B8AAh   ‰¹—Êİ’è
+        --  B8AAh   éŸ³é‡è¨­å®š
         adr     <= X"AA";       -- B8AAh
         req     <= '1';
         wrt     <= '1';
@@ -531,7 +531,7 @@ begin
             wait until( clk21m'event and clk21m = '1' );
         end loop;
 
-        --  B8AFh   ƒCƒl[ƒuƒ‰İ’è
+        --  B8AFh   ã‚¤ãƒãƒ¼ãƒ–ãƒ©è¨­å®š
         adr     <= X"AF";       -- B8AFh
         req     <= '1';
         wrt     <= '1';
@@ -545,7 +545,7 @@ begin
             wait until( clk21m'event and clk21m = '1' );
         end loop;
 
-        --  B8C0h   ƒ‚[ƒhİ’è
+        --  B8C0h   ãƒ¢ãƒ¼ãƒ‰è¨­å®š
         adr     <= X"C0";       -- B8C0h
         req     <= '1';
         wrt     <= '1';
@@ -559,7 +559,7 @@ begin
             wait until( clk21m'event and clk21m = '1' );
         end loop;
 
-        --  B8A0h   ü”g”İ’è
+        --  B8A0h   å‘¨æ³¢æ•°è¨­å®š
         adr     <= X"A0";       -- B8A0h
         req     <= '1';
         wrt     <= '1';

@@ -6,25 +6,25 @@
 --  All rights reserved.
 --                                     http://www.ohnaka.jp/ese-vdp/
 --
---  –{ƒ\ƒtƒgƒEƒFƒA‚¨‚æ‚Ñ–{ƒ\ƒtƒgƒEƒFƒA‚ÉŠî‚Ã‚¢‚Äì¬‚³‚ê‚½”h¶•¨‚ÍAˆÈ‰º‚ÌðŒ‚ð
---  –ž‚½‚·ê‡‚ÉŒÀ‚èAÄ”Ð•z‚¨‚æ‚ÑŽg—p‚ª‹–‰Â‚³‚ê‚Ü‚·B
+--  æœ¬ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãŠã‚ˆã³æœ¬ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ã«åŸºã¥ã„ã¦ä½œæˆã•ã‚ŒãŸæ´¾ç”Ÿç‰©ã¯ã€ä»¥ä¸‹ã®æ¡ä»¶ã‚’
+--  æº€ãŸã™å ´åˆã«é™ã‚Šã€å†é ’å¸ƒãŠã‚ˆã³ä½¿ç”¨ãŒè¨±å¯ã•ã‚Œã¾ã™ã€‚
 --
---  1.ƒ\[ƒXƒR[ƒhŒ`Ž®‚ÅÄ”Ð•z‚·‚éê‡Aã‹L‚Ì’˜ìŒ •\Ž¦A–{ðŒˆê——A‚¨‚æ‚Ñ‰º‹L
---    –ÆÓð€‚ð‚»‚Ì‚Ü‚Ü‚ÌŒ`‚Å•ÛŽ‚·‚é‚±‚ÆB
---  2.ƒoƒCƒiƒŠŒ`Ž®‚ÅÄ”Ð•z‚·‚éê‡A”Ð•z•¨‚É•t‘®‚ÌƒhƒLƒ…ƒƒ“ƒg“™‚ÌŽ‘—¿‚ÉAã‹L‚Ì
---    ’˜ìŒ •\Ž¦A–{ðŒˆê——A‚¨‚æ‚Ñ‰º‹L–ÆÓð€‚ðŠÜ‚ß‚é‚±‚ÆB
---  3.‘–Ê‚É‚æ‚éŽ–‘O‚Ì‹–‰Â‚È‚µ‚ÉA–{ƒ\ƒtƒgƒEƒFƒA‚ð”Ì”„A‚¨‚æ‚Ñ¤‹Æ“I‚È»•i‚âŠˆ“®
---    ‚ÉŽg—p‚µ‚È‚¢‚±‚ÆB
+--  1.ã‚½ãƒ¼ã‚¹ã‚³ãƒ¼ãƒ‰å½¢å¼ã§å†é ’å¸ƒã™ã‚‹å ´åˆã€ä¸Šè¨˜ã®è‘—ä½œæ¨©è¡¨ç¤ºã€æœ¬æ¡ä»¶ä¸€è¦§ã€ãŠã‚ˆã³ä¸‹è¨˜
+--    å…è²¬æ¡é …ã‚’ãã®ã¾ã¾ã®å½¢ã§ä¿æŒã™ã‚‹ã“ã¨ã€‚
+--  2.ãƒã‚¤ãƒŠãƒªå½¢å¼ã§å†é ’å¸ƒã™ã‚‹å ´åˆã€é ’å¸ƒç‰©ã«ä»˜å±žã®ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆç­‰ã®è³‡æ–™ã«ã€ä¸Šè¨˜ã®
+--    è‘—ä½œæ¨©è¡¨ç¤ºã€æœ¬æ¡ä»¶ä¸€è¦§ã€ãŠã‚ˆã³ä¸‹è¨˜å…è²¬æ¡é …ã‚’å«ã‚ã‚‹ã“ã¨ã€‚
+--  3.æ›¸é¢ã«ã‚ˆã‚‹äº‹å‰ã®è¨±å¯ãªã—ã«ã€æœ¬ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ã‚’è²©å£²ã€ãŠã‚ˆã³å•†æ¥­çš„ãªè£½å“ã‚„æ´»å‹•
+--    ã«ä½¿ç”¨ã—ãªã„ã“ã¨ã€‚
 --
---  –{ƒ\ƒtƒgƒEƒFƒA‚ÍA’˜ìŒ ŽÒ‚É‚æ‚Á‚ÄuŒ»ó‚Ì‚Ü‚Üv’ñ‹Ÿ‚³‚ê‚Ä‚¢‚Ü‚·B’˜ìŒ ŽÒ‚ÍA
---  “Á’è–Ú“I‚Ö‚Ì“K‡«‚Ì•ÛØA¤•i«‚Ì•ÛØA‚Ü‚½‚»‚ê‚ÉŒÀ’è‚³‚ê‚È‚¢A‚¢‚©‚È‚é–¾Ž¦
---  “I‚à‚µ‚­‚ÍˆÃ–Ù‚È•ÛØÓ”C‚à•‰‚¢‚Ü‚¹‚ñB’˜ìŒ ŽÒ‚ÍAŽ–—R‚Ì‚¢‚©‚ñ‚ð–â‚í‚¸A‘¹ŠQ
---  ”­¶‚ÌŒ´ˆö‚¢‚©‚ñ‚ð–â‚í‚¸A‚©‚ÂÓ”C‚Ìª‹’‚ªŒ_–ñ‚Å‚ ‚é‚©ŒµŠiÓ”C‚Å‚ ‚é‚©i‰ßŽ¸
---  ‚»‚Ì‘¼‚Ìj•s–@sˆ×‚Å‚ ‚é‚©‚ð–â‚í‚¸A‰¼‚É‚»‚Ì‚æ‚¤‚È‘¹ŠQ‚ª”­¶‚·‚é‰Â”\«‚ð’m‚ç
---  ‚³‚ê‚Ä‚¢‚½‚Æ‚µ‚Ä‚àA–{ƒ\ƒtƒgƒEƒFƒA‚ÌŽg—p‚É‚æ‚Á‚Ä”­¶‚µ‚½i‘ã‘Ö•i‚Ü‚½‚Í‘ã—pƒT
---  [ƒrƒX‚Ì’²’BAŽg—p‚Ì‘rŽ¸Aƒf[ƒ^‚Ì‘rŽ¸A—˜‰v‚Ì‘rŽ¸A‹Æ–±‚Ì’†’f‚àŠÜ‚ßA‚Ü‚½‚»
---  ‚ê‚ÉŒÀ’è‚³‚ê‚È‚¢j’¼Ú‘¹ŠQAŠÔÚ‘¹ŠQA‹ô”­“I‚È‘¹ŠQA“Á•Ê‘¹ŠQA’¦”±“I‘¹ŠQA‚Ü
---  ‚½‚ÍŒ‹‰Ê‘¹ŠQ‚É‚Â‚¢‚ÄAˆêØÓ”C‚ð•‰‚í‚È‚¢‚à‚Ì‚Æ‚µ‚Ü‚·B
+--  æœ¬ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ã¯ã€è‘—ä½œæ¨©è€…ã«ã‚ˆã£ã¦ã€Œç¾çŠ¶ã®ã¾ã¾ã€æä¾›ã•ã‚Œã¦ã„ã¾ã™ã€‚è‘—ä½œæ¨©è€…ã¯ã€
+--  ç‰¹å®šç›®çš„ã¸ã®é©åˆæ€§ã®ä¿è¨¼ã€å•†å“æ€§ã®ä¿è¨¼ã€ã¾ãŸãã‚Œã«é™å®šã•ã‚Œãªã„ã€ã„ã‹ãªã‚‹æ˜Žç¤º
+--  çš„ã‚‚ã—ãã¯æš—é»™ãªä¿è¨¼è²¬ä»»ã‚‚è² ã„ã¾ã›ã‚“ã€‚è‘—ä½œæ¨©è€…ã¯ã€äº‹ç”±ã®ã„ã‹ã‚“ã‚’å•ã‚ãšã€æå®³
+--  ç™ºç”Ÿã®åŽŸå› ã„ã‹ã‚“ã‚’å•ã‚ãšã€ã‹ã¤è²¬ä»»ã®æ ¹æ‹ ãŒå¥‘ç´„ã§ã‚ã‚‹ã‹åŽ³æ ¼è²¬ä»»ã§ã‚ã‚‹ã‹ï¼ˆéŽå¤±
+--  ãã®ä»–ã®ï¼‰ä¸æ³•è¡Œç‚ºã§ã‚ã‚‹ã‹ã‚’å•ã‚ãšã€ä»®ã«ãã®ã‚ˆã†ãªæå®³ãŒç™ºç”Ÿã™ã‚‹å¯èƒ½æ€§ã‚’çŸ¥ã‚‰
+--  ã•ã‚Œã¦ã„ãŸã¨ã—ã¦ã‚‚ã€æœ¬ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ã®ä½¿ç”¨ã«ã‚ˆã£ã¦ç™ºç”Ÿã—ãŸï¼ˆä»£æ›¿å“ã¾ãŸã¯ä»£ç”¨ã‚µ
+--  ãƒ¼ãƒ“ã‚¹ã®èª¿é”ã€ä½¿ç”¨ã®å–ªå¤±ã€ãƒ‡ãƒ¼ã‚¿ã®å–ªå¤±ã€åˆ©ç›Šã®å–ªå¤±ã€æ¥­å‹™ã®ä¸­æ–­ã‚‚å«ã‚ã€ã¾ãŸã
+--  ã‚Œã«é™å®šã•ã‚Œãªã„ï¼‰ç›´æŽ¥æå®³ã€é–“æŽ¥æå®³ã€å¶ç™ºçš„ãªæå®³ã€ç‰¹åˆ¥æå®³ã€æ‡²ç½°çš„æå®³ã€ã¾
+--  ãŸã¯çµæžœæå®³ã«ã¤ã„ã¦ã€ä¸€åˆ‡è²¬ä»»ã‚’è² ã‚ãªã„ã‚‚ã®ã¨ã—ã¾ã™ã€‚
 --
 --  Note that above Japanese version license is the formal document.
 --  The following translation is only for reference.
@@ -58,28 +58,34 @@
 -------------------------------------------------------------------------------
 -- Memo
 --   Japanese comment lines are starts with "JP:".
---   JP: “ú–{Œê‚ÌƒRƒƒ“ƒgs‚Í JP:‚ð“ª‚É•t‚¯‚éŽ–‚É‚·‚é
+--   JP: æ—¥æœ¬èªžã®ã‚³ãƒ¡ãƒ³ãƒˆè¡Œã¯ JP:ã‚’é ­ã«ä»˜ã‘ã‚‹äº‹ã«ã™ã‚‹
 --
 -------------------------------------------------------------------------------
 -- Revision History
 --
 -- 12th,August,2006 created by Kunihiko Ohnaka
--- JP: VDP‚ÌƒRƒA‚ÌŽÀ‘•‚ÆƒXƒNƒŠ[ƒ“ƒ‚[ƒh‚ÌŽÀ‘•‚ð•ª—£‚µ‚½
+-- JP: VDPã®ã‚³ã‚¢ã®å®Ÿè£…ã¨ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ãƒ¢ãƒ¼ãƒ‰ã®å®Ÿè£…ã‚’åˆ†é›¢ã—ãŸ
 --
 -- 29th,October,2006 modified by Kunihiko Ohnaka
 --   - Insert the license text.
 --   - Add the document part below.
 --
 -- 20th,March,2008 modified by t.hara
--- JP: ƒŠƒtƒ@ƒNƒ^ƒŠƒ“ƒO, VDP_PACKAGE ‚ÌŽQÆ‚ðíœ
+-- JP: ãƒªãƒ•ã‚¡ã‚¯ã‚¿ãƒªãƒ³ã‚°, VDP_PACKAGE ã®å‚ç…§ã‚’å‰Šé™¤
 --
 -- 9th, April,2008 modified by t.hara
 -- Supported YJK mode.
 --
+-- 11th, September,2019 modified by Oduvaldo Pavan Junior
+-- Fixed the lack of page flipping (R13) capability
+--
+-- Added the undocumented feature where R1 bit #2 change the blink counter
+-- clock source from VSYNC to HSYNC
+--
 -------------------------------------------------------------------------------
 -- Document
 --
--- JP: GRAPHICƒ‚[ƒh4,5,6,7‚ÌƒƒCƒ“ˆ—‰ñ˜H‚Å‚·B
+-- JP: GRAPHICãƒ¢ãƒ¼ãƒ‰4,5,6,7ã®ãƒ¡ã‚¤ãƒ³å‡¦ç†å›žè·¯ã§ã™ã€‚
 --
 
 LIBRARY IEEE;
@@ -103,7 +109,9 @@ ENTITY VDP_GRAPHIC4567 IS
         VDPMODEGRAPHIC7         : IN    STD_LOGIC;
 
         -- REGISTERS
+        REG_R1_BL_CLKS          : IN    STD_LOGIC;
         REG_R2_PT_NAM_ADDR      : IN    STD_LOGIC_VECTOR(  6 DOWNTO 0 );
+        REG_R13_BLINK_PERIOD    : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
         REG_R26_H_SCROLL        : IN    STD_LOGIC_VECTOR(  8 DOWNTO 3 );
         REG_R27_H_SCROLL        : IN    STD_LOGIC_VECTOR(  2 DOWNTO 0 );
         REG_R25_YAE             : IN    STD_LOGIC;
@@ -162,18 +170,23 @@ ARCHITECTURE RTL OF VDP_GRAPHIC4567 IS
     SIGNAL W_SP2_H_SCROLL               : STD_LOGIC;
     SIGNAL W_PIX                        : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
 
-    SIGNAL  W_Y                         : STD_LOGIC_VECTOR( 4 DOWNTO 0 );
-    SIGNAL  W_K                         : STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-    SIGNAL  W_J                         : STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-    SIGNAL  W_R_YJK                     : STD_LOGIC_VECTOR( 6 DOWNTO 0 );
-    SIGNAL  W_G_YJK                     : STD_LOGIC_VECTOR( 6 DOWNTO 0 );
-    SIGNAL  W_B_Y                       : STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-    SIGNAL  W_B_JK                      : STD_LOGIC_VECTOR( 7 DOWNTO 0 );
-    SIGNAL  W_B_YJKP                    : STD_LOGIC_VECTOR( 8 DOWNTO 0 );
-    SIGNAL  W_B_YJK                     : STD_LOGIC_VECTOR( 6 DOWNTO 0 );
-    SIGNAL  W_R                         : STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-    SIGNAL  W_G                         : STD_LOGIC_VECTOR( 5 DOWNTO 0 );
-    SIGNAL  W_B                         : STD_LOGIC_VECTOR( 5 DOWNTO 0 );
+    SIGNAL W_Y                          : STD_LOGIC_VECTOR(  4 DOWNTO 0 );
+    SIGNAL W_K                          : STD_LOGIC_VECTOR(  5 DOWNTO 0 );
+    SIGNAL W_J                          : STD_LOGIC_VECTOR(  5 DOWNTO 0 );
+    SIGNAL W_R_YJK                      : STD_LOGIC_VECTOR(  6 DOWNTO 0 );
+    SIGNAL W_G_YJK                      : STD_LOGIC_VECTOR(  6 DOWNTO 0 );
+    SIGNAL W_B_Y                        : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
+    SIGNAL W_B_JK                       : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
+    SIGNAL W_B_YJKP                     : STD_LOGIC_VECTOR(  8 DOWNTO 0 );
+    SIGNAL W_B_YJK                      : STD_LOGIC_VECTOR(  6 DOWNTO 0 );
+    SIGNAL W_R                          : STD_LOGIC_VECTOR(  5 DOWNTO 0 );
+    SIGNAL W_G                          : STD_LOGIC_VECTOR(  5 DOWNTO 0 );
+    SIGNAL W_B                          : STD_LOGIC_VECTOR(  5 DOWNTO 0 );
+    SIGNAL FF_BLINK_CLK_CNT             : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL FF_BLINK_STATE               : STD_LOGIC;
+    SIGNAL FF_BLINK_PERIOD_CNT          : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL W_BLINK_CNT_MAX              : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL W_BLINK_SYNC                 : STD_LOGIC;
 BEGIN
 
     ----------------------------------------------------------------
@@ -229,8 +242,9 @@ BEGIN
         (OTHERS => 'X') WHEN OTHERS;
 
     -- TWO SCREEN H-SCROLL MODE (R25 SP2 = '1')
+    -- CONSIDER R#13 BLINKING TO FLIP PAGES
     W_SP2_H_SCROLL      <=  LOCALDOTCOUNTERX(8) WHEN( (REG_R25_SP2 AND LATCHEDPTNNAMETBLBASEADDR(5)) = '1' )ELSE
-                            LATCHEDPTNNAMETBLBASEADDR(5);
+                            LATCHEDPTNNAMETBLBASEADDR(5) WHEN ( FF_BLINK_STATE = '0') ELSE '0';
 
     -- VRAM ADDRESS MAPPINGS.
     LOGICALVRAMADDRG45  <=  LATCHEDPTNNAMETBLBASEADDR(6) & W_SP2_H_SCROLL &
@@ -456,6 +470,47 @@ BEGIN
                     LOCALDOTCOUNTERX <= LOCALDOTCOUNTERX + 2;
                 END IF;
             END IF;
+        END IF;
+    END PROCESS;
+
+    W_BLINK_CNT_MAX <=  REG_R13_BLINK_PERIOD(  3 DOWNTO 0 ) WHEN( FF_BLINK_STATE = '0' )ELSE
+                        REG_R13_BLINK_PERIOD(  7 DOWNTO 4 );
+    W_BLINK_SYNC    <=  '1' WHEN ( (DOTCOUNTERX = 0) AND (DOTCOUNTERY = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '0') ) ELSE
+                        '1' WHEN ( (DOTCOUNTERX = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '1') ) ELSE
+                        '0';
+
+    PROCESS( RESET, CLK21M )
+    BEGIN
+        IF( RESET = '1' )THEN
+            FF_BLINK_CLK_CNT <= (OTHERS => '0');
+            FF_BLINK_STATE <= '0';
+            FF_BLINK_PERIOD_CNT <= (OTHERS => '0');
+        ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
+            IF( W_BLINK_SYNC = '1' )THEN
+
+                IF (FF_BLINK_CLK_CNT = "1001") THEN
+                    FF_BLINK_CLK_CNT <= (OTHERS => '0');
+                    FF_BLINK_PERIOD_CNT <= FF_BLINK_PERIOD_CNT + 1;
+                ELSE
+                    FF_BLINK_CLK_CNT <= FF_BLINK_CLK_CNT + 1;
+                END IF;
+
+                IF( FF_BLINK_PERIOD_CNT >= W_BLINK_CNT_MAX )THEN
+                    FF_BLINK_PERIOD_CNT <= (OTHERS => '0');
+                    IF (REG_R13_BLINK_PERIOD( 7 DOWNTO 4 ) = "0000")THEN
+                         -- WHEN ON PERIOD IS 0, THE PAGE SELECTED SHOULD BE ALWAYS ODD / R#2
+                         FF_BLINK_STATE <= '0';
+                    ELSIF( REG_R13_BLINK_PERIOD( 3 DOWNTO 0 ) = "0000")THEN
+                         -- WHEN OFF PERIOD IS 0 AND ON NOT, THE PAGE SELECT SHOULD BE ALWAYS THE R#2 EVEN PAIR
+                         FF_BLINK_STATE <= '1';
+                    ELSE
+                         -- NEITHER ARE 0, SO JUST KEEP SWITCHING WHEN PERIOD ENDS
+                         FF_BLINK_STATE <= NOT FF_BLINK_STATE;
+                    END IF;
+                END IF;
+
+            END IF;
+
         END IF;
     END PROCESS;
 

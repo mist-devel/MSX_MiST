@@ -6,25 +6,25 @@
 --  All rights reserved.
 --                                     http://www.ohnaka.jp/ese-vdp/
 --
---  �{�\�t�g�E�F�A����і{�\�t�g�E�F�A�Ɋ�Â��č쐬���ꂽ�h�����́A�ȉ��̏�����
---  �������ꍇ�Ɍ���A�ĔЕz����юg�p��������܂��B
+--  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
+--  満たす場合に限り、再頒布および使用が許可されます。
 --
---  1.�\�[�X�R�[�h�`���ōĔЕz����ꍇ�A��L�̒��쌠�\���A�{�����ꗗ�A����щ��L
---    �Ɛӏ��������̂܂܂̌`�ŕێ����邱�ƁB
---  2.�o�C�i���`���ōĔЕz����ꍇ�A�Еz���ɕt���̃h�L�������g���̎����ɁA��L��
---    ���쌠�\���A�{�����ꗗ�A����щ��L�Ɛӏ������܂߂邱�ƁB
---  3.���ʂɂ�鎖�O�̋��Ȃ��ɁA�{�\�t�g�E�F�A��̔��A����я��ƓI�Ȑ��i�⊈��
---    �Ɏg�p���Ȃ����ƁB
+--  1.ソースコード形式で再頒布する場合、上記の著作権表示、本条件一覧、および下記
+--    免責条項をそのままの形で保持すること。
+--  2.バイナリ形式で再頒布する場合、頒布物に付属のドキュメント等の資料に、上記の
+--    著作権表示、本条件一覧、および下記免責条項を含めること。
+--  3.書面による事前の許可なしに、本ソフトウェアを販売、および商業的な製品や活動
+--    に使用しないこと。
 --
---  �{�\�t�g�E�F�A�́A���쌠�҂ɂ���āu����̂܂܁v�񋟂���Ă��܂��B���쌠�҂́A
---  ����ړI�ւ̓K�����̕ۏ؁A���i���̕ۏ؁A�܂�����Ɍ��肳��Ȃ��A�����Ȃ閾��
---  �I�������͈ÖقȕۏؐӔC�������܂���B���쌠�҂́A���R�̂�������킸�A���Q
---  �����̌�����������킸�A���ӔC�̍������_��ł��邩���i�ӔC�ł��邩�i�ߎ�
---  ���̑��́j�s�@�s�ׂł��邩���킸�A���ɂ��̂悤�ȑ��Q����������\����m��
---  ����Ă����Ƃ��Ă��A�{�\�t�g�E�F�A�̎g�p�ɂ���Ĕ��������i��֕i�܂��͑�p�T
---  �[�r�X�̒��B�A�g�p�̑r���A�f�[�^�̑r���A���v�̑r���A�Ɩ��̒��f���܂߁A�܂���
---  ��Ɍ��肳��Ȃ��j���ڑ��Q�A�Ԑڑ��Q�A�����I�ȑ��Q�A���ʑ��Q�A�����I���Q�A��
---  ���͌��ʑ��Q�ɂ��āA��ؐӔC�𕉂�Ȃ����̂Ƃ��܂��B
+--  本ソフトウェアは、著作権者によって「現状のまま」提供されています。著作権者は、
+--  特定目的への適合性の保証、商品性の保証、またそれに限定されない、いかなる明示
+--  的もしくは暗黙な保証責任も負いません。著作権者は、事由のいかんを問わず、損害
+--  発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失
+--  その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知ら
+--  されていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サ
+--  ービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそ
+--  れに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、ま
+--  たは結果損害について、一切責任を負わないものとします。
 --
 --  Note that above Japanese version license is the formal document.
 --  The following translation is only for reference.
@@ -58,7 +58,7 @@
 -------------------------------------------------------------------------------
 -- Memo
 --   Japanese comment lines are starts with "JP:".
---   JP: ���{��̃R�����g�s�� JP:�𓪂ɕt���鎖�ɂ���
+--   JP: 日本語のコメント行は JP:を頭に付ける事にする
 --
 -------------------------------------------------------------------------------
 -- Revision History
@@ -68,12 +68,12 @@
 --   - Add the document part below.
 --
 -- 12th,August,2006 created by Kunihiko Ohnaka
--- JP: VDP�̃R�A�̎����ƃX�N���[�����[�h�̎����𕪗�����
+-- JP: VDPのコアの実装とスクリーンモードの実装を分離した
 --
 -------------------------------------------------------------------------------
 -- Document
 --
--- JP: GRAPHIC���[�h4,5,6,7�̃��C��������H�ł��B
+-- JP: GRAPHICモード4,5,6,7のメイン処理回路です。
 --
 
 library ieee;
@@ -125,17 +125,17 @@ architecture rtl of graphic4567 is
   signal colorData : std_logic_vector(7 downto 0);
 begin
 
-  -- JP: RAM�� dotState��"10","00"�̎��ɃA�h���X���o����"01"�ŃA�N�Z�X����B
-  -- JP: �܂��A"10"�̃^�C�~���O�ł�A16�̈قȂ�y�A�ɂȂ�o�C�g��ǂݏo�������ł���B
-  -- JP: (���@��VDP��DRAM�C���^�[���[�u�ɑ����BGRAPHIC6,7�ł����g��Ȃ��B����TEXT2����?)
-  -- JP: ���@�ł�8�h�b�g���̃f�[�^��4�h�b�g���̎��ԂŃo�[�X�g�ň�C�ɓǂ݁A
-  -- JP: �c���4�h�b�g�̎��Ԃ�VRAM R/W�� VDP�R�}���h�����s���Ă���B
-  -- JP: ����VDP�ł����l�ɁA8�h�b�g�̍ŏ���4�h�b�g���ɕ`��p�̃f�[�^��ǂ݁A
-  -- JP: �c���4�h�b�g�̊��Ԃ�VRAM R/W�� VDP�R�}���h�����s����B
+  -- JP: RAMは dotStateが"10","00"の時にアドレスを出して"01"でアクセスする。
+  -- JP: また、"10"のタイミングではA16の異なるペアになるバイトを読み出す事ができる。
+  -- JP: (実機のVDPのDRAMインターリーブに相当。GRAPHIC6,7でしか使わない。あとTEXT2もか?)
+  -- JP: 実機では8ドット分のデータを4ドット分の時間でバーストで一気に読み、
+  -- JP: 残りの4ドットの時間でVRAM R/Wや VDPコマンドを実行している。
+  -- JP: 似非VDPでも同様に、8ドットの最初の4ドット中に描画用のデータを読み、
+  -- JP: 残りの4ドットの期間でVRAM R/Wや VDPコマンドを実行する。
   --
-  -- JP: ����āA�ȉ��̂悤�ȃ^�C�~���O�ŉ�ʂ̕`����s�����B
+  -- JP: よって、以下のようなタイミングで画面の描画を行う事。
   --
-  -- [�f�[�^���[�h�n]
+  -- [データリード系]
   --                     |-----------|-----------|-----------|-----------|
   -- eightDotState    0=><====1=====><====2=====><====3=====><====4=====>
   -- dotState         "10"00"01"11"10"00"01"11"10"00"01"11"10"00"01"11"10"
@@ -148,9 +148,9 @@ begin
   -- eightDotState    4=><====5=====><====6=====><====7=====><====0=====>
   -- dotState         "10"00"01"11"10"00"01"11"10"00"01"11"10"00"01"11"10"
   --                  <ADRa>      <ADRa>      <ADRb>      <ADRc>      <ADR4>
-  --  ��ADRa�`c��VDP�R�}���h��X�v���C�g��Y���W�����AVRAM R/W�Ɏg����
+  --  ※ADRa～cはVDPコマンドやスプライトのY座標検査、VRAM R/Wに使われる
   --
-  -- [�`��n(4�h�b�g���̂�)]
+  -- [描画系(4ドット分のみ)]
   --                     |-----------|-----------|-----------|-----------|
   -- eightDotState    7=><====0=====><====1=====><====2=====><====3=====>
   -- dotState         "10"00"01"11"10"00"01"11"10"00"01"11"10"00"01"11"10"
@@ -222,12 +222,12 @@ begin
                  (eightDotState = "011") or
                  (eightDotState = "100") ) then
             fifoIn <= '1';
-            -- �{���œǂݏo���̂ŁA2��������
+            -- 倍速で読み出すので、2ずつ増える
             localDotCounterX <= localDotCounterX + 2;
           end if;
         when "01" =>
-          -- �O�̃X�e�[�g��fifoIn = '1'���o�͂�����A����(���̎��̃N���b�N�G�b�W)��
-          -- FIFO�Ƀf�[�^����荞�܂��
+          -- 前のステートでfifoIn = '1'を出力したら、ここ(この次のクロックエッジ)で
+          -- FIFOにデータが取り込まれる
           if( fifoIn = '1' ) then
               fifoIn <= '0';
               fifoAddr_in <= fifoAddr_in + 1;
@@ -238,19 +238,19 @@ begin
                (eightDotState = "010") or
                (eightDotState = "011") or
                (eightDotState = "100")) ) then
-            -- GRAPHIC6,7�̎��̓y�A�f�[�^���g��
+            -- GRAPHIC6,7の時はペアデータも使う
             fifoIn <= '1';
           end if;
-          -- ���̃f�[�^�̃A�h���X
+          -- 次のデータのアドレス
           if( (vdpModeGraphic4 = '1') or (vdpModeGraphic5 = '1') ) then
             pRamAdr <= logicalVramAddrG45(16 downto 0);
           else
             pRamAdr <= logicalVramAddrG67(0) & logicalVramAddrG67(16 downto 1);
           end if;
         when "10" =>
-          -- JP: �O�̃X�e�[�g��fifoIn = '1'���o�͂�����A����(���̎��̃N���b�N�G�b�W)��
-          -- JP: FIFO�Ƀf�[�^����荞�܂��
-          -- JP: �����Ŏ�荞�܂��f�[�^�̓y�A�f�[�^
+          -- JP: 前のステートでfifoIn = '1'を出力したら、ここ(この次のクロックエッジ)で
+          -- JP: FIFOにデータが取り込まれる
+          -- JP: ここで取り込まれるデータはペアデータ
           if( fifoIn = '1' ) then
             fifoIn <= '0';
             fifoAddr_in <= fifoAddr_in + 1;
@@ -260,18 +260,18 @@ begin
       end case;
 
       -- Color code decision
-      -- JP: "01"��"10"�̃^�C�~���O�ł����[�R�[�h���o�͂��Ă�����΁A
-      -- JP: VDP�G���e�B�e�B�̕��Ńp���b�g���f�R�[�h���ĐF���o�͂��Ă����B
-      -- JP: "01"��"10"�œ����F���o�͂���Ή�256�h�b�g�ɂȂ�A�Ⴄ�F��
-      -- JP: �o�͂���Ή�512�h�b�g�\���ƂȂ�B
+      -- JP: "01"と"10"のタイミングでかラーコードを出力してあげれば、
+      -- JP: VDPエンティティの方でパレットをデコードして色を出力してくれる。
+      -- JP: "01"と"10"で同じ色を出力すれば横256ドットになり、違う色を
+      -- JP: 出力すれば横512ドット表示となる。
       case dotState is
         when "00" =>
           null;
         when "01" =>
-          -- JP: ������FIFO�̃f�[�^�o�͂���荞�݁A�ŏ��̃h�b�g�̃J���[�R�[�h������
+          -- JP: ここでFIFOのデータ出力を取り込み、最初のドットのカラーコードを決定
           if( (vdpModeGraphic4 ='1') or (vdpModeGraphic5 ='1') ) then
-            -- JP: GRAPHIC5�͍��𑜓x���[�h�����A���̏�����vdp�G���e�B�e�B�̂ق���
-            -- JP: �����Ȃ��Ă���̂ŁA�����ł̓����GRAPHIC4�ƑS�������ŗǂ��B
+            -- JP: GRAPHIC5は高解像度モードだが、その処理はvdpエンティティのほうで
+            -- JP: おこなっているので、ここでの動作はGRAPHIC4と全く同じで良い。
             if( eightDotState(0) = '0' ) then
               colorData <= fifoData_out;
               fifoAddr_out <= fifoAddr_out + 1;

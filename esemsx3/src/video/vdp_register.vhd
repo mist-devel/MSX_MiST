@@ -5,25 +5,25 @@
 --  All rights reserved.
 --                                     http://www.ohnaka.jp/ese-vdp/
 --
---  �{�\�t�g�E�F�A����і{�\�t�g�E�F�A�Ɋ�Â��č쐬���ꂽ�h�����́A�ȉ��̏�����
---  �������ꍇ�Ɍ���A�ĔЕz����юg�p��������܂��B
+--  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
+--  満たす場合に限り、再頒布および使用が許可されます。
 --
---  1.�\�[�X�R�[�h�`���ōĔЕz����ꍇ�A��L�̒��쌠�\���A�{�����ꗗ�A����щ��L
---    �Ɛӏ��������̂܂܂̌`�ŕێ����邱�ƁB
---  2.�o�C�i���`���ōĔЕz����ꍇ�A�Еz���ɕt���̃h�L�������g���̎����ɁA��L��
---    ���쌠�\���A�{�����ꗗ�A����щ��L�Ɛӏ������܂߂邱�ƁB
---  3.���ʂɂ�鎖�O�̋��Ȃ��ɁA�{�\�t�g�E�F�A��̔��A����я��ƓI�Ȑ��i�⊈��
---    �Ɏg�p���Ȃ����ƁB
+--  1.ソースコード形式で再頒布する場合、上記の著作権表示、本条件一覧、および下記
+--    免責条項をそのままの形で保持すること。
+--  2.バイナリ形式で再頒布する場合、頒布物に付属のドキュメント等の資料に、上記の
+--    著作権表示、本条件一覧、および下記免責条項を含めること。
+--  3.書面による事前の許可なしに、本ソフトウェアを販売、および商業的な製品や活動
+--    に使用しないこと。
 --
---  �{�\�t�g�E�F�A�́A���쌠�҂ɂ���āu����̂܂܁v�񋟂���Ă��܂��B���쌠�҂́A
---  ����ړI�ւ̓K�����̕ۏ؁A���i���̕ۏ؁A�܂�����Ɍ��肳��Ȃ��A�����Ȃ閾��
---  �I�������͈ÖقȕۏؐӔC�������܂���B���쌠�҂́A���R�̂�������킸�A���Q
---  �����̌�����������킸�A���ӔC�̍������_��ł��邩���i�ӔC�ł��邩�i�ߎ�
---  ���̑��́j�s�@�s�ׂł��邩���킸�A���ɂ��̂悤�ȑ��Q����������\����m��
---  ����Ă����Ƃ��Ă��A�{�\�t�g�E�F�A�̎g�p�ɂ���Ĕ��������i��֕i�܂��͑�p�T
---  �[�r�X�̒��B�A�g�p�̑r���A�f�[�^�̑r���A���v�̑r���A�Ɩ��̒��f���܂߁A�܂���
---  ��Ɍ��肳��Ȃ��j���ڑ��Q�A�Ԑڑ��Q�A�����I�ȑ��Q�A���ʑ��Q�A�����I���Q�A��
---  ���͌��ʑ��Q�ɂ��āA��ؐӔC�𕉂�Ȃ����̂Ƃ��܂��B
+--  本ソフトウェアは、著作権者によって「現状のまま」提供されています。著作権者は、
+--  特定目的への適合性の保証、商品性の保証、またそれに限定されない、いかなる明示
+--  的もしくは暗黙な保証責任も負いません。著作権者は、事由のいかんを問わず、損害
+--  発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失
+--  その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知ら
+--  されていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サ
+--  ービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそ
+--  れに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、ま
+--  たは結果損害について、一切責任を負わないものとします。
 --
 --  Note that above Japanese version license is the formal document.
 --  The following translation is only for reference.
@@ -55,7 +55,7 @@
 --  POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
 --  23th,March,2008
---      JP: VDP.VHD ���番�� by t.hara
+--      JP: VDP.VHD から分離 by t.hara
 --
 --  28th,March,2008
 --      added "S#0 bit6 5th sprite (9th sprite) flag support" by t.hara
@@ -65,7 +65,13 @@
 --
 --  26th,January,2017
 --      patch yuukun status R0 S#5 timing
-
+--
+--  5th, September,2019 modified by Oduvaldo Pavan Junior
+--      Fixed the lack of page flipping (R13) capability
+--
+--      Added the undocumented feature where R1 bit #2 change the blink counter
+--      clock source from VSYNC to HSYNC
+--
 
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
@@ -138,6 +144,7 @@ ENTITY VDP_REGISTER IS
         REG_R0_HSYNC_INT_EN         : OUT   STD_LOGIC;
         REG_R1_SP_SIZE              : OUT   STD_LOGIC;
         REG_R1_SP_ZOOM              : OUT   STD_LOGIC;
+        REG_R1_BL_CLKS              : OUT   STD_LOGIC;
         REG_R1_VSYNC_INT_EN         : OUT   STD_LOGIC;
         REG_R1_DISP_ON              : OUT   STD_LOGIC;
         REG_R2_PT_NAM_ADDR          : OUT   STD_LOGIC_VECTOR(  6 DOWNTO 0 );
@@ -484,6 +491,7 @@ BEGIN
             FF_R1_DISP_MODE <= (OTHERS => '0');
             REG_R1_SP_SIZE <= '0';
             REG_R1_SP_ZOOM <= '0';
+            REG_R1_BL_CLKS <= '0';
             REG_R1_VSYNC_INT_EN <= '0';
             FF_R1_DISP_ON <= '0';
             FF_R2_PT_NAM_ADDR <= (OTHERS => '0');
@@ -585,8 +593,8 @@ BEGIN
                             PALETTEDATARB_IN <= DBO;
                             VDPP2IS1STBYTE <= '0';
                         ELSE
-                            -- �p���b�g��RGB�̃f�[�^�����������Ɉ�x�ɏ���������B
-                            -- (���@�œ�����m�F����)
+                            -- パレットはRGBのデータが揃った時に一度に書き換える。
+                            -- (実機で動作を確認した)
                             PALETTEDATAG_IN <= DBO;
                             PALETTEWRNUM <= VDPR16PALNUM;
                             FF_PALETTE_WR_REQ <= NOT FF_PALETTE_WR_ACK;
@@ -621,6 +629,7 @@ BEGIN
                         WHEN "00001" =>     -- #01
                             REG_R1_SP_ZOOM      <= VDPP1DATA(0);
                             REG_R1_SP_SIZE      <= VDPP1DATA(1);
+                            REG_R1_BL_CLKS      <= VDPP1DATA(2);
                             FF_R1_DISP_MODE     <= VDPP1DATA(4 DOWNTO 3);
                             REG_R1_VSYNC_INT_EN <= VDPP1DATA(5);
                             FF_R1_DISP_ON       <= VDPP1DATA(6);

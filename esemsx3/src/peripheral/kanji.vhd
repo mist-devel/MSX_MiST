@@ -34,7 +34,7 @@
 -- Fixed kanjiptr2 counter
 --
 -- 05th, April, 2008 modified by t.hara
--- ƒŠƒtƒ@ƒNƒ^ƒŠƒ“ƒOB
+-- ãƒªãƒ•ã‚¡ã‚¯ã‚¿ãƒªãƒ³ã‚°ã€‚
 --
 
 library ieee;

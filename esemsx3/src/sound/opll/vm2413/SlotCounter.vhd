@@ -70,6 +70,6 @@ begin
         end if;
     end process;
 
-    stage   <= ff_count( 1 downto 0 );      --  0`3 ‚ÅzŠÂ
-    slot    <= ff_count( 6 downto 2 );      --  0`17 ‚ÅzŠÂ
+    stage   <= ff_count( 1 downto 0 );      --  0Â`3 â€šÃ…ÂzÅ Ã‚
+    slot    <= ff_count( 6 downto 2 );      --  0Â`17 â€šÃ…ÂzÅ Ã‚
 end rtl;

@@ -3,7 +3,7 @@
 --   Switched I/O ports ($40-$4F)
 --   Revision 9
 --
--- Copyright (c) 2011-2019 KdL
+-- Copyright (c) 2011-2020 KdL
 -- All rights reserved.
 --
 -- Redistribution and use of this source code or any derivative works, are
@@ -79,7 +79,7 @@ entity switched_io_ports is
         forced_v_mode   : inout std_logic;                                  -- Forced Video Mode        :   0=60Hz, 1=50Hz
         right_inverse   : inout std_logic;                                  -- Right Inverse Audio      :   0=Off (Normal Wave), 1=On (Inverse Wave)
         vram_slot_ids   : inout std_logic_vector(  7 downto 0 );            -- VRAM Slot IDs            :   MSB(4bits)=0-15 for Page 1, LSB(4bits)=0-15 for Page 0
-        DefKmap         : inout std_logic;                                  -- Default keyboard layout  :   0=JP, 1=Non-JP (as UK,FR,..)
+        DefKmap         : inout std_logic;                                  -- Default keyboard layout  :   0=JP, 1=Non-JP (BR, ES, FR, US, ...)
         -- 'DIP-SW' group
         ff_dip_req      : in    std_logic_vector(  7 downto 0 );            -- DIP-SW states/reqs
         ff_dip_ack      : inout std_logic_vector(  7 downto 0 );            -- DIP-SW acks
@@ -119,8 +119,8 @@ architecture RTL of switched_io_ports is
     signal  swio_ack    : std_logic;
 
     -- 'OCM-PLD' version number (x \ 10).(y mod 10).(z[0~3])                -- OCM-PLD version 0.0(.0) ~ 25.5(.3)
-    constant ocm_pld_xy : std_logic_vector(  7 downto 0 ) := "00100101";    -- 37
-    constant ocm_pld_z  : std_logic_vector(  1 downto 0 ) :=       "01";    -- 1
+    constant ocm_pld_xy : std_logic_vector(  7 downto 0 ) := "00100110";    -- 38
+    constant ocm_pld_z  : std_logic_vector(  1 downto 0 ) :=       "00";    -- 0
 
     -- 'Switched I/O Ports' revision number (0-31)                          -- Switched I/O ports Revision 0 ~ 31
     constant swioRevNr  : std_logic_vector(  4 downto 0 ) :=    "01001";    -- 9
@@ -151,11 +151,11 @@ begin
             Blink_ena & RstReq_sta & LastRst_sta & Red_sta & LightsMode & CmtScro & swioKmap & not io41_id008_n
                                                 when( (adr(3 downto 0) = "1000") and (io40_n = "00101011") )else
                 -- $49 ID212 states as below => read only
-                -- Machine Type IDs are "XX0000XX" for 1chipMSX, "XX0001XX" for Zemmix Neo, all the others are free IDs
-            forced_v_mode & ( ntsc_pal_type and ( not io42_id212(1) or io42_id212(2) ) ) & "000" & ZemmixNeo & extclk3m & pseudoStereo
+                -- Machine Type IDs are "XX0000XX" for 1chipMSX, "XX0001XX" for Zemmix Neo, "XX0010XX" for SM-X, "XX1111XX" is Unknown, all the others are free IDs
+            forced_v_mode & (ntsc_pal_type and (not io42_id212(1) or io42_id212(2))) & ("000" & ZemmixNeo) & extclk3m & pseudoStereo
                                                 when( (adr(3 downto 0) = "1001") and (io40_n = "00101011") )else
                 -- $4A ID212 states as below => read only
-            iSlt2_linear & iSlt1_linear & legacy_sel & not centerYJK_R25_n & ( not RatioMode + 1 ) & right_inverse
+            iSlt2_linear & iSlt1_linear & legacy_sel & not centerYJK_R25_n & (not RatioMode + 1) & right_inverse
                                                 when( (adr(3 downto 0) = "1010") and (io40_n = "00101011") )else
                 -- $4B ID212 => free
                 -- $4C ID212 states of physical dip-sw => read only
@@ -629,13 +629,13 @@ begin
                                 if( portF4_mode = '0' )then
                                     swioCmt         <=  '0';                    -- CMT Off (default)
                                 else
-                                    io41_id212_n    <=  "11111111";             -- (MSX turbo-R does not have CMT)
+                                    io41_id212_n    <=  "11111111";             -- (MSX turboR does not have CMT)
                                 end if;
                             when "00101000" =>
                                 if( portF4_mode = '0' )then
                                     swioCmt         <=  '1';                    -- CMT On
                                 else
-                                    io41_id212_n    <=  "11111111";             -- (MSX turbo-R does not have CMT)
+                                    io41_id212_n    <=  "11111111";             -- (MSX turboR does not have CMT)
                                 end if;
                             -- SMART CODES  #041, #042
                             when "00101001" =>                                  -- Turbo Locked
@@ -888,6 +888,7 @@ begin
                                 swioRESET_n     <=  '0';
                             -- SMART CODE   #255
                             when "11111111" =>                                  -- System Restore
+                                RatioMode       <=  "000";
                                 OFFSET_Y        :=  "0010011";
                                 io42_id212(5 downto 0)  <=  ff_dip_req(5 downto 0);
                                 ff_dip_ack(5 downto 0)  <=  ff_dip_req(5 downto 0);

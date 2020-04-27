@@ -98,7 +98,7 @@ begin
         variable dphase : PHASE_TYPE;
         variable noise14 : std_logic;
         variable noise17 : std_logic;
-        variable pgout_buf : std_logic_vector( 17 downto 0 );   --  ®”•” 9bit, ¬”•” 9bit
+        variable pgout_buf : std_logic_vector( 17 downto 0 );   --  æ•´æ•°éƒ¨ 9bit, å°æ•°éƒ¨ 9bit
   begin
 
     if reset = '1' then

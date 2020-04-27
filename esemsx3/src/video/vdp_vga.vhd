@@ -6,25 +6,25 @@
 --  All rights reserved.
 --                                     http://www.ohnaka.jp/ese-vdp/
 --
---  �{�\�t�g�E�F�A����і{�\�t�g�E�F�A�Ɋ�Â��č쐬���ꂽ�h�����́A�ȉ��̏�����
---  �������ꍇ�Ɍ���A�ĔЕz����юg�p��������܂��B
+--  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
+--  満たす場合に限り、再頒布および使用が許可されます。
 --
---  1.�\�[�X�R�[�h�`���ōĔЕz����ꍇ�A��L�̒��쌠�\���A�{�����ꗗ�A����щ��L
---    �Ɛӏ��������̂܂܂̌`�ŕێ����邱�ƁB
---  2.�o�C�i���`���ōĔЕz����ꍇ�A�Еz���ɕt���̃h�L�������g���̎����ɁA��L��
---    ���쌠�\���A�{�����ꗗ�A����щ��L�Ɛӏ������܂߂邱�ƁB
---  3.���ʂɂ�鎖�O�̋��Ȃ��ɁA�{�\�t�g�E�F�A��̔��A����я��ƓI�Ȑ��i�⊈��
---    �Ɏg�p���Ȃ����ƁB
+--  1.ソースコード形式で再頒布する場合、上記の著作権表示、本条件一覧、および下記
+--    免責条項をそのままの形で保持すること。
+--  2.バイナリ形式で再頒布する場合、頒布物に付属のドキュメント等の資料に、上記の
+--    著作権表示、本条件一覧、および下記免責条項を含めること。
+--  3.書面による事前の許可なしに、本ソフトウェアを販売、および商業的な製品や活動
+--    に使用しないこと。
 --
---  �{�\�t�g�E�F�A�́A���쌠�҂ɂ���āu����̂܂܁v�񋟂���Ă��܂��B���쌠�҂́A
---  ����ړI�ւ̓K�����̕ۏ؁A���i���̕ۏ؁A�܂�����Ɍ��肳��Ȃ��A�����Ȃ閾��
---  �I�������͈ÖقȕۏؐӔC�������܂���B���쌠�҂́A���R�̂�������킸�A���Q
---  �����̌�����������킸�A���ӔC�̍������_��ł��邩���i�ӔC�ł��邩�i�ߎ�
---  ���̑��́j�s�@�s�ׂł��邩���킸�A���ɂ��̂悤�ȑ��Q����������\����m��
---  ����Ă����Ƃ��Ă��A�{�\�t�g�E�F�A�̎g�p�ɂ���Ĕ��������i��֕i�܂��͑�p�T
---  �[�r�X�̒��B�A�g�p�̑r���A�f�[�^�̑r���A���v�̑r���A�Ɩ��̒��f���܂߁A�܂���
---  ��Ɍ��肳��Ȃ��j���ڑ��Q�A�Ԑڑ��Q�A�����I�ȑ��Q�A���ʑ��Q�A�����I���Q�A��
---  ���͌��ʑ��Q�ɂ��āA��ؐӔC�𕉂�Ȃ����̂Ƃ��܂��B
+--  本ソフトウェアは、著作権者によって「現状のまま」提供されています。著作権者は、
+--  特定目的への適合性の保証、商品性の保証、またそれに限定されない、いかなる明示
+--  的もしくは暗黙な保証責任も負いません。著作権者は、事由のいかんを問わず、損害
+--  発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失
+--  その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知ら
+--  されていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サ
+--  ービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそ
+--  れに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、ま
+--  たは結果損害について、一切責任を負わないものとします。
 --
 --  Note that above Japanese version license is the formal document.
 --  The following translation is only for reference.
@@ -58,7 +58,7 @@
 -------------------------------------------------------------------------------
 -- Memo
 --   Japanese comment lines are starts with "JP:".
---   JP: ���{��̃R�����g�s�� JP:�𓪂ɕt���鎖�ɂ���
+--   JP: 日本語のコメント行は JP:を頭に付ける事にする
 --
 -------------------------------------------------------------------------------
 -- Revision History
@@ -80,18 +80,18 @@
 --        odd  field  -> odd line  (even line is black)
 --
 -- 13th,October,2003 created by Kunihiko Ohnaka
--- JP: VDP�̃R�A�̎����ƕ\���f�o�C�X�ւ̏o�͂�ʃ\�[�X�ɂ����D
+-- JP: VDPのコアの実装と表示デバイスへの出力を別ソースにした．
 --
 -------------------------------------------------------------------------------
 -- Document
 --
--- JP: ESE-VDP�R�A(vdp.vhd)�����������r�f�I�M�����AVGA�^�C�~���O��
--- JP: �ϊ�����A�b�v�X�L�����R���o�[�^�ł��B
--- JP: NTSC�͐����������g����15.7KHz�A�����������g����60Hz�ł����A
--- JP: VGA�̐����������g����31.5KHz�A�����������g����60Hz�ł���A
--- JP: ���C�����������قڔ{�ɂȂ����悤�ȃ^�C�~���O�ɂȂ�܂��B
--- JP: �����ŁAvdp�� ntsc���[�h�œ������A�e���C����{�̑��x��
--- JP: ��x�`�悷�邱�ƂŃX�L�����R���o�[�g���������Ă��܂��B
+-- JP: ESE-VDPコア(vdp.vhd)が生成したビデオ信号を、VGAタイミングに
+-- JP: 変換するアップスキャンコンバータです。
+-- JP: NTSCは水平同期周波数が15.7KHz、垂直同期周波数が60Hzですが、
+-- JP: VGAの水平同期周波数は31.5KHz、垂直同期周波数は60Hzであり、
+-- JP: ライン数だけがほぼ倍になったようなタイミングになります。
+-- JP: そこで、vdpを ntscモードで動かし、各ラインを倍の速度で
+-- JP: 二度描画することでスキャンコンバートを実現しています。
 --
 
 LIBRARY IEEE;
@@ -112,7 +112,7 @@ ENTITY VDP_VGA IS
         HCOUNTERIN      : IN    STD_LOGIC_VECTOR(10 DOWNTO 0);
         VCOUNTERIN      : IN    STD_LOGIC_VECTOR(10 DOWNTO 0);
         -- MODE
-        PALMODE         : IN    STD_LOGIC;  -- caro
+        PALMODE         : IN    STD_LOGIC; -- caro
         INTERLACEMODE   : IN    STD_LOGIC;
         LEGACY_VGA      : IN    STD_LOGIC;
         -- VIDEO OUTPUT
@@ -238,35 +238,36 @@ BEGIN
     -- GENERATE V-SYNC SIGNAL
     -- THE VIDEOVSIN_N SIGNAL IS NOT USED
     PROCESS( RESET, CLK21M )
+        CONSTANT CENTER_Y       : INTEGER := 12;                                -- based on HDMI AV output
     BEGIN
         IF( RESET = '1' )THEN
             VIDEOVSOUT_N <= '1';
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF ( PALMODE = '0' ) THEN -- caro
                 IF( INTERLACEMODE = '0' ) THEN
-                    IF( (VCOUNTERIN = 3*2) OR (VCOUNTERIN = 524 + 3*2) )THEN
+                    IF( (VCOUNTERIN = 3*2 + CENTER_Y) OR (VCOUNTERIN = 524 + 3*2 + CENTER_Y) )THEN
                         VIDEOVSOUT_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2) OR (VCOUNTERIN = 524 + 6*2) )THEN
+                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y) OR (VCOUNTERIN = 524 + 6*2 + CENTER_Y) )THEN
                         VIDEOVSOUT_N <= '1';
                     END IF;
                 ELSE
-                    IF( (VCOUNTERIN = 3*2) OR (VCOUNTERIN = 525 + 3*2) )THEN
+                    IF( (VCOUNTERIN = 3*2 + CENTER_Y) OR (VCOUNTERIN = 525 + 3*2 + CENTER_Y) )THEN
                         VIDEOVSOUT_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2) OR (VCOUNTERIN = 525 + 6*2) )THEN
+                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y) OR (VCOUNTERIN = 525 + 6*2 + CENTER_Y) )THEN
                         VIDEOVSOUT_N <= '1';
                     END IF;
                 END IF;
             ELSE
                 IF( INTERLACEMODE = '0' ) THEN
-                    IF( (VCOUNTERIN = 3*2) OR (VCOUNTERIN = 626 + 3*2) )THEN
+                    IF( (VCOUNTERIN = 3*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 3*2 + CENTER_Y + 6) )THEN
                         VIDEOVSOUT_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2) OR (VCOUNTERIN = 626 + 6*2) )THEN
+                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 6*2 + CENTER_Y + 6) )THEN
                         VIDEOVSOUT_N <= '1';
                     END IF;
                 ELSE
-                    IF( (VCOUNTERIN = 3*2) OR (VCOUNTERIN = 625 + 3*2) )THEN
+                    IF( (VCOUNTERIN = 3*2 + CENTER_Y + 6) OR (VCOUNTERIN = 625 + 3*2 + CENTER_Y + 6) )THEN
                         VIDEOVSOUT_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2) OR (VCOUNTERIN = 625 + 6*2) )THEN
+                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y + 6) OR (VCOUNTERIN = 625 + 6*2 + CENTER_Y + 6) )THEN
                         VIDEOVSOUT_N <= '1';
                     END IF;
                 END IF;
@@ -299,7 +300,7 @@ BEGIN
                     ((HCOUNTERIN = DISP_START_X + (CLOCKS_PER_LINE/2)) AND INTERLACEMODE = '0') )THEN
                 VIDEOOUTX <= '1';
             ELSIF( (HCOUNTERIN = DISP_START_X + DISP_WIDTH) OR
-                       (HCOUNTERIN = DISP_START_X + DISP_WIDTH + (CLOCKS_PER_LINE/2)) )THEN
+                    (HCOUNTERIN = DISP_START_X + DISP_WIDTH + (CLOCKS_PER_LINE/2)) )THEN
                 VIDEOOUTX <= '0';
             END IF;
         END IF;

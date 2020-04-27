@@ -92,7 +92,7 @@ architecture RTL of OutputGenerator is
         variable vL, vR : std_logic_vector(LI_TYPE'high + 2 downto 0);
     begin
 
-        --  •„†{â‘Î’l ¨ ‚Q‚Ì•â”
+        --  ç¬¦å·ï¼‹çµ¶å¯¾å€¤ â†’ ï¼’ã®è£œæ•°
         if( L.sign = '0' )then
             vL := "00" & L.value;
         else
@@ -106,7 +106,7 @@ architecture RTL of OutputGenerator is
 
         vL := vL + vR;
 
-        --  ‚Q‚Ì•â” ¨ •„†{â‘Î’lA‚Â‚¢‚Å‚É 1/2 ”{B‚±‚±‚Å‚PƒrƒbƒgÁŽ¸B
+        --  ï¼’ã®è£œæ•° â†’ ç¬¦å·ï¼‹çµ¶å¯¾å€¤ã€ã¤ã„ã§ã« 1/2 å€ã€‚ã“ã“ã§ï¼‘ãƒ“ãƒƒãƒˆæ¶ˆå¤±ã€‚
         if vL(vL'high) = '0' then -- positive
             return ( sign => '0', value => vL(vL'high-1 downto 1) );
         else -- negative
@@ -146,8 +146,8 @@ begin
     Ltbl : LinearTable port map (
         clk     => clk,
         reset   => reset,
-        addr    => opout,           --  0`127 (opout ‚Í FF ‚Ìo—Í‚¾‚©‚çƒ_ƒCƒŒƒNƒg‚É“ü‚ê‚Ä‚à–â‘è‚È‚¢j
-        data    => li_data          --  0`511
+        addr    => opout,           --  0ï½ž127 (opout ã¯ FF ã®å‡ºåŠ›ã ã‹ã‚‰ãƒ€ã‚¤ãƒ¬ã‚¯ãƒˆã«å…¥ã‚Œã¦ã‚‚å•é¡Œãªã„ï¼‰
+        data    => li_data          --  0ï½ž511
     );
 
     process( reset, clk )
@@ -164,13 +164,13 @@ begin
                     fb_wr   <= '0';
 
                 elsif( stage = 1 )then
-                    --  opout ‚ÉŠ–]‚Ì’l‚ª“ü‚Á‚Ä‚­‚éƒXƒe[ƒW
+                    --  opout ã«æ‰€æœ›ã®å€¤ãŒå…¥ã£ã¦ãã‚‹ã‚¹ãƒ†ãƒ¼ã‚¸
                 elsif( stage = 2 )then
-                    --  ‘Ò‚¿
+                    --  å¾…ã¡
                 elsif( stage = 3 )then
-                    --  LinerTable ‚©‚ç opout ‚ÅŽw’è‚³‚ê‚½ƒAƒhƒŒƒX‚É‘Î‰ž‚·‚é’l‚ªo‚Ä‚­‚éƒXƒe[ƒW
+                    --  LinerTable ã‹ã‚‰ opout ã§æŒ‡å®šã•ã‚ŒãŸã‚¢ãƒ‰ãƒ¬ã‚¹ã«å¯¾å¿œã™ã‚‹å€¤ãŒå‡ºã¦ãã‚‹ã‚¹ãƒ†ãƒ¼ã‚¸
                     if( slot(0) = '0' )then
-                        --  ƒtƒB[ƒhƒoƒbƒNƒƒ‚ƒŠ‚É‚Íƒ‚ƒWƒ…ƒŒ[ƒ^‚Ì‚Æ‚«‚µ‚©‘‚«ž‚Ü‚È‚¢
+                        --  ãƒ•ã‚£ãƒ¼ãƒ‰ãƒãƒƒã‚¯ãƒ¡ãƒ¢ãƒªã«ã¯ãƒ¢ã‚¸ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®ã¨ãã—ã‹æ›¸ãè¾¼ã¾ãªã„
                         fb_addr <= conv_integer(slot)/2;
                         fb_wdata<= AVERAGE(mo_rdata, li_data);
                         fb_wr   <= '1';

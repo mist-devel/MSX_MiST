@@ -38,9 +38,9 @@ library ieee;
 
 entity scc_wave_mul is
     port(
-        a           : in    std_logic_vector(  7 downto 0 );    -- 8bit ‚Q‚Ì•â”
-        b           : in    std_logic_vector(  3 downto 0 );    -- 4bit ƒoƒCƒiƒŠ
-        c           : out   std_logic_vector( 11 downto 0 )     -- 12bit ‚Q‚Ì•â”
+        a           : in    std_logic_vector(  7 downto 0 );    -- 8bit ï¼’ã®è£œæ•°
+        b           : in    std_logic_vector(  3 downto 0 );    -- 4bit ãƒã‚¤ãƒŠãƒª
+        c           : out   std_logic_vector( 11 downto 0 )     -- 12bit ï¼’ã®è£œæ•°
     );
 end scc_wave_mul;
 
@@ -58,9 +58,9 @@ library ieee;
 
 entity scc_mix_mul is
     port(
-        a           : in    std_logic_vector( 15 downto 0 );    -- 16bit ‚Q‚Ì•â”
-        b           : in    std_logic_vector(  2 downto 0 );    -- 3bit ƒoƒCƒiƒŠ
-        c           : out   std_logic_vector( 18 downto 0 )     -- 19bit ‚Q‚Ì•â”
+        a           : in    std_logic_vector( 15 downto 0 );    -- 16bit ï¼’ã®è£œæ•°
+        b           : in    std_logic_vector(  2 downto 0 );    -- 3bit ãƒã‚¤ãƒŠãƒª
+        c           : out   std_logic_vector( 18 downto 0 )     -- 19bit ï¼’ã®è£œæ•°
     );
 end scc_mix_mul;
 
@@ -106,26 +106,26 @@ architecture rtl of scc_wave is
 
     component scc_interpo is
         port(
-            reset       : in    std_logic;                          -- ”ñ“¯ŠúƒŠƒZƒbƒg
-            clk         : in    std_logic;                          -- ƒx[ƒXƒNƒƒbƒN
-            clkena      : in    std_logic;                          -- ƒNƒƒbƒNƒCƒl[ƒuƒ‰
-            clear       : in    std_logic;                          -- “¯ŠúƒŠƒZƒbƒg
-            left        : in    std_logic_vector(  7 downto 0 );    -- •âŠÔ¶‘¤ƒTƒ“ƒvƒ‹
-            right       : in    std_logic_vector(  7 downto 0 );    -- •âŠÔ‰E‘¤ƒTƒ“ƒvƒ‹
-            wave        : out   std_logic_vector(  7 downto 0 );    -- o—ÍƒTƒ“ƒvƒ‹
-            reg_en      : in    std_logic;                          -- •âŠÔ—LŒø/–³Œø
-            reg_th1     : in    std_logic_vector(  7 downto 0 );    -- è‡’l1
-            reg_th2     : in    std_logic_vector(  7 downto 0 );    -- è‡’l2
-            reg_th3     : in    std_logic_vector(  7 downto 0 );    -- è‡’l3
-            reg_cnt     : in    std_logic_vector( 11 downto 0 )     -- •ªü”ä
+            reset       : in    std_logic;                          -- éåŒæœŸãƒªã‚»ãƒƒãƒˆ
+            clk         : in    std_logic;                          -- ãƒ™ãƒ¼ã‚¹ã‚¯ãƒ­ãƒƒã‚¯
+            clkena      : in    std_logic;                          -- ã‚¯ãƒ­ãƒƒã‚¯ã‚¤ãƒãƒ¼ãƒ–ãƒ©
+            clear       : in    std_logic;                          -- åŒæœŸãƒªã‚»ãƒƒãƒˆ
+            left        : in    std_logic_vector(  7 downto 0 );    -- è£œé–“å·¦å´ã‚µãƒ³ãƒ—ãƒ«
+            right       : in    std_logic_vector(  7 downto 0 );    -- è£œé–“å³å´ã‚µãƒ³ãƒ—ãƒ«
+            wave        : out   std_logic_vector(  7 downto 0 );    -- å‡ºåŠ›ã‚µãƒ³ãƒ—ãƒ«
+            reg_en      : in    std_logic;                          -- è£œé–“æœ‰åŠ¹/ç„¡åŠ¹
+            reg_th1     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤1
+            reg_th2     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤2
+            reg_th3     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤3
+            reg_cnt     : in    std_logic_vector( 11 downto 0 )     -- åˆ†å‘¨æ¯”
         );
     end component;
 
     component scc_wave_mul
         port(
-            a   : in    std_logic_vector(  7 downto 0 );    -- 8bit ‚Q‚Ì•â”
-            b   : in    std_logic_vector(  3 downto 0 );    -- 4bit ƒoƒCƒiƒŠ
-            c   : out   std_logic_vector( 11 downto 0 )     -- 12bit ‚Q‚Ì•â”
+            a   : in    std_logic_vector(  7 downto 0 );    -- 8bit ï¼’ã®è£œæ•°
+            b   : in    std_logic_vector(  3 downto 0 );    -- 4bit ãƒã‚¤ãƒŠãƒª
+            c   : out   std_logic_vector( 11 downto 0 )     -- 12bit ï¼’ã®è£œæ•°
         );
     end component;
 
@@ -245,7 +245,7 @@ begin
             ff_rst_ch_d     <= '0';
             ff_rst_ch_e     <= '0';
 
-            -- •âŠÔŠÖ˜A‚ÌƒŒƒWƒXƒ^‰Šú’lİ’è
+            -- è£œé–“é–¢é€£ã®ãƒ¬ã‚¸ã‚¹ã‚¿åˆæœŸå€¤è¨­å®š
             reg_th1         <= "00100000";
             reg_th2         <= "01000000";
             reg_th3         <= "10000000";
@@ -253,7 +253,7 @@ begin
 
         elsif (clk21m'event and clk21m = '1') then
             -- mapped i/o port access on b8a0-b8afh (9880-988fh) ... register write
-            if( req = '1' and ff_req_dl = '0' and adr(7 downto 5) = "101" and wrt = '1' )then   -- xxAxh, xxBxh ‚ªŠY“–
+            if( req = '1' and ff_req_dl = '0' and adr(7 downto 5) = "101" and wrt = '1' )then   -- xxAxh, xxBxh ãŒè©²å½“
                 case adr(3 downto 0) is
                     when "0000" => reg_freq_ch_a(  7 downto 0 ) <= dbo( 7 downto 0 ); ff_rst_ch_a <= reg_mode_sel(5);
                     when "0001" => reg_freq_ch_a( 11 downto 8 ) <= dbo( 3 downto 0 ); ff_rst_ch_a <= reg_mode_sel(5);
@@ -280,12 +280,12 @@ begin
                 ff_rst_ch_e <= '0';
             end if;
 
-            -- mapped i/o port access on b8c0-b8dfh (98e0-98ffh) ... register write             -- xxCxh, xxDxh ‚ªŠY“–
+            -- mapped i/o port access on b8c0-b8dfh (98e0-98ffh) ... register write             -- xxCxh, xxDxh ãŒè©²å½“
             if( req = '1' and wrt = '1' and adr(7 downto 5) = "110" )then
                 reg_mode_sel <= dbo;
             end if;
 
-            -- mapped i/o port access on b8e0-b8ffh (98c0-98dfh) ... register write             -- xxExh, xxFxh ‚ªŠY“–
+            -- mapped i/o port access on b8e0-b8ffh (98c0-98dfh) ... register write             -- xxExh, xxFxh ãŒè©²å½“
             if( req = '1' and wrt = '1' and adr(7 downto 5) = "111" )then
                 case adr(1 downto 0) is
                     when "00"   => reg_interpo_en   <= dbo( 4 downto 0 );
@@ -584,7 +584,7 @@ begin
     end process;
 
     ----------------------------------------------------------------
-    -- mixer control (mix state, stage0`4)
+    -- mixer control (mix state, stage0ï½4)
     ----------------------------------------------------------------
     with ff_mix_state select w_ch_dec <=
         "00001" when "000",
@@ -618,13 +618,13 @@ begin
         w_wav_ch_e          when "100",
         (others => 'X')     when others;
 
-    w_wave  <=  (w_ch_mask and w_wave_dat);     -- 8bit “ñ‚Ì•â”
+    w_wave  <=  (w_ch_mask and w_wave_dat);     -- 8bit äºŒã®è£œæ•°
 
     u_mul: scc_wave_mul
     port map (
-        a   => w_wave   ,   -- 8bit “ñ‚Ì•â”
-        b   => w_ch_vol ,   -- 4bit ƒoƒCƒiƒŠi•„†–³‚µj
-        c   => w_mul        -- 12bit “ñ‚Ì•â”
+        a   => w_wave   ,   -- 8bit äºŒã®è£œæ•°
+        b   => w_ch_vol ,   -- 4bit ãƒã‚¤ãƒŠãƒªï¼ˆç¬¦å·ç„¡ã—ï¼‰
+        c   => w_mul        -- 12bit äºŒã®è£œæ•°
     );
 
     ----------------------------------------------------------------
@@ -639,8 +639,8 @@ begin
                 --  stage5
                 ff_mix  <=  (others => '0');
             else
-                --  stage0`4
-                ff_mix  <=  (w_mul(11) & w_mul(11) & w_mul(11) & w_mul) + ff_mix;   -- 15bit “ñ‚Ì•â”
+                --  stage0ï½4
+                ff_mix  <=  (w_mul(11) & w_mul(11) & w_mul(11) & w_mul) + ff_mix;   -- 15bit äºŒã®è£œæ•°
             end if;
         end if;
     end process;
@@ -654,7 +654,7 @@ begin
             ff_wave <= (others => '0');
         elsif( clk21m'event and clk21m = '1' )then
             if( ff_mix_state = "101" )then
-                ff_wave <= ff_mix;  -- 15bit “ñ‚Ì•â”
+                ff_wave <= ff_mix;  -- 15bit äºŒã®è£œæ•°
             else
                 --  hold
             end if;

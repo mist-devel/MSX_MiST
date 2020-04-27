@@ -6,25 +6,25 @@
 --  All rights reserved.
 --                                     http://www.ohnaka.jp/ese-vdp/
 --
---  �{�\�t�g�E�F�A����і{�\�t�g�E�F�A�Ɋ�Â��č쐬���ꂽ�h�����́A�ȉ��̏�����
---  �������ꍇ�Ɍ���A�ĔЕz����юg�p��������܂��B
+--  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
+--  満たす場合に限り、再頒布および使用が許可されます。
 --
---  1.�\�[�X�R�[�h�`���ōĔЕz����ꍇ�A��L�̒��쌠�\���A�{�����ꗗ�A����щ��L
---    �Ɛӏ��������̂܂܂̌`�ŕێ����邱�ƁB
---  2.�o�C�i���`���ōĔЕz����ꍇ�A�Еz���ɕt���̃h�L�������g���̎����ɁA��L��
---    ���쌠�\���A�{�����ꗗ�A����щ��L�Ɛӏ������܂߂邱�ƁB
---  3.���ʂɂ�鎖�O�̋��Ȃ��ɁA�{�\�t�g�E�F�A��̔��A����я��ƓI�Ȑ��i�⊈��
---    �Ɏg�p���Ȃ����ƁB
+--  1.ソースコード形式で再頒布する場合、上記の著作権表示、本条件一覧、および下記
+--    免責条項をそのままの形で保持すること。
+--  2.バイナリ形式で再頒布する場合、頒布物に付属のドキュメント等の資料に、上記の
+--    著作権表示、本条件一覧、および下記免責条項を含めること。
+--  3.書面による事前の許可なしに、本ソフトウェアを販売、および商業的な製品や活動
+--    に使用しないこと。
 --
---  �{�\�t�g�E�F�A�́A���쌠�҂ɂ���āu����̂܂܁v�񋟂���Ă��܂��B���쌠�҂́A
---  ����ړI�ւ̓K�����̕ۏ؁A���i���̕ۏ؁A�܂�����Ɍ��肳��Ȃ��A�����Ȃ閾��
---  �I�������͈ÖقȕۏؐӔC�������܂���B���쌠�҂́A���R�̂�������킸�A���Q
---  �����̌�����������킸�A���ӔC�̍������_��ł��邩���i�ӔC�ł��邩�i�ߎ�
---  ���̑��́j�s�@�s�ׂł��邩���킸�A���ɂ��̂悤�ȑ��Q����������\����m��
---  ����Ă����Ƃ��Ă��A�{�\�t�g�E�F�A�̎g�p�ɂ���Ĕ��������i��֕i�܂��͑�p�T
---  �[�r�X�̒��B�A�g�p�̑r���A�f�[�^�̑r���A���v�̑r���A�Ɩ��̒��f���܂߁A�܂���
---  ��Ɍ��肳��Ȃ��j���ڑ��Q�A�Ԑڑ��Q�A�����I�ȑ��Q�A���ʑ��Q�A�����I���Q�A��
---  ���͌��ʑ��Q�ɂ��āA��ؐӔC�𕉂�Ȃ����̂Ƃ��܂��B
+--  本ソフトウェアは、著作権者によって「現状のまま」提供されています。著作権者は、
+--  特定目的への適合性の保証、商品性の保証、またそれに限定されない、いかなる明示
+--  的もしくは暗黙な保証責任も負いません。著作権者は、事由のいかんを問わず、損害
+--  発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失
+--  その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知ら
+--  されていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サ
+--  ービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそ
+--  れに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、ま
+--  たは結果損害について、一切責任を負わないものとします。
 --
 --  Note that above Japanese version license is the formal document.
 --  The following translation is only for reference.
@@ -58,7 +58,7 @@
 -----------------------------------------------------------------------------
 -- Memo
 --   Japanese comment lines are starts with "JP:".
---   JP: ���{��̃R�����g�s�� JP:�𓪂ɕt���鎖�ɂ���
+--   JP: 日本語のコメント行は JP:を頭に付ける事にする
 --
 -----------------------------------------------------------------------------
 -- Revision History
@@ -87,92 +87,93 @@
 -----------------------------------------------------------------------------
 -- Document
 --
--- JP: ���̎����ł�BLOCKRAM���g���A�����SLICE��ߖ񂷂�̂��_���B
--- JP: ���̎������g��Ȃ���Ԃł� vdp.vhd���R���p�C����������
--- JP: SLICE�g�p����1900�O��B
--- JP: 2006/8/16�B���̃X�v���C�g���g��Ȃ��ŐV��(Cyclone)�ł́A
--- JP:            2726LC������.
--- JP: 2006/8/19�B���̃X�v���C�g���g�����Ƃ���A2278LC�܂Ō����B
+-- JP: この実装ではBLOCKRAMを使い、消費するSLICEを節約するのが狙い。
+-- JP: この実装を使わない状態での vdp.vhdをコンパイルした時の
+-- JP: SLICE使用数は1900前後。
+-- JP: 2006/8/16。このスプライトを使わない最新版(Cyclone)では、
+-- JP:            2726LCだった.
+-- JP: 2006/8/19。このスプライトを使ったところ、2278LCまで減少。
 -- JP:
--- JP: [�p��]
--- JP: �E���[�J���v���[���ԍ�
--- JP:   ���郉�C����ɕ���ł���X�v���C�g(�v���[��)�����𔲂��o����
--- JP:   �X�v���C�g�v���[���ԍ����ɕ��ׂ����̏��ʁB
--- JP:   �Ⴆ�΂��郉�C���ɃX�v���C�g�v���[��#1,#4,#5�����݂���ꍇ�A
--- JP:   ���ꂼ��̃X�v���C�g�̃��[�J���v���[���ԍ���#0,#1,#2�ƂȂ�B
--- JP:   �X�v���C�g���[�h2�ł������ɍő�8���������΂Ȃ��̂ŁA
--- JP:   ���[�J���v���[���ԍ��͍ő��#7�ƂȂ�B
+-- JP: [用語]
+-- JP: ・ローカルプレーン番号
+-- JP:   あるライン上に並んでいるスプライト(プレーン)だけを抜き出して
+-- JP:   スプライトプレーン番号順に並べた時の順位。
+-- JP:   例えばあるラインにスプライトプレーン#1,#4,#5が存在する場合、
+-- JP:   それぞれのスプライトのローカルプレーン番号は#0,#1,#2となる。
+-- JP:   スプライトモード2でも横一列に最大8枚しか並ばないので、
+-- JP:   ローカルプレーン番号は最大で#7となる。
 -- JP:
--- JP: �E��ʕ`��ш�
--- JP:    VDP�̎��@��8�h�b�g(32�N���b�N)�ŘA���A�h���X��̃f�[�^4�o�C�g
--- JP:    (GRAPHIC6,7�ł�RAM�̃C���^�[���[�u�A�N�Z�X�ɂ��o�C�g)
--- JP:    �̃��[�h�ɉ����A�����_���A�h���X�ւ�2�T�C�N��(2�o�C�g)��
--- JP:    �A�N�Z�X�����[
--- JP:    ������DRAM�A�N�Z�X�T�C�N���Ɉȉ��̂悤�ɖ��O��t����B
--- JP:     * ��ʕ`�惊�[�h�T�C�N��
--- JP:     * �X�v���C�gY���W�����T�C�N��
--- JP:     * �����_���A�N�Z�X�T�C�N��
+-- JP: ・画面描画帯域
+-- JP:    VDPの実機は8ドット(32クロック)で連続アドレス上のデータ4バイト
+-- JP:    (GRAPHIC6,7ではRAMのインターリーブアクセスによりバイト)
+-- JP:    のリードに加え、ランダムアドレスへの2サイクル(2バイト)の
+-- JP:    アクセスが加納
+-- JP:    それらのDRAMアクセスサイクルに以下のように名前を付ける。
+-- JP:     * 画面描画リードサイクル
+-- JP:     * スプライトY座標検査サイクル
+-- JP:     * ランダムアクセスサイクル
 -- JP:
--- JP: ������VDP�ł�VRAM�A�N�Z�X�T�C�N��
--- JP:    ����VDP�ł͋�����DRAM�ł͂Ȃ���荂���ȃ��������g�p���Ă���B
--- JP:    ���̂��߁A�S�N���b�N��1��m���Ƀ����_���A�N�Z�X�����s�ł���
--- JP:    �������������Ă��鎖��O��Ƃ��ăR�[�f�B���O���܂��B
--- JP:    �܂��ACyclone�Ŏ���MSX�ł́A16�r�b�g����SDRAM��p���Ă���
--- JP:    ���߁A���̃A�N�Z�X�ŘA������16�r�b�g�̃f�[�^��ǂގ����\
--- JP:    �ł��B
--- JP:    ����VDP�ł́AD0�`D7�̉���8�r�b�g��VRAM�̑O��64K�o�C�g�A
--- JP:    D8�`D15�̏��8�r�b�g���㔼64K�o�C�g�Ƀ}�b�s���O���Ă��܂��B
--- JP:    ���̂悤�ȕϑ��I�Ȋ��蓖�Ă�����̂́A���@��VDP�̃�����
--- JP:    �}�b�v���܂˂邽�߂ł��B���ہA4�N���b�N��2�o�C�g�̃�������
--- JP:    �ǂݏo���ш悪�K�v�ɂȂ�̂�GRAPHIC6,7�̃��[�h�����ł��B
--- JP:    ���@��VDP�́AGRAPHIC6,7�ł̓������̃C���^�[���[�u��p���A
--- JP:    (GRAPHIC7�ɂ�����)�����h�b�g��VRAM�̑O��64K�o�C�g��
--- JP:    ��肠�āA��h�b�g���㔼64K�o�C�g�Ɋ��蓖�ĂĂ��܂��B
--- JP:    ���̂��߁A����VDP�ł��O��64K�ƌ㔼64K�̓���A�h���X���
--- JP:    �f�[�^���P�T�C�N��(4�N���b�N)�œǂݏo����K�v������̂�
--- JP:    ���̂悤�ȃ}�b�s���O�ɂȂ��Ă��܂��B
--- JP:    �P���Ɍ����΁ASDRAM��16�r�b�g�A�N�Z�X���A���@��DRAM��
--- JP:    �C���^�[���[�u�A�N�Z�X�Ɍ����ĂĂ���Ƃ������Ƃł��B
+-- JP: ○似非VDPでのVRAMアクセスサイクル
+-- JP:    似非VDPでは旧式のDRAMではなくより高速なメモリを使用している。
+-- JP:    そのため、４クロックに1回確実にランダムアクセスを実行できる
+-- JP:    メモリを持っている事を前提としてコーディングします。
+-- JP:    また、Cyclone版似非MSXでは、16ビット幅のSDRAMを用いている
+-- JP:    ため、一回のアクセスで連続する16ビットのデータを読む事も可能
+-- JP:    です。
+-- JP:    似非VDPでは、D0～D7の下位8ビットをVRAMの前半64Kバイト、
+-- JP:    D8～D15の上位8ビットを後半64Kバイトにマッピングしています。
+-- JP:    このような変則的な割り当てをするのは、実機のVDPのメモリ
+-- JP:    マップをまねるためです。実際、4クロックで2バイトのメモリを
+-- JP:    読み出す帯域が必要になるのはGRAPHIC6,7のモードだけです。
+-- JP:    実機のVDPは、GRAPHIC6,7ではメモリのインターリーブを用い、
+-- JP:    (GRAPHIC7における)偶数ドットをVRAMの前半64Kバイトに
+-- JP:    わりあて、奇数ドットを後半64Kバイトに割り当てています。
+-- JP:    そのため、似非VDPでも前半64Kと後半64Kの同一アドレス上の
+-- JP:    データを１サイクル(4クロック)で読み出せる必要があるので
+-- JP:    このようなマッピングになっています。
+-- JP:    単純に言えば、SDRAMの16ビットアクセスを、実機のDRAMの
+-- JP:    インターリーブアクセスに見立てているということです。
 -- JP:
--- JP:    ���낢��Ȍ��ۂ���AVDP�̓�����8�h�b�g�T�C�N���œ����Ă����
--- JP:    ��������Ă��܂��B8�h�b�g�A�܂�32�N���b�N�̂ǂ�����������
--- JP:    �̑ш悩�琄������ƁA�ȉ��̂悤�ɂȂ�܂��B
+-- JP:    いろいろな現象から、VDPの内部は8ドットサイクルで動いていると
+-- JP:    推測されています。8ドット、つまり32クロックのどうさをメモリ
+-- JP:    の帯域から推測すると、以下のようになります。
 -- JP:
--- JP:   �@�@�h�b�g�@�F<=0=><=1=><=2=><=3=><=4=><=5=><=6=><=7=>
--- JP:   �ʏ�A�N�Z�X�F A0   A1   A2   A3   A4  (A5)  A6  (A7)
--- JP: �C���^�[���[�u�F B0   B1   B2   B3
+-- JP:   　　ドット　：<=0=><=1=><=2=><=3=><=4=><=5=><=6=><=7=>
+-- JP:   通常アクセス： A0   A1   A2   A3   A4  (A5)  A6  (A7)
+-- JP: インターリーブ： B0   B1   B2   B3
 -- JP:
--- JP:    - �`�撆
--- JP:   �@�@�EA0�`A3 (B0�`B3)
--- JP:        ��ʕ`��̂��߂Ɏg�p�BB0�`B3�̓C���^�[���[�u�œ�����
--- JP:        �ǂݏo����f�[�^�ŁAGRAPHIC6,7�ł����g��Ȃ��B
--- JP:   �@�@�EA4     �X�v���C�gY���W����
--- JP:   �@�@�EA6     VRAM R/W or VDP�R�}���h (2��Ɉ�񂸂A���݂Ɋ��蓖�Ă�)
+-- JP:    - 描画中
+-- JP:   　　・A0～A3 (B0～B3)
+-- JP:        画面描画のために使用。B0～B3はインターリーブで同時に
+-- JP:        読み出せるデータで、GRAPHIC6,7でしか使わない。
+-- JP:   　　・A4     スプライトY座標検査
+-- JP:   　　・A6     VRAM R/W or VDPコマンド (2回に一回ずつ、交互に割り当てる)
 -- JP:
--- JP:     - ��`�撆(�X�v���C�g������)
--- JP:    �@�@�EA0     �X�v���C�gX���W���[�h
--- JP:    �@�@�EA1     �X�v���C�g�p�^�[���ԍ����[�h
--- JP:    �@�@�EA2     �X�v���C�g�p�^�[�������[�h
--- JP:    �@�@�EA3     �X�v���C�g�p�^�[���E���[�h
--- JP:    �@�@�EA4     �X�v���C�g�J���[���[�h
--- JP:    �@�@�EA6     VRAM R/W or VDP�R�}���h (2��Ɉ�񂸂A���݂Ɋ��蓖�Ă�)
+-- JP:     - 非描画中(スプライト準備中)
+-- JP:    　　・A0     スプライトX座標リード
+-- JP:    　　・A1     スプライトパターン番号リード
+-- JP:    　　・A2     スプライトパターン左リード
+-- JP:    　　・A3     スプライトパターン右リード
+-- JP:    　　・A4     スプライトカラーリード
+-- JP:    　　・A6     VRAM R/W or VDPコマンド (2回に一回ずつ、交互に割り当てる)
 -- JP:
--- JP:   A5��A7�̃X���b�g�͎��ۂɂ͎g�p���邱�Ƃ��ł���̂ł����A
--- JP:   ������g���Ă��܂��Ǝ��@�����ш悪�����Ă��܂��̂ŁA
--- JP:   �����Ďg�킸�Ɏc���Ă��܂��B
--- JP:   �܂��A��`�撆�̃T�C�N���́A���@�Ƃ͈قȂ�܂��B���@�ł�
--- JP:   64�N���b�N�� 2�̃X�v���C�g���܂Ƃ߂ď������鎖�ŁADRAM��
--- JP:   �y�[�W���[�h�T�C�N����L�����p�ł���悤�ɂ��Ă��܂��B
--- JP:   �܂��A����64�N���b�N�̒��ɂ�VRAM��VDP�R�}���h�Ɋ������߂�
--- JP:   �X���b�g�������̂ŁA64�N���b�N�T�C�N���̌��Ԃ�VRAM�A�N
--- JP:   �Z�X�̂��߂̌��Ԃ��󂯂Ă���̂�������܂���B�i���m�F�j
--- JP:   ����VDP�ł����̓�������S�ɐ^�����鎖�͉\�ł����A
--- JP:   �\�[�X���K�v�ȏ�ɕ��G�Ɍ����Ă��܂��̂ƁA2��n��T�C�N��
--- JP:   ���炸��Ă��܂��̂�������҂茙�������̂ŁA��L�̂悤��
--- JP:   ���ꂢ�ȃT�C�N���ɂ��Ă��܂��B
--- JP:   �ǂ����Ă����@�Ɠ����^�C�~���O�ɂ������Ƃ�������
--- JP:   �`�������W���Ă݂Ă��������B
+-- JP:   A5とA7のスロットは実際には使用することもできるのですが、
+-- JP:   これを使ってしまうと実機よりも帯域が増えてしまうので、
+-- JP:   あえて使わずに残しています。
+-- JP:   また、非描画中のサイクルは、実機とは異なります。実機では
+-- JP:   64クロックで 2つのスプライトをまとめて処理する事で、DRAMの
+-- JP:   ページモードサイクルを有効利用できるようにしています。
+-- JP:   また、その64クロックの中にはVRAMやVDPコマンドに割くための
+-- JP:   スロットが無いので、64クロックサイクルの隙間にVRAMアク
+-- JP:   セスのための隙間を空けているのかもしれません。（未確認）
+-- JP:   似非VDPでもその動作を完全に真似する事は可能ですが、
+-- JP:   ソースが必要以上に複雑に見えてしまうのと、2のn乗サイクル
+-- JP:   からずれてしまうのがちょっぴり嫌だったので、上記のような
+-- JP:   きれいなサイクルにしています。
+-- JP:   どうしても実機と同じタイミングにしたいという方は
+-- JP:   チャレンジしてみてください。
 -- JP:
+--
 
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
@@ -219,8 +220,8 @@ ENTITY VDP_SPRITE IS
         PRAMDAT                     : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
         PRAMADR                     : OUT   STD_LOGIC_VECTOR( 16 DOWNTO 0 );
 
-        -- JP: �X�v���C�g��`�悵������'1'�ɂȂ�B�J���[�R�[�h0��
-        -- JP: �`�悷�鎖���ł���̂ŁA���̃r�b�g���K�v
+        -- JP: スプライトを描画した時に'1'になる。カラーコード0で
+        -- JP: 描画する事もできるので、このビットが必要
         SPCOLOROUT                  : OUT   STD_LOGIC;
         -- OUTPUT COLOR
         SPCOLORCODE                 : OUT   STD_LOGIC_VECTOR(  3 DOWNTO 0 )
@@ -274,7 +275,7 @@ ARCHITECTURE RTL OF VDP_SPRITE IS
     TYPE TYPESPSTATE IS ( SPSTATE_IDLE, SPSTATE_YTEST_DRAW, SPSTATE_PREPARE );
     SIGNAL SPSTATE                  : TYPESPSTATE;
 
-    -- JP: �X�v���C�g�v���[���ԍ��~�������\�������̔z��
+    -- JP: スプライトプレーン番号×横方向表示枚数の配列
     TYPE SPRENDERPLANESTYPE IS ARRAY( 0 TO 7 ) OF STD_LOGIC_VECTOR( 4 DOWNTO 0 );
     SIGNAL SPRENDERPLANES           : SPRENDERPLANESTYPE;
 
@@ -288,33 +289,33 @@ ARCHITECTURE RTL OF VDP_SPRITE IS
     SIGNAL READVRAMADDRCREAD        : STD_LOGIC_VECTOR( 16 DOWNTO 0 );
     SIGNAL READVRAMADDRPTREAD       : STD_LOGIC_VECTOR( 16 DOWNTO 0 );
 
-    -- JP: Y���W�������̃v���[���ԍ�
+    -- JP: Y座標検査中のプレーン番号
     SIGNAL FF_Y_TEST_SP_NUM         : STD_LOGIC_VECTOR(  4 DOWNTO 0 );
     SIGNAL FF_Y_TEST_LISTUP_ADDR    : STD_LOGIC_VECTOR(  3 DOWNTO 0 );   -- 0 - 8
     SIGNAL FF_Y_TEST_EN             : STD_LOGIC;
-    -- JP: �������f�[�^�������̃��[�J���v���[���ԍ�
+    -- JP: 下書きデータ準備中のローカルプレーン番号
     SIGNAL SPPREPARELOCALPLANENUM   : STD_LOGIC_VECTOR(  2 DOWNTO 0 );
-    -- JP: �������f�[�^�������̃v���[���ԍ�
+    -- JP: 下書きデータ準備中のプレーン番号
     SIGNAL SPPREPAREPLANENUM        : STD_LOGIC_VECTOR(  4 DOWNTO 0 );
-    -- JP: �������f�[�^�������̃X�v���C�g��Y���C���ԍ�(�X�v���C�g�̂ǂ̕�����`�悷�邩)
+    -- JP: 下書きデータ準備中のスプライトのYライン番号(スプライトのどの部分を描画するか)
     SIGNAL SPPREPARELINENUM         : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
-    -- JP: �������f�[�^�������̃X�v���C�g��X�ʒu�B0�̎���8�h�b�g�B1�̎��E8�h�b�g�B(16X16���[�h�݂̂Ŏg�p)
+    -- JP: 下書きデータ準備中のスプライトのX位置。0の時左8ドット。1の時右8ドット。(16X16モードのみで使用)
     SIGNAL SPPREPAREXPOS            : STD_LOGIC;
     SIGNAL SPPREPAREPATTERNNUM      : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
-    -- JP: �����f�[�^�̏������I������
+    -- JP: 下書データの準備が終了した
     SIGNAL SPPREPAREEND             : STD_LOGIC;
     SIGNAL SPCCD                    : STD_LOGIC;
 
-    -- JP: �����������Ă���X�v���C�g�̃��[�J���v���[���ԍ�
+    -- JP: 下書きをしているスプライトのローカルプレーン番号
     SIGNAL SPPREDRAWLOCALPLANENUM   : STD_LOGIC_VECTOR(  2 DOWNTO 0 );   -- 0 - 7
     SIGNAL SPPREDRAWEND             : STD_LOGIC;
 
-    -- JP: ���C���o�b�t�@�ւ̕`��p
+    -- JP: ラインバッファへの描画用
     SIGNAL SPDRAWX                  : STD_LOGIC_VECTOR(  8 DOWNTO 0 );  -- -32 - 287 (=256+31)
     SIGNAL SPDRAWPATTERN            : STD_LOGIC_VECTOR( 15 DOWNTO 0 );
     SIGNAL SPDRAWCOLOR              : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
 
-    -- JP: �X�v���C�g�`�惉�C���o�b�t�@�̐���M��
+    -- JP: スプライト描画ラインバッファの制御信号
     SIGNAL SPLINEBUFADDR_E          : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
     SIGNAL SPLINEBUFADDR_O          : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
     SIGNAL SPLINEBUFWE_E            : STD_LOGIC;
@@ -350,7 +351,7 @@ BEGIN
     PVDPS0SPOVERMAPPEDNUM   <= FF_SP_OVERMAP_NUM;
 
     -----------------------------------------------------------------------------
-    -- �X�v���C�g��\�����邩�ۂ��������M��
+    -- スプライトを表示するか否かを示す信号
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -365,7 +366,7 @@ BEGIN
 
     -----------------------------------------------------------------------------
     -- SPRITE INFORMATION ARRAY
-    -- ���ۂɕ\������X�v���C�g�̏����W�߂ċL�^���Ă���RAM
+    -- 実際に表示するスプライトの情報を集めて記録しておくRAM
     -----------------------------------------------------------------------------
     ISPINFORAM: VDP_SPINFORAM
     PORT MAP(
@@ -423,7 +424,7 @@ BEGIN
     SPPREPAREXPOS       <=  '1' WHEN( EIGHTDOTSTATE = "100" )ELSE
                             '0';
 
-    -- JP: VRAM�A�N�Z�X�A�h���X�̏o��
+    -- JP: VRAMアクセスアドレスの出力
     IRAMADR <=  FF_Y_TEST_VRAM_ADDR     WHEN( SPSTATE = SPSTATE_YTEST_DRAW )ELSE
                 IRAMADRPREPARE;
     PRAMADR <=  IRAMADR(16 DOWNTO 0)    WHEN( VRAMINTERLEAVEMODE = '0' )ELSE
@@ -459,7 +460,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- �����C���̃��C���ԍ�
+    -- 現ラインのライン番号
     -----------------------------------------------------------------------------
     PROCESS( CLK21M )
     BEGIN
@@ -519,30 +520,30 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]Y�e�X�g�p�̐M��
+    -- [Y_TEST]Yテスト用の信号
     -----------------------------------------------------------------------------
     W_SPLISTUPY     <= FF_CUR_Y(7 DOWNTO 0) - PRAMDAT;
 
-    -- [Y_TEST]���ڃX�v���C�g�������C���ɕ\�����邩�ǂ����̐M��
+    -- [Y_TEST]着目スプライトを現ラインに表示するかどうかの信号
     W_TARGET_SP_EN  <=  '1'     WHEN(   ((W_SPLISTUPY(7 DOWNTO 3) = "00000") AND (REG_R1_SP_SIZE = '0' ) AND (REG_R1_SP_ZOOM='0')) OR
                                         ((W_SPLISTUPY(7 DOWNTO 4) = "0000" ) AND (REG_R1_SP_SIZE = '1' ) AND (REG_R1_SP_ZOOM='0')) OR
                                         ((W_SPLISTUPY(7 DOWNTO 4) = "0000" ) AND (REG_R1_SP_SIZE = '0' ) AND (REG_R1_SP_ZOOM='1')) OR
                                         ((W_SPLISTUPY(7 DOWNTO 5) = "000"  ) AND (REG_R1_SP_SIZE = '1' ) AND (REG_R1_SP_ZOOM='1')) )ELSE
                         '0';
 
-    -- [Y_TEST]����ȍ~�̃X�v���C�g�͕\���֎~���ǂ����̐M��
+    -- [Y_TEST]これ以降のスプライトは表示禁止かどうかの信号
     W_SP_OFF        <=  '1' WHEN( PRAMDAT = ("1101" & SPMODE2 & "000") )ELSE
                         '0';
 
-    -- [Y_TEST]�S�i�W�j�̃X�v���C�g������ł��邩�ǂ����̐M��
+    -- [Y_TEST]４つ（８つ）のスプライトが並んでいるかどうかの信号
     W_SP_OVERMAP    <=  '1' WHEN( (FF_Y_TEST_LISTUP_ADDR(2) = '1' AND SPMODE2 = '0') OR FF_Y_TEST_LISTUP_ADDR(3) = '1' )ELSE
                         '0';
 
-    -- [Y_TEST]�\�����̃��C�����ۂ�
+    -- [Y_TEST]表示中のラインか否か
     W_ACTIVE        <=  BWINDOW_Y;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]Y�e�X�g�X�e�[�g�łȂ����Ƃ������M��
+    -- [Y_TEST]Yテストステートでないことを示す信号
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -562,7 +563,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]�e�X�g�Ώۂ̃X�v���C�g�ԍ� (0�`31)
+    -- [Y_TEST]テスト対象のスプライト番号 (0～31)
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -582,7 +583,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]�\������X�v���C�g�����X�g�A�b�v���邽�߂̃��X�g�A�b�v�������A�h���X 0�`8
+    -- [Y_TEST]表示するスプライトをリストアップするためのリストアップメモリアドレス 0～8
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -594,7 +595,7 @@ BEGIN
                     -- INITIALIZE
                     FF_Y_TEST_LISTUP_ADDR <= (OTHERS => '0');
                 ELSIF( EIGHTDOTSTATE = "110" )THEN
-                    -- NEXT SPRITE [���X�g�A�b�v�����������t�ɂȂ�܂ŃC���N�������g]
+                    -- NEXT SPRITE [リストアップメモリが満杯になるまでインクリメント]
                     IF( FF_Y_TEST_EN = '1' AND W_TARGET_SP_EN = '1' AND W_SP_OVERMAP = '0' AND W_SP_OFF = '0' )THEN
                         FF_Y_TEST_LISTUP_ADDR <= FF_Y_TEST_LISTUP_ADDR + 1;
                     END IF;
@@ -604,7 +605,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]�\������X�v���C�g�����X�g�A�b�v���邽�߂̃��X�g�A�b�v�������ւ̏�������
+    -- [Y_TEST]表示するスプライトをリストアップするためのリストアップメモリへの書き込み
     -----------------------------------------------------------------------------
     PROCESS( CLK21M )
     BEGIN
@@ -623,7 +624,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]�S�ځi�W�ځj�̃X�v���C�g�����񂾂��ǂ����̐M��
+    -- [Y_TEST]４つ目（８つ目）のスプライトが並んだかどうかの信号
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -631,7 +632,7 @@ BEGIN
             FF_SP_OVERMAP       <= '0';
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF( PVDPS0RESETREQ = NOT FF_VDPS0RESETACK )THEN
-                -- S#0���ǂݍ��܂��܂ŃN���A���Ȃ�
+                -- S#0が読み込まれるまでクリアしない
                 FF_SP_OVERMAP       <= '0';
             ELSIF( DOTSTATE = "01" )THEN
                 IF( DOTCOUNTERX = 0 )THEN
@@ -646,7 +647,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- [Y_TEST]������������߂��X�v���C�g�M��
+    -- [Y_TEST]処理をあきらめたスプライト信号
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -659,8 +660,8 @@ BEGIN
                 IF( DOTCOUNTERX = 0 )THEN
                     -- INITIALIZE
                 ELSIF( EIGHTDOTSTATE = "110" )THEN
-                    -- JP: ������������߂��X�v���C�g�ԍ����i�[�����BOVERMAP�Ƃ͌���Ȃ��B
-                    -- JP: �������A���ł� OVERMAP �Œl���m�肵�Ă���ꍇ�͍X�V���Ȃ��B
+                    -- JP: 調査をあきらめたスプライト番号が格納される。OVERMAPとは限らない。
+                    -- JP: しかし、すでに OVERMAP で値が確定している場合は更新しない。
                     IF( FF_Y_TEST_EN = '1' AND W_TARGET_SP_EN = '1' AND W_SP_OVERMAP = '1' AND W_SP_OFF = '0' AND FF_SP_OVERMAP = '0' )THEN
                         FF_SP_OVERMAP_NUM <= FF_Y_TEST_SP_NUM;
                     END IF;
@@ -670,7 +671,7 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- Y�e�X�g�p�� VRAM�ǂݏo���A�h���X
+    -- Yテスト用の VRAM読み出しアドレス
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -686,11 +687,11 @@ BEGIN
     -----------------------------------------------------------------------------
     -- PREPARE SPRITE
     --
-    -- JP: ��ʕ`�撆           : 8�h�b�g�`�悷��Ԃ�1�v���[���A�X�v���C�g��Y���W���������A
-    -- JP:                        �\�����ׂ��X�v���C�g�����X�g�A�b�v����B
-    -- JP: ��ʔ�`�撆         : ���X�g�A�b�v�����X�v���C�g�̏����W�߁Ainforam�Ɋi�[
-    -- JP: ���̉�ʕ`�撆       : inforam�Ɋi�[���ꂽ�������ɁA���C���o�b�t�@�ɕ`��
-    -- JP: ���̎��̉�ʕ`�撆   : ���C���o�b�t�@�ɕ`�悳�ꂽ�G���o�͂��A��ʕ`��ɍ�����
+    -- JP: 画面描画中           : 8ドット描画する間に1プレーン、スプライトのY座標を検査し、
+    -- JP:                        表示すべきスプライトをリストアップする。
+    -- JP: 画面非描画中         : リストアップしたスプライトの情報を集め、inforamに格納
+    -- JP: 次の画面描画中       : inforamに格納された情報を元に、ラインバッファに描画
+    -- JP: 次の次の画面描画中   : ラインバッファに描画された絵を出力し、画面描画に混ぜる
     -----------------------------------------------------------------------------
 
     -- READ TIMING OF SPRITE ATTRIBUTE TABLE
@@ -759,7 +760,7 @@ BEGIN
                     IF( SPSTATE = SPSTATE_PREPARE ) THEN
                         CASE EIGHTDOTSTATE IS
                             WHEN "001" =>                               -- Y READ
-                                -- JP: �X�v���C�g�̉��s�ڂ��Y���������o���Ă���
+                                -- JP: スプライトの何行目が該当したか覚えておく
                                 IF( REG_R1_SP_ZOOM = '0' ) THEN
                                     SPPREPARELINENUM    <= W_SPLISTUPY(3 DOWNTO 0);
                                 ELSE
@@ -782,15 +783,15 @@ BEGIN
                             WHEN "110" =>                               -- COLOR READ
                                 -- COLOR
                                 SPINFORAMCOLOR_IN <= PRAMDAT(3 DOWNTO 0);
-                                -- CC   �D�揇�ʃr�b�g (1: �D�揇�ʖ���, 0: �D�揇�ʂ���)
+                                -- CC   優先順位ビット (1: 優先順位無し, 0: 優先順位あり)
                                 IF(SPMODE2 = '1') THEN
                                     SPINFORAMCC_IN <= PRAMDAT(6);
                                 ELSE
                                     SPINFORAMCC_IN <= '0';
                                 END IF;
-                                -- IC   �Փˌ��m�r�b�g (1: ���m���Ȃ�, 0: ���m����)
+                                -- IC   衝突検知ビット (1: 検知しない, 0: 検知する)
                                 SPINFORAMIC_IN <= PRAMDAT(5) AND SPMODE2;
-                                -- EC   32�h�b�g���V�t�g (1: ����, 0: ���Ȃ�)
+                                -- EC   32ドット左シフト (1: する, 0: しない)
                                 IF( PRAMDAT(7) = '1' ) THEN
                                     SPINFORAMX_IN <= SPINFORAMX_IN - 32;
                                 END IF;
@@ -851,14 +852,14 @@ BEGIN
         VARIABLE VDPS5S6SPCOLLISIONYV               : STD_LOGIC_VECTOR(8 DOWNTO 0);
     BEGIN
         IF( RESET ='1' ) THEN
-            SPLINEBUFDRAWWE             <= '0';                 -- JP: ���C���o�b�t�@�ւ̏������݃C�l�[�u��
+            SPLINEBUFDRAWWE             <= '0';                 -- JP: ラインバッファへの書き込みイネーブラ
             SPPREDRAWEND                <= '0';
             SPDRAWPATTERN               <= (OTHERS => '0');
             SPLINEBUFDRAWCOLOR          <= (OTHERS => '0');
             SPLINEBUFDRAWX              <= (OTHERS => '0');
             SPDRAWCOLOR                 <= (OTHERS => '0');
 
-            VDPS0SPCOLLISIONINCIDENCEV  := '0';                 -- JP: �X�v���C�g���Փ˂������ǂ����������t���O
+            VDPS0SPCOLLISIONINCIDENCEV  := '0';                 -- JP: スプライトが衝突したかどうかを示すフラグ
             VDPS3S4SPCOLLISIONXV        := (OTHERS => '0');
             VDPS5S6SPCOLLISIONYV        := (OTHERS => '0');
             SPCC0FOUNDV                 := '0';
@@ -868,7 +869,7 @@ BEGIN
             IF( SPSTATE = SPSTATE_YTEST_DRAW ) THEN
                 CASE DOTSTATE IS
                     WHEN "10" =>
-                        -- JP: �����P�ʂ̎n�܂�
+                        -- JP: 処理単位の始まり
                         SPLINEBUFDRAWWE <= '0';
                     WHEN "00" =>
                         -- JP:
@@ -892,27 +893,27 @@ BEGIN
                         END IF;
                         IF( (SPDRAWPATTERN(15) = '1') AND (SPDRAWX(8) = '0') AND (SPPREDRAWEND = '0') AND
                                 ((REG_R8_COL0_ON = '1') OR (SPDRAWCOLOR /= 0)) ) THEN
-                            -- JP: �X�v���C�g�̃h�b�g��`��
-                            -- JP: ���C���o�b�t�@��7�r�b�g�ڂ́A���炩�̐F��`�悵������'1'�ɂȂ�B
-                            -- JP: ���C���o�b�t�@��6-4�r�b�g�ڂ͂����ɕ`�悳��Ă���h�b�g�̃��[�J���v���[���ԍ�
-                            -- JP: (�F��������Ă���Ƃ��͐e�ƂȂ�CC='0'�̃X�v���C�g�̃��[�J���v���[���ԍ�)������B
-                            -- JP: �܂�ALASTCC0LOCALPLANENUMV�����̔ԍ��Ɠ������Ƃ���OR�������Ă悢���ɂȂ�B
+                            -- JP: スプライトのドットを描画
+                            -- JP: ラインバッファの7ビット目は、何らかの色を描画した時に'1'になる。
+                            -- JP: ラインバッファの6-4ビット目はそこに描画されているドットのローカルプレーン番号
+                            -- JP: (色合成されているときは親となるCC='0'のスプライトのローカルプレーン番号)が入る。
+                            -- JP: つまり、LASTCC0LOCALPLANENUMVがこの番号と等しいときはOR合成してよい事になる。
                             IF( (SPLINEBUFDRAWDATA_OUT(7) = '0') AND (SPCC0FOUNDV = '1') ) THEN
-                                -- JP: �����`����Ă��Ȃ�(�r�b�g7��'0')�Ƃ��A���̃h�b�g�ɏ��߂Ă�
-                                -- JP: �X�v���C�g���`�悳���B�������ACC='0'�̃X�v���C�g�����ꃉ�C����ɂ܂�
-                                -- JP: ����Ă��Ȃ����͕`�悵�Ȃ�
+                                -- JP: 何も描かれていない(ビット7が'0')とき、このドットに初めての
+                                -- JP: スプライトが描画される。ただし、CC='0'のスプライトが同一ライン上にまだ
+                                -- JP: 現れていない時は描画しない
                                 SPLINEBUFDRAWCOLOR <= ("1" & LASTCC0LOCALPLANENUMV & SPDRAWCOLOR);
                                 SPLINEBUFDRAWWE <= '1';
                             ELSIF( (SPLINEBUFDRAWDATA_OUT(7) = '1') AND (SPINFORAMCC_OUT = '1') AND
                                          (SPLINEBUFDRAWDATA_OUT(6 DOWNTO 4) = LASTCC0LOCALPLANENUMV) ) THEN
-                                -- JP: ���ɊG���`����Ă��邪�ACC��'1'�ł����̃h�b�g�ɕ`����Ă���X�v���C�g��
-                                -- JP: LOCALPLANENUM�� LASTCC0LOCALPLANENUMV�Ɠ��������́A���C���o�b�t�@����
-                                -- JP: ���n�f�[�^��ǂ݁A���������F�Ƙ_���a���惊�A�����߂��B
+                                -- JP: 既に絵が描かれているが、CCが'1'でかつこのドットに描かれているスプライトの
+                                -- JP: LOCALPLANENUMが LASTCC0LOCALPLANENUMVと等しい時は、ラインバッファから
+                                -- JP: 下地データを読み、書きたい色と論理和を取リ、書き戻す。
                                 SPLINEBUFDRAWCOLOR <= SPLINEBUFDRAWDATA_OUT OR ("0000" & SPDRAWCOLOR);
                                 SPLINEBUFDRAWWE <= '1';
                             ELSIF( (SPLINEBUFDRAWDATA_OUT(7) = '1') AND (SPINFORAMIC_OUT = '0') ) THEN
                                 SPLINEBUFDRAWCOLOR <= SPLINEBUFDRAWDATA_OUT;
-                                -- JP: �X�v���C�g���ՓˁB
+                                -- JP: スプライトが衝突。
                                 -- SPRITE COLISION OCCURED
                                 VDPS0SPCOLLISIONINCIDENCEV := '1';
                                 VDPS3S4SPCOLLISIONXV := SPDRAWX + 12;
@@ -954,8 +955,8 @@ BEGIN
     END PROCESS;
 
     -----------------------------------------------------------------------------
-    -- JP: ��ʂւ̃����_�����O�BVDP�G���e�B�e�B��DOTSTATE="11"�̎��ɒl���擾�ł���悤�ɁA
-    -- JP: "01"�̃^�C�~���O�ŏo�͂���B
+    -- JP: 画面へのレンダリング。VDPエンティティがDOTSTATE="11"の時に値を取得できるように、
+    -- JP: "01"のタイミングで出力する。
     -----------------------------------------------------------------------------
     PROCESS( RESET, CLK21M )
     BEGIN
@@ -963,7 +964,7 @@ BEGIN
             SPLINEBUFDISPX  <= (OTHERS => '0');
         ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
             IF( DOTSTATE = "10" )THEN
-                -- JP: DOTCOUNTER�Ǝ��ۂ̕\��(�J���[�R�[�h�̏o��)��8�h�b�g����Ă���
+                -- JP: DOTCOUNTERと実際の表示(カラーコードの出力)は8ドットずれている
                 IF( DOTCOUNTERX = 8 )THEN
                     SPLINEBUFDISPX <= ("00000" & REG_R27_H_SCROLL);
                 ELSE
@@ -979,7 +980,7 @@ BEGIN
             SPWINDOWX <= '0';
         ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
             IF( DOTSTATE = "10" )THEN
-                -- JP: DOTCOUNTER�Ǝ��ۂ̕\��(�J���[�R�[�h�̏o��)��8�h�b�g����Ă���
+                -- JP: DOTCOUNTERと実際の表示(カラーコードの出力)は8ドットずれている
                 IF( DOTCOUNTERX = 8 )THEN
                     SPWINDOWX <= '1';
                 ELSIF( SPLINEBUFDISPX = X"FF" ) THEN
@@ -1003,12 +1004,12 @@ BEGIN
         END IF;
     END PROCESS;
 
-    -- JP: �E�B���h�E�ŕ\�����J�b�g����
+    -- JP: ウィンドウで表示をカットする
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' ) THEN
-            SPCOLOROUT  <= '0';                     -- JP:  0=����, 1=�X�v���C�g�h�b�g
-            SPCOLORCODE <= (OTHERS => '0');         -- JP:  SPCOLOROUT=1 �̎��̃X�v���C�g�h�b�g�F�ԍ�
+            SPCOLOROUT  <= '0';                     -- JP:  0=透明, 1=スプライトドット
+            SPCOLORCODE <= (OTHERS => '0');         -- JP:  SPCOLOROUT=1 の時のスプライトドット色番号
         ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
             IF( DOTSTATE = "01" )THEN
                 IF( SPWINDOWX = '1' ) THEN

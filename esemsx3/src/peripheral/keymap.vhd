@@ -29,11 +29,15 @@
 -- OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 -- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
+-- 2013.08.12 modified by KdL
+-- Added RWIN and LWIN usable as an alternative to the space-bar.
+--
 -- 2018.07.27 modified by KdL
 -- Added optional scancode $61 '\|' to the English keyboard.
 --
--- 2013.08.12 modified by KdL
--- Added RWIN and LWIN usable as alternatives to the space-bar.
+-- 2018.12.16 modified by KdL
+-- Added MENU usable as an alternative to the F7 key for KANA/CODE.
+-- Fixed scancode of SHIFT+F6 (GRAPH).
 --
 
 library ieee;
@@ -105,7 +109,7 @@ constant rom101 : rom_101 := (
         X"7F", X"26", X"7F", X"7F", X"16", X"7F", X"7F", X"7F", -- 10
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"08", -- 18  (LWIN = $1F = SPACE)
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"08", -- 20  (RWIN = $27 = SPACE)
-        X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", -- 28
+        X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"46", -- 28  (MENU = $2F = KANA)
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", -- 30
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", -- 38
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", -- 40
@@ -136,7 +140,7 @@ constant rom101 : rom_101 := (
 -- 101 keyboard (set 2) / Shift = ON
 
         X"FF", X"FF", X"FF", X"97", X"F6", X"D6", X"E6", X"FF", -- 00
-        X"FF", X"FF", X"E7", X"E6", X"87", X"B7", X"B1", X"FF", -- 08
+        X"FF", X"FF", X"E7", X"A6", X"87", X"B7", X"B1", X"FF", -- 08
         X"FF", X"A6", X"86", X"C6", X"96", X"E4", X"90", X"FF", -- 10
         X"FF", X"FF", X"F5", X"85", X"E2", X"C5", X"51", X"FF", -- 18
         X"FF", X"83", X"D5", X"93", X"A3", X"C0", X"B0", X"FF", -- 20
@@ -173,7 +177,7 @@ constant rom101 : rom_101 := (
         X"FF", X"A6", X"FF", X"FF", X"96", X"FF", X"FF", X"FF", -- 10
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"88", -- 18  (LWIN = $1F = SHIFT + SPACE)
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"88", -- 20  (RWIN = $27 = SHIFT + SPACE)
-        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 28
+        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"C6", -- 28  (MENU = $2F = SHIFT + KANA)
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 30
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 38
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 40
@@ -256,7 +260,7 @@ constant rom106 : rom_106 := (
         X"FF", X"26", X"FF", X"FF", X"16", X"FF", X"FF", X"FF", -- 10
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"08", -- 18  (LWIN = $1F = SPACE)
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"08", -- 20  (RWIN = $27 = SPACE)
-        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 28
+        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"46", -- 28  (MENU = $2F = KANA)
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 30
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 38
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 40

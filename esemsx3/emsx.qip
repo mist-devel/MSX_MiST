@@ -45,6 +45,7 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/sound/
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/sound/filter/esefir5.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/sound/filter/tapram.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/sound/dac/esepwm.vhd]
+set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) src/sound/tr_pcm/tr_pcm.v]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/peripheral/eseps2.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/peripheral/iplrom.vhd]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) src/peripheral/kanji.vhd]

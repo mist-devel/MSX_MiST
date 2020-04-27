@@ -36,42 +36,42 @@ use ieee.std_logic_unsigned.all;
 
 entity psg_wave is
   port(
-    clk21m  : in std_logic;
-    reset   : in std_logic;
-    clkena  : in std_logic;
-    req     : in std_logic;
+    clk21m  : in  std_logic;
+    reset   : in  std_logic;
+    clkena  : in  std_logic;
+    req     : in  std_logic;
     ack     : out std_logic;
-    wrt     : in std_logic;
-    adr     : in std_logic_vector(15 downto 0);
-    dbi     : out std_logic_vector(7 downto 0);
-    dbo     : in std_logic_vector(7 downto 0);
-    wave    : out std_logic_vector(7 downto 0)
+    wrt     : in  std_logic;
+    adr     : in  std_logic_vector( 15 downto 0 );
+    dbi     : out std_logic_vector(  7 downto 0 );
+    dbo     : in  std_logic_vector(  7 downto 0 );
+    wave    : out std_logic_vector(  7 downto 0 )
   );
 end psg_wave;
 
 architecture rtl of psg_wave is
 
-  signal PsgClkEna   : std_logic_vector(4 downto 0);
-  signal PsgRegPtr   : std_logic_vector(3 downto 0);
+  signal PsgClkEna   : std_logic_vector(  4 downto 0 );
+  signal PsgRegPtr   : std_logic_vector(  3 downto 0 );
 
   signal PsgEdgeChA  : std_logic;
   signal PsgEdgeChB  : std_logic;
   signal PsgEdgeChC  : std_logic;
   signal PsgNoise    : std_logic;
-  signal PsgVolEnv   : std_logic_vector(3 downto 0);
+  signal PsgVolEnv   : std_logic_vector(  3 downto 0 );
   signal PsgEnvReq   : std_logic;
   signal PsgEnvAck   : std_logic;
 
-  signal PsgFreqChA  : std_logic_vector(11 downto 0);
-  signal PsgFreqChB  : std_logic_vector(11 downto 0);
-  signal PsgFreqChC  : std_logic_vector(11 downto 0);
-  signal PsgFreqNoise: std_logic_vector(4 downto 0);
-  signal PsgChanSel  : std_logic_vector(5 downto 0);
-  signal PsgVolChA   : std_logic_vector(4 downto 0);
-  signal PsgVolChB   : std_logic_vector(4 downto 0);
-  signal PsgVolChC   : std_logic_vector(4 downto 0);
-  signal PsgFreqEnv  : std_logic_vector(15 downto 0);
-  signal PsgShapeEnv : std_logic_vector(3 downto 0);
+  signal PsgFreqChA  : std_logic_vector( 11 downto 0 );
+  signal PsgFreqChB  : std_logic_vector( 11 downto 0 );
+  signal PsgFreqChC  : std_logic_vector( 11 downto 0 );
+  signal PsgFreqNoise: std_logic_vector(  4 downto 0 );
+  signal PsgChanSel  : std_logic_vector(  5 downto 0 );
+  signal PsgVolChA   : std_logic_vector(  4 downto 0 );
+  signal PsgVolChB   : std_logic_vector(  4 downto 0 );
+  signal PsgVolChC   : std_logic_vector(  4 downto 0 );
+  signal PsgFreqEnv  : std_logic_vector( 15 downto 0 );
+  signal PsgShapeEnv : std_logic_vector(  3 downto 0 );
 
   alias hold   : std_logic is PsgShapeEnv(0);
   alias alter  : std_logic is PsgShapeEnv(1);
@@ -117,7 +117,7 @@ begin
          "000"  & PsgVolChA               when PsgRegPtr = "1000" and adr(1 downto 0) = "10" else
          "000"  & PsgVolChB               when PsgRegPtr = "1001" and adr(1 downto 0) = "10" else
          "000"  & PsgVolChC               when PsgRegPtr = "1010" and adr(1 downto 0) = "10" else
-                  PsgFreqEnv(7 downto 0)  when PsgRegPtr = "1011" and adr(1 downto 0) = "10" else
+                  PsgFreqEnv( 7 downto 0) when PsgRegPtr = "1011" and adr(1 downto 0) = "10" else
                   PsgFreqEnv(15 downto 8) when PsgRegPtr = "1100" and adr(1 downto 0) = "10" else
          "0000" & PsgShapeEnv             when PsgRegPtr = "1101" and adr(1 downto 0) = "10" else
          (others => '1');
@@ -153,18 +153,18 @@ begin
       elsif (req = '1' and wrt = '1' and adr(1 downto 0) = "01") then
         -- PSG registers
         case PsgRegPtr is
-          when "0000" => PsgFreqChA(7 downto 0)  <= dbo;
+          when "0000" => PsgFreqChA( 7 downto 0) <= dbo;
           when "0001" => PsgFreqChA(11 downto 8) <= dbo(3 downto 0);
-          when "0010" => PsgFreqChB(7 downto 0)  <= dbo;
+          when "0010" => PsgFreqChB( 7 downto 0) <= dbo;
           when "0011" => PsgFreqChB(11 downto 8) <= dbo(3 downto 0);
-          when "0100" => PsgFreqChC(7 downto 0)  <= dbo;
+          when "0100" => PsgFreqChC( 7 downto 0) <= dbo;
           when "0101" => PsgFreqChC(11 downto 8) <= dbo(3 downto 0);
           when "0110" => PsgFreqNoise            <= dbo(4 downto 0);
           when "0111" => PsgChanSel              <= dbo(5 downto 0);
           when "1000" => PsgVolChA               <= dbo(4 downto 0);
           when "1001" => PsgVolChB               <= dbo(4 downto 0);
           when "1010" => PsgVolChC               <= dbo(4 downto 0);
-          when "1011" => PsgFreqEnv(7 downto 0)  <= dbo;
+          when "1011" => PsgFreqEnv( 7 downto 0) <= dbo;
           when "1100" => PsgFreqEnv(15 downto 8) <= dbo;
           when "1101" => PsgShapeEnv             <= dbo(3 downto 0); PsgEnvReq <= not PsgEnvAck;
           when others => null;
@@ -238,7 +238,7 @@ begin
   ----------------------------------------------------------------
   process(clk21m, reset)
 
-    variable PsgCntNoise : std_logic_vector(4 downto 0);
+    variable PsgCntNoise : std_logic_vector( 4 downto 0);
     variable PsgGenNoise : std_logic_vector(17 downto 0);
 
   begin
@@ -290,7 +290,7 @@ begin
   process(clk21m, reset)
 
     variable PsgCntEnv : std_logic_vector(15 downto 0);
-    variable PsgPtrEnv : std_logic_vector(4 downto 0);
+    variable PsgPtrEnv : std_logic_vector( 4 downto 0);
 
   begin
 

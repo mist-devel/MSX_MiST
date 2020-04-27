@@ -30,7 +30,7 @@
 -- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 --------------------------------------------------------------------------------------
--- OCM-PLD Pack v3.7.1 by KdL (2019.05.20) / MSX2+ Stable Release / MSXtR Experimental
+-- OCM-PLD Pack v3.8 by KdL (2020.01.09) / MSX2+ Stable Release / MSXtR Experimental
 -- Special thanks to t.hara, caro, mygodess & all MRC users (http://www.msx.org)
 --------------------------------------------------------------------------------------
 --
@@ -595,10 +595,25 @@ architecture RTL of emsx_top is
         );
     end component;
 
+    component tr_pcm                                                            -- 2019/11/29 t.hara added
+        port(
+            clk21m          : in    std_logic;
+            reset           : in    std_logic;
+            req             : in    std_logic;
+            ack             : out   std_logic;
+            wrt             : in    std_logic;
+            adr             : in    std_logic;
+            dbi             : out   std_logic_vector(  7 downto 0 );
+            dbo             : in    std_logic_vector(  7 downto 0 );
+            wave_in         : in    std_logic_vector(  7 downto 0 );
+            wave_out        : out   std_logic_vector(  7 downto 0 )
+       );
+    end component;
+
     -- Switched I/O ports
     signal  swio_req        : std_logic;
     signal  swio_dbi        : std_logic_vector(  7 downto 0 );
-    signal  io40_n          : std_logic_vector(  7 downto 0 );
+    signal  io40_n          : std_logic_vector(  7 downto 0 ) := (others => '1');
     signal  io41_id212_n    : std_logic_vector(  7 downto 0 );              -- here to reduce LEs
     signal  io42_id212      : std_logic_vector(  7 downto 0 );
     signal  io43_id212      : std_logic_vector(  7 downto 0 );
@@ -626,7 +641,7 @@ architecture RTL of emsx_top is
     signal  pseudoStereo    : std_logic;
     signal  extclk3m        : std_logic;
     signal  right_inverse   : std_logic;
-    signal  vram_slot_ids   : std_logic_vector(  7 downto 0 );
+    signal  vram_slot_ids   : std_logic_vector(  7 downto 0 ) := "00010000";
     signal  vram_page       : std_logic_vector(  7 downto 0 );
     signal  DefKmap         : std_logic;                                    -- here to reduce LEs
     signal  ff_dip_req      : std_logic_vector(  7 downto 0 ) := "10000011";    -- overwrites any startup errors with the most common settings
@@ -634,12 +649,12 @@ architecture RTL of emsx_top is
     signal  LevCtrl         : std_logic_vector(  2 downto 0 );
     signal  GreenLvEna      : std_logic;
     signal  swioRESET_n     : std_logic;
-    signal  warmRESET       : std_logic;
+    signal  warmRESET       : std_logic := '0';
     signal  WarmMSXlogo     : std_logic;                                    -- here to reduce LEs
     signal  ZemmixNeo       : std_logic;
     signal  JIS2_ena        : std_logic;
     signal  portF4_mode     : std_logic;
-    signal  RatioMode       : std_logic_vector(  2 downto 0 );
+    signal  RatioMode       : std_logic_vector(  2 downto 0 ) := (others => '0');
     signal  centerYJK_R25_n : std_logic;
     signal  legacy_sel      : std_logic;
     signal  iSlt1_linear    : std_logic;
@@ -654,7 +669,7 @@ architecture RTL of emsx_top is
     -- Operation mode
     signal  w_key_mode      : std_logic;                                    -- Kana key board layout: 1=JIS layout
     signal  Kmap            : std_logic;                                    -- '0': Japanese-106    '1': Non-Japanese (English-101, French, ..)
-    signal  DisplayMode     : std_logic_vector(  1 downto 0 );
+    signal  DisplayMode     : std_logic_vector(  1 downto 0 ) := "10";
     signal  Slot1Mode       : std_logic;
     signal  Slot2Mode       : std_logic_vector(  1 downto 0 );
     alias   FullRAM         : std_logic is Mapper_ack;                      -- '0': 2048 kB RAM     '1': 4096 kB RAM
@@ -669,11 +684,9 @@ architecture RTL of emsx_top is
     signal  ff_clksel       : std_logic;
     signal  ff_clksel5m_n   : std_logic;
     signal  hybridclk_n     : std_logic;
-    signal  hstartcount     : std_logic_vector(  2 downto 0 );
-    signal  htoutcount      : std_logic_vector(  2 downto 0 );
+    signal  hybstartcnt     : std_logic_vector(  2 downto 0 );
+    signal  hybtoutcnt      : std_logic_vector(  2 downto 0 );
     signal  reset           : std_logic;
-    signal  RstEna          : std_logic := '0';
-    signal  FirstBoot_n     : std_logic := '0';
     signal  RstSeq          : std_logic_vector(  4 downto 0 ) := (others => '0');
     signal  FreeCounter     : std_logic_vector( 15 downto 0 ) := (others => '0');
     signal  HoldRst_ena     : std_logic := '0';
@@ -694,6 +707,7 @@ architecture RTL of emsx_top is
     signal  dlydbi          : std_logic_vector(  7 downto 0 );
     signal  CpuM1_n         : std_logic;
     signal  CpuRfsh_n       : std_logic;
+    signal  wait_n_s        : std_logic := '1';
 
     -- Internal bus signals (common)
     signal  req             : std_logic;
@@ -862,10 +876,10 @@ architecture RTL of emsx_top is
     signal  DACin           : std_logic_vector(DAC_MSBI downto 0);
     signal  DACout          : std_logic;
 
-    signal  OpllVol         : std_logic_vector(  2 downto 0 );
-    signal  SccVol          : std_logic_vector(  2 downto 0 );
-    signal  PsgVol          : std_logic_vector(  2 downto 0 );
-    signal  MstrVol         : std_logic_vector(  2 downto 0 );
+    signal  OpllVol         : std_logic_vector(  2 downto 0 ) := "100";
+    signal  SccVol          : std_logic_vector(  2 downto 0 ) := "100";
+    signal  PsgVol          : std_logic_vector(  2 downto 0 ) := "100";
+    signal  MstrVol         : std_logic_vector(  2 downto 0 ) := "000";
 
     signal  pSltSndL        : std_logic_vector(  5 downto 0 );
     signal  pSltSndR        : std_logic_vector(  5 downto 0 );
@@ -933,6 +947,12 @@ architecture RTL of emsx_top is
     signal portF4_req       : std_logic;
     signal portF4_bit7      : std_logic;                                    -- 1=hard reset, 0=soft reset
 
+     -- turboR PCM device
+    signal  tr_pcm_req      : std_logic;
+    signal  tr_pcm_dbi      : std_logic_vector(  7 downto 0 );
+    signal  tr_pcm_wave_in  : std_logic_vector(  7 downto 0 );
+    signal  tr_pcm_wave_out : std_logic_vector(  7 downto 0 );
+
     -- Mixer
     signal  ff_prepsg       : std_logic_vector(  8 downto 0 );
     signal  ff_prescc       : std_logic_vector( 15 downto 0 );
@@ -943,6 +963,7 @@ architecture RTL of emsx_top is
     signal  ff_opll         : std_logic_vector( DACin'high + 2 downto DACin'low );
     signal  ff_psg_offset   : std_logic_vector( DACin'high + 2 downto DACin'low );
     signal  ff_scc_offset   : std_logic_vector( DACin'high + 2 downto DACin'low );
+    signal  ff_tr_pcm       : std_logic_vector( DACin'high + 2 downto DACin'low );
     signal  ff_pre_dacin    : std_logic_vector( DACin'high + 2 downto DACin'low );
     constant c_opll_offset  : std_logic_vector( DACin'high + 2 downto DACin'low ) := ( ff_pre_dacin'high => '1', others => '0' );
     constant c_opll_zero    : std_logic_vector( OpllAmp'range ) := ( OpllAmp'high => '1', others => '0' );
@@ -1020,13 +1041,13 @@ begin
     process( reset, clk21m )
     begin
         if( reset = '1' )then
-            hstartcount <=  (others => '0');
+            hybstartcnt <=  (others => '0');
         elsif( clk21m'event and clk21m = '1' )then
             if( ff_clk21m_cnt( 16 downto 0 ) = "00000000000000000" )then
                 if( mmcena = '0' )then
-                    hstartcount <=  "111";                                              -- begin after 48ms
-                elsif( hstartcount /= "000" )then
-                    hstartcount <=  hstartcount - 1;
+                    hybstartcnt <=  "111";                                              -- begin after 48ms
+                elsif( hybstartcnt /= "000" )then
+                    hybstartcnt <=  hybstartcnt - 1;
                 end if;
             end if;
         end if;
@@ -1036,13 +1057,13 @@ begin
     process( reset, clk21m )
     begin
         if( reset = '1' )then
-            htoutcount  <=  (others => '0');
+            hybtoutcnt  <=  (others => '0');
         elsif( clk21m'event and clk21m = '1' )then
-            if( hstartcount = "000" or htoutcount /= "000" )then
+            if( hybstartcnt = "000" or hybtoutcnt /= "000" )then
                 if( mmcena = '1' )then
-                    htoutcount  <=  "111";                                              -- timeout after 96ms
+                    hybtoutcnt  <=  "111";                                              -- timeout after 96ms
                 elsif( ff_clk21m_cnt( 17 downto 0 ) = "000000000000000000" )then
-                    htoutcount  <=  htoutcount - 1;
+                    hybtoutcnt  <=  hybtoutcnt - 1;
                 end if;
             end if;
         end if;
@@ -1054,7 +1075,7 @@ begin
         if( reset = '1' )then
             hybridclk_n <=  '1';
         elsif( clk21m'event and clk21m = '1' )then
-            if( htoutcount = "000" )then
+            if( hybtoutcnt = "000" )then
                 hybridclk_n <= '1';
             else
                 hybridclk_n <= not tMegaSD;
@@ -1074,10 +1095,10 @@ begin
 --          elsif( w_10hz = '1' and LogoRstCnt /= "00000" and SdPaus = '0' )then        -- dismissed
             elsif( w_10hz = '1' and LogoRstCnt /= "00000" )then
                 LogoRstCnt <= LogoRstCnt - 1;
-                if LogoRstCnt = "10010" then -- 1800ms
+                if( LogoRstCnt = "10010" )then -- 1800ms
                     logo_timeout <= "01";
                 end if;
-            elsif LogoRstCnt = "00000" then -- 0ms
+            elsif( LogoRstCnt = "00000" )then -- 0ms
                 logo_timeout <= "10";
             end if;
         end if;
@@ -1087,8 +1108,7 @@ begin
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '0' )then
-            if( FirstBoot_n /= '1' or RstEna = '1' )then
-                if( cpuclk = '0' and clkdiv = "00" and pSltWait_n = '0' )then
+            if( cpuclk = '0' and clkdiv = "00" and wait_n_s = '0' )then
                     if( ff_ldbios_n = '0' or logo_timeout = "00" )then                  -- ultra-fast bootstrap
                         ff_clksel5m_n   <=  '1';
                         ff_clksel       <=  '1';
@@ -1104,7 +1124,6 @@ begin
                         ff_clksel5m_n   <=  '1';
                         ff_clksel       <=  '0';
                     end if;
-                end if;
             end if;
         end if;
     end process;
@@ -1115,15 +1134,13 @@ begin
 --      if( clk21m'event and clk21m = '1' and SdPaus = '0' )then                        -- dismissed
         if( clk21m'event and clk21m = '1' )then
             Kmap <= swioKmap;                                                           -- keyboard layout assignment
-            if( FirstBoot_n /= '1' or RstEna = '1' )then
-                    CmtScro           <=  swioCmt;
-                    DisplayMode(1)    <=  io42_id212(1);
-                    DisplayMode(0)    <=  io42_id212(2);
-                    Slot1Mode         <=  io42_id212(3);
-                    Slot2Mode(1)      <=  io42_id212(4);
-                    Slot2Mode(0)      <=  io42_id212(5);
-                end if;
-            end if;
+            CmtScro           <=  swioCmt;
+            DisplayMode(1)    <=  io42_id212(1);
+            DisplayMode(0)    <=  io42_id212(2);
+            Slot1Mode         <=  io42_id212(3);
+            Slot2Mode(1)      <=  io42_id212(4);
+            Slot2Mode(0)      <=  io42_id212(5);
+        end if;
     end process;
 
     -- cpu clock assignment
@@ -1133,8 +1150,7 @@ begin
                     cpuclk;                                                                                 --  3.58 MHz
 
     -- slots clock assignment
-    pCpuClk     <=  -- '1'          when( SdPaus /= '0' or FirstBoot_n /= '1' )else                         -- dismissed
-                    '1'             when( FirstBoot_n /= '1' )else
+    pCpuClk     <=  -- '1'          when( SdPaus /= '0' )else                                               -- dismissed
                     clkdiv(0)       when( ff_clksel = '1' and extclk3m = '0' and reset /= '1' )else         -- 10.74 MHz
                     clkdiv(1)       when( ff_clksel5m_n = '0' and extclk3m = '0' and reset /= '1' )else     --  5.37 MHz
                     cpuclk;                                                                                 --  3.58 MHz
@@ -1328,21 +1344,6 @@ begin
         end if;
     end process;
 
-    -- reset enabler
-    process( reset, clk21m )
-    begin
-        if( reset = '1' )then
-            RstEna <= '0';
-        elsif( clk21m'event and clk21m = '1' )then
-            if( ff_rst_seq = "11" and warmRESET /= '1' )then
-                RstEna      <= '1';                         -- RstEna change to 1 after 200ms from power on
-                FirstBoot_n <= '1';
-            else
-                --  hold
-            end if;
-        end if;
-    end process;
-
     -- DIP-SW latch
     process( clk21m )
     begin
@@ -1475,7 +1476,8 @@ begin
     pSltM1_n    <=  CpuM1_n;
     pSltRfsh_n  <=  CpuRfsh_n;
 
-    pSltInt_n   <=  pVdpInt_n;
+    pSltInt_n   <=  '0' when( pVdpInt_n = '0' )else
+                    'Z';
 
     pSltSltsl_n <=  '1' when Scc1Type /= "00" else
                     '0' when( pSltMerq_n = '0' and CpuRfsh_n = '1' and PriSltNum = "01" )else
@@ -1500,6 +1502,8 @@ begin
     pSltSw1     <= 'Z';
     pSltSw2     <= 'Z';
 
+    pSltWait_n  <=  'Z';
+
     ----------------------------------------------------------------
     -- Z80 CPU wait control
     ----------------------------------------------------------------
@@ -1517,13 +1521,17 @@ begin
             jSltIorq_n  := '1';
             jSltMerq_n  := '1';
             count       := "0000";
-            pSltWait_n  <= '1';
+            wait_n_s    <= '1';
 
         elsif( trueClk'event and trueClk = '1' )then
 
             if( pSltMerq_n = '0' and jSltMerq_n = '1' )then
                 if( ff_clksel = '1' )then
-                    count := CustomSpeed;                               -- 8.06MHz until 4.10MHz
+                    if( ff_ldbios_n = '0' )then
+                        count := "0010";                                -- 8.06MHz (simulated)
+                    else
+                        count := CustomSpeed;                           -- 4.10MHz until 8.06MHz (simulated)
+                    end if;
                 elsif( ff_clksel5m_n = '0' and (iSltScc1 = '1' or iSltScc2 = '1') )then
                     count := "0001";
                 end if;
@@ -1537,17 +1545,16 @@ begin
                 count := count - 1;
             end if;
 
-            if( CpuM1_n = '0' and iCpuM1_n = '1' )then
-                pSltWait_n <= '0';
+            if( (CpuM1_n = '0' and iCpuM1_n = '1') or pSltWait_n ='0' )then
+                wait_n_s <= '0';
             elsif( count /= "0000" )then
-                pSltWait_n <= '0';
+                wait_n_s <= '0';
             elsif( (ff_clksel = '1' or ff_clksel5m_n = '0') and OpllReq = '1' and OpllAck = '0' )then
-                pSltWait_n <= '0';
+                wait_n_s <= '0';
             elsif( ErmReq = '1' and adr(15 downto 13) = "010" and MmcAct = '1' )then
-                pSltWait_n <= '0';
+                wait_n_s <= '0';
             else
---              pSltWait_n <= not SdPaus;                               -- dismissed
-                pSltWait_n <= '1';
+                wait_n_s <= '1';
             end if;
 
             iCpuM1_n    := CpuM1_n;
@@ -1624,6 +1631,8 @@ begin
                 dlydbi <= RtcDbi;
             elsif( mem = '0' and adr(  7 downto 1 ) = "1110011" )then                           -- System timer (S1990)
                 dlydbi <= systim_dbi;
+            elsif( mem = '0' and adr(  7 downto 1 ) = "1010010" )then                           -- turboR PCM device
+                dlydbi <= tr_pcm_dbi;
             elsif( mem = '0' and adr(  7 downto 4 ) = "0100" and io40_n /= "11111111" )then     -- Switched I/O ports
                 dlydbi <= swio_dbi;
             elsif( mem = '0' and adr(  7 downto 0 ) = "10100111" and portF4_mode = '1' )then    -- Pause R800 (read only)
@@ -1681,7 +1690,7 @@ begin
                 else                                                    -- disable SD/MMC drive
                     jSltMem <= '0';
                 end if;
-            elsif( mem = '1' and (iSltMap = '1' or rom_main = '1' or rom_opll = '1' or rom_extd = '1' or rom_xbas = '1' or rom_free = '1' or iSltLin1 = '1' or iSltLin2 = '1') )then
+            elsif( mem = '1' and ((iSltMap or rom_main or rom_opll or rom_extd or rom_xbas or rom_free or iSltLin1 or iSltLin2) = '1') )then
                     jSltMem <= '1';
             else
                     jSltMem <= '0';
@@ -1737,13 +1746,13 @@ begin
         if( reset = '1' )then
             PpiPortA    <= "11111111";          -- primary slot : page 0 => boot-rom, page 1/2 => ese-mmc, page 3 => mapper
             PpiPortC    <= (others => '0');
-            ff_ldbios_n <= '0';                 -- OCM-BIOS is waiting to be loaded by EPL-ROM
+            ff_ldbios_n <= '0';                 -- OCM-BIOS is waiting to be loaded by IPL-ROM
         elsif( clk21m'event and clk21m = '1' )then
             -- I/O port access on A8-ABh ... PPI(8255) access
             if( PpiReq = '1' )then
                 if( wrt = '1' and adr(1 downto 0) = "00" )then
                     PpiPortA    <= dbo;
-                    ff_ldbios_n <= '1';         -- OCM-BIOS has been loaded by EPL-ROM
+                    ff_ldbios_n <= '1';         -- OCM-BIOS has been loaded by IPL-ROM
                 elsif( wrt = '1' and adr(1 downto 0) = "10" )then
                     PpiPortC  <= dbo;
                 elsif( wrt = '1' and adr(1 downto 0) = "11" and dbo(7) = '0' )then
@@ -1940,6 +1949,7 @@ begin
     systim_req  <=  req when( mem = '0' and adr(7 downto 1) = "1110011" )else '0';                  -- I/O:E6-E7h   / System timer (S1990)
     swio_req    <=  req when( mem = '0' and adr(7 downto 4) = "0100" )else '0';                     -- I/O:40-4Fh   / Switched I/O ports
     portF4_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110100" )else '0';                 -- I/O:F4h      / Port F4 device
+    tr_pcm_req  <=  req when( mem = '0' and adr(7 downto 1) = "1010010" )else '0';                  -- I/O:A4h-A5h  / turboR PCM device
     --  pcm_req <=  req when( mem = '0' and adr(7 downto 1) = "1110100" )else '0';                  -- I/O:E8-E9h   / test PCM
 
     BusDir  <=  '1' when( pSltAdr(7 downto 2) = "100110"                         )else  -- I/O:98-9Bh / VDP (V9938/V9958)
@@ -1953,6 +1963,7 @@ begin
                 '1' when( pSltAdr(7 downto 4) = "0100" and io40_n /= "11111111"  )else  -- I/O:40-4Fh / Switched I/O ports
                 '1' when( pSltAdr(7 downto 0) = "10100111" and portF4_mode = '1' )else  -- I/O:A7h    / Pause R800 (read only)
                 '1' when( pSltAdr(7 downto 0) = "11110100"                       )else  -- I/O:F4h    / Port F4 device
+                '1' when( pSltAdr(7 downto 1) = "1010010"                        )else  -- I/O:A4-A5h / turboR PCM device
 --              '1' when( pSltAdr(7 downto 1) = "1110100"                        )else  -- I/O:E8-E9h / test PCM
                 '0';
 
@@ -2018,14 +2029,10 @@ begin
     end process;
 
     -- PRNSCR key
-    process( reset, clk21m )
+    process( clk21m )
     begin
-        if( reset = '1' )then
-            ff_Reso <= '0';
-        elsif( clk21m'event and clk21m = '1' )then
-            if( FirstBoot_n /= '1' or RstEna = '1' )then
-                ff_Reso <= Reso;
-            end if;
+        if( clk21m'event and clk21m = '1' )then
+            ff_Reso <= Reso;
         end if;
     end process;
 
@@ -2038,14 +2045,10 @@ begin
 
     -- | b7  | b6   | b5   | b4   | b3  | b2  | b1  | b0  |
     -- | SHI | --   | PgUp | PgDn | F9  | F10 | F11 | F12 |
-    process( reset, clk21m )
+    process( clk21m )
     begin
-        if( reset = '1' )then
-            vFkeys  <= (others => '0');     -- Sync to oFkeys
-        elsif( clk21m'event and clk21m = '1' )then
-            if( FirstBoot_n /= '1' or RstEna = '1' )then
-                vFkeys  <=  Fkeys;
-            end if;
+        if( clk21m'event and clk21m = '1' )then
+            vFkeys  <=  Fkeys;
         end if;
     end process;
 
@@ -2069,9 +2072,11 @@ begin
         variable c_Opll : std_logic_vector(  3 downto  0 );     -- combine OpllVol and MstrVol
         variable chPsg  : std_logic_vector( ff_prepsg'range );
         variable chOpll : std_logic_vector( ff_pre_dacin'range );
+        variable tr_pcm_vol : std_logic_vector(  2 downto  0 );
     begin
         if( clk21m'event and clk21m = '1' )then
-            -- amplitude ramp of PSG
+
+            -- amplitude ramp of the PSG (full range)
             ff_prepsg <= ("0" & PsgAmp) + (KeyClick & "00000");
             c_Psg       := ("1" & PsgVol) - ("0" & MstrVol);
 --          if( PsgVol = "000" or MstrVol = "111" or SdPaus = '1' )then             -- dismissed
@@ -2087,7 +2092,7 @@ begin
                 chPsg       := "00" & ff_prepsg( ff_prepsg'high downto 2 );
                 ff_psg      <= "0" & ("0" & (chPsg * (PsgVol - MstrVol + l_ramp + x_thrd)) + chPsg( chPsg'high - 4 downto  0 )) & "00";
             end if;
-            -- amplitude ramp of SCC-I
+            -- amplitude ramp of the SCC-I (full range)
             ff_prescc   <= (Scc1AmpL(14) & Scc1AmpL) + (Scc2AmpL(14) & Scc2AmpL);
             c_Scc       := ("1" & SccVol) - ("0" & MstrVol);
 --          if( SccVol = "000" or MstrVol = "111" or SdPaus = '1' )then             -- dismissed
@@ -2104,7 +2109,7 @@ begin
                 m_SccVol    <= SccVol - MstrVol + l_ramp;
                 ff_scc      <= w_scc(18) & w_scc(18) & w_scc(18) & w_scc( 18 downto  6 );
             end if;
-            -- amplitude ramp of OPLL
+            -- amplitude ramp of the OPLL (full range)
             c_Opll      := ("1" & OpllVol) - ("0" & MstrVol);
 --          if( OpllVol = "000" or MstrVol = "111" or SdPaus = '1' )then            -- dismissed
             if( OpllVol = "000" or MstrVol = "111" )then
@@ -2128,24 +2133,38 @@ begin
                 end if;
                 ff_opll <= c_opll_offset + (chOpll - chOpll( chOpll'high downto  3 ));
             end if;
+
+            -- amplitude ramp of the turboR PCM (mixer level equivalences: off, 4, 7 and 10 out of 13)
+            tr_pcm_vol  := MstrVol;
+            case tr_pcm_vol is
+                when "000" | "001"         =>
+                    ff_tr_pcm(             10 downto  0 ) <= tr_pcm_wave_out & "000";
+                    ff_tr_pcm( ff_tr_pcm'high downto 11 ) <= (others => tr_pcm_wave_out(7));
+                when "010" | "011" | "100" =>
+                    ff_tr_pcm(              9 downto  0 ) <= tr_pcm_wave_out(  7 downto  1 ) & "000";
+                    ff_tr_pcm( ff_tr_pcm'high downto 10 ) <= (others => tr_pcm_wave_out(7));
+                when "101" | "110"         =>
+                    ff_tr_pcm(              8 downto  0 ) <= tr_pcm_wave_out(  7 downto  2 ) & "000";
+                    ff_tr_pcm( ff_tr_pcm'high downto  9 ) <= (others => tr_pcm_wave_out(7));
+                when others                =>
+                    ff_tr_pcm                             <= (others => tr_pcm_wave_out(7));
+            end case;
         end if;
     end process;
 
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
-            ff_pre_dacin <= (not ff_psg + ff_scc) + ff_opll;
+		      -- ff_pre_dacin assignment
+            ff_pre_dacin <= (not ff_psg) + ff_scc + ff_opll + ff_tr_pcm;
+
             -- amplitude limiter
             case ff_pre_dacin( ff_pre_dacin'high downto ff_pre_dacin'high - 2 ) is
-                when "111" => DACin <= (others => '1');
-                when "110" => DACin <= (others => '1');
-                when "101" => DACin <= (others => '1');
-                when "100" => DACin <= "1" & ff_pre_dacin( ff_pre_dacin'high - 3 downto 0 );
-                when "011" => DACin <= "0" & ff_pre_dacin( ff_pre_dacin'high - 3 downto 0 );
-                when "010" => DACin <= (others => '0');
-                when "001" => DACin <= (others => '0');
-                when "000" => DACin <= (others => '0');
+                when "100" => DACin <= ff_pre_dacin( ff_pre_dacin'high ) & ff_pre_dacin( ff_pre_dacin'high - 3 downto 0 );
+                when "011" => DACin <= ff_pre_dacin( ff_pre_dacin'high ) & ff_pre_dacin( ff_pre_dacin'high - 3 downto 0 );
+                when others => DACin <= (others => ff_pre_dacin( ff_pre_dacin'high ));
             end case;
+
 --          DACin <= ff_pcm;        -- test PCM
         end if;
     end process;
@@ -2159,12 +2178,8 @@ begin
     -- SCRLK key
     process( reset, clk21m )
     begin
-        if( reset = '1' )then
-            ff_Scro     <= '0';
-        elsif( clk21m'event and clk21m = '1' )then
-            if( FirstBoot_n /= '1' or RstEna = '1' )then
-                ff_Scro     <= Scro;
-            end if;
+        if( clk21m'event and clk21m = '1' )then
+            ff_Scro     <= Scro;
         end if;
     end process;
 
@@ -2188,7 +2203,7 @@ begin
     -- Slot 3-2 : MegaSDHC / NEXTOR     600000-61FFFF ( 128 kB)
     --            EseRAM                600000-67FFFF (BIOS: 512 kB)
     --            RAMDISK(unused)       680000-68FFFF (FREE: 512 kB) <= not implemented because it slows down the startup
-    -- Slot 3-3 : IPL-ROM               (blockRAM: 1 kB, see IPLROM.VHD) <= shared w/ XBASIC
+    -- Slot 3-3 : IPL-ROM               (blockRAM: 1 kB, see IPLROM*.ASM) <= shared w/ XBASIC
     -- VRAM     : VRAM                  700000-7FFFFF (1024 kB)
     -- I/O      : Kanji-data            640000-67FFFF ( 256 kB)
 
@@ -2533,7 +2548,7 @@ begin
             RESET_n     => ((pSltRst_n or RstKeyLock) and swioRESET_n),
             R800_mode   => portF4_mode,
             CLK_n       => trueClk,
-            WAIT_n      => pSltWait_n,
+            WAIT_n      => wait_n_s,
             INT_n       => pSltInt_n,
             NMI_n       => '1',
             BUSRQ_n     => '1',
@@ -2585,7 +2600,7 @@ begin
 --                      VideoDHClk, VideoDLClk, open, open, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga);
         -- V9958 MSX2+/tR VDP
         port map(clk21m, reset, VdpReq, open, wrt, adr, VdpDbi, dbo, pVdpInt_n,
-                        open, WeVdp_n, VdpAdr, VrmDbi, VrmDbo, VdpSpeedMode, RatioMode, centerYJK_R25_n,
+                        open, WeVdp_n, VdpAdr, VrmDbi, VrmDbo, VdpSpeedMode or (not hybridclk_n), RatioMode, centerYJK_R25_n,
                         VideoR, VideoG, VideoB, VideoHS_n, VideoVS_n, VideoCS_n,
                         VideoDHClk, VideoDLClk, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga);
 
@@ -2755,7 +2770,13 @@ begin
         Slot0Mode       => Slot0Mode
     );
 
-    -- debug enabler 'shift+pause'
+    U40 : tr_pcm
+        port map(clk21m, reset, tr_pcm_req, open, wrt, adr(0), tr_pcm_dbi, dbo,
+                        tr_pcm_wave_in, tr_pcm_wave_out );
+
+     tr_pcm_wave_in <= (others => '0');
+
+    -- debug enabler 'SHIFT+PAUSE'
     process( clk21m )
     constant DEBUG_MODE     : boolean := FALSE; -- TRUE = enabled, FALSE = disabled
     begin

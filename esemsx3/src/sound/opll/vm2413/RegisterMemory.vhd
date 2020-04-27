@@ -49,7 +49,7 @@ entity RegisterMemory is
 end RegisterMemory;
 
 architecture rtl of registermemory is
-    --  ƒ`ƒƒƒlƒ‹î•ñ•Û—p 1read/1write ‚Ì SRAM
+    --  ãƒãƒ£ãƒãƒ«æƒ…å ±ä¿æŒç”¨ 1read/1write ã® SRAM
     type regs_array_type is array (0 to 8) of std_logic_vector( 23 downto 0 );
     signal regs_array : regs_array_type;
 
@@ -61,14 +61,14 @@ begin
             init_state := 0;
         elsif( clk'event and clk ='1' )then
             if( init_state /= 9 )then
-                --  ‹N“®‚µ‚Ä‚·‚®‚É RAM ‚Ì“à—e‚ğ‰Šú‰»‚·‚é
+                --  èµ·å‹•ã—ã¦ã™ãã« RAM ã®å†…å®¹ã‚’åˆæœŸåŒ–ã™ã‚‹
                 regs_array( init_state ) <= (others => '0');
                 init_state := init_state + 1;
             elsif( wr = '1' )then
-                --  ‘‚«‚İƒTƒCƒNƒ‹
+                --  æ›¸ãè¾¼ã¿ã‚µã‚¤ã‚¯ãƒ«
                 regs_array( conv_integer(addr) ) <= idata;
             end if;
-            --  “Ç‚İo‚µ‚Íí
+            --  èª­ã¿å‡ºã—ã¯å¸¸æ™‚
             odata <= regs_array( conv_integer(addr) );
         end if;
     end process;

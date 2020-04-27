@@ -161,7 +161,7 @@ architecture rtl of controller is
 
 begin   -- rtl
 
-    --  ƒŒƒWƒXƒ^İ’è’l‚ğ•Û‚·‚é‚½‚ß‚Ìƒƒ‚ƒŠ
+    --  ãƒ¬ã‚¸ã‚¹ã‚¿è¨­å®šå€¤ã‚’ä¿æŒã™ã‚‹ãŸã‚ã®ãƒ¡ãƒ¢ãƒª
     u_register_memory : RegisterMemory
     port map (
         clk     => clk,
@@ -176,7 +176,7 @@ begin   -- rtl
         clk, reset, user_voice_wdata, user_voice_wr, user_voice_addr, slot_voice_addr,
         user_voice_rdata, slot_voice_data );
 
-    --  ƒŒƒWƒXƒ^ƒAƒhƒŒƒXƒ‰ƒbƒ` (‘æ‚PƒXƒe[ƒW)
+    --  ãƒ¬ã‚¸ã‚¹ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹ãƒ©ãƒƒãƒ (ç¬¬ï¼‘ã‚¹ãƒ†ãƒ¼ã‚¸)
     process( reset, clk )
     begin
         if( reset = '1' )then
@@ -192,7 +192,7 @@ begin   -- rtl
         end if;
     end process;
 
-    --  Œ»İ‚ÌƒXƒƒbƒg‚Ì‰¹Fƒf[ƒ^“Ç‚İo‚µƒAƒhƒŒƒXƒ‰ƒbƒ` (‘æ‚PƒXƒe[ƒW)
+    --  ç¾åœ¨ã®ã‚¹ãƒ­ãƒƒãƒˆã®éŸ³è‰²ãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—ã‚¢ãƒ‰ãƒ¬ã‚¹ãƒ©ãƒƒãƒ (ç¬¬ï¼‘ã‚¹ãƒ†ãƒ¼ã‚¸)
     process( reset, clk )
     begin
         if( reset = '1' )then
@@ -201,7 +201,7 @@ begin   -- rtl
             if clkena='1' then
                 if( stage = "00" )then
                     if( rflag(5) = '1' and w_channel >= "0110" )then
-                        --  ƒŠƒYƒ€ƒ‚[ƒh‚Å ch6 ˆÈ~
+                        --  ãƒªã‚ºãƒ ãƒ¢ãƒ¼ãƒ‰ã§ ch6 ä»¥é™
                         slot_voice_addr <= conv_integer(slot) - 12 + 32;
                     else
                         slot_voice_addr <= inst_cache(conv_integer(slot)/2) * 2 + conv_integer(slot) mod 2;
@@ -359,16 +359,16 @@ begin   -- rtl
                         if( conv_integer(addr(3 downto 0) ) = conv_integer(slot) / 2 ) then
                             regs_tmp := regs_rdata;
                             case addr( 5 downto 4 ) is
-                                when "01" => -- 10h`18h ‚Ìê‡i‰ºˆÊ F-Numberj
+                                when "01" => -- 10hï½18h ã®å ´åˆï¼ˆä¸‹ä½ F-Numberï¼‰
                                     regs_tmp(7 downto 0) := data;               --  F-Number
                                     regs_wr <= '1';
-                                when "10" => -- 20h`28h ‚Ìê‡iSus, Key, Block, F-Number MSBj
+                                when "10" => -- 20hï½28h ã®å ´åˆï¼ˆSus, Key, Block, F-Number MSBï¼‰
                                     regs_tmp(13) := data(5);                    --  Sus
                                     regs_tmp(12) := data(4);                    --  Key
                                     regs_tmp(11 downto 9) := data(3 downto 1);  --  Block
                                     regs_tmp(8) := data(0);                     --  F-Number
                                     regs_wr <= '1';
-                                when "11" => -- 30h`38h ‚Ìê‡iInst, Volj
+                                when "11" => -- 30hï½38h ã®å ´åˆï¼ˆInst, Volï¼‰
                                     regs_tmp(23 downto 20) := data(7 downto 4); --  Inst
                                     regs_tmp(19 downto 16) := data(3 downto 0); --  Vol
                                     regs_wr <='1';

@@ -6,25 +6,25 @@
 --  All rights reserved.
 --                                     http://www.ohnaka.jp/ese-vdp/
 --
---  �{�\�t�g�E�F�A����і{�\�t�g�E�F�A�Ɋ�Â��č쐬���ꂽ�h�����́A�ȉ��̏�����
---  �������ꍇ�Ɍ���A�ĔЕz����юg�p��������܂��B
+--  本ソフトウェアおよび本ソフトウェアに基づいて作成された派生物は、以下の条件を
+--  満たす場合に限り、再頒布および使用が許可されます。
 --
---  1.�\�[�X�R�[�h�`���ōĔЕz����ꍇ�A��L�̒��쌠�\���A�{�����ꗗ�A����щ��L
---    �Ɛӏ��������̂܂܂̌`�ŕێ����邱�ƁB
---  2.�o�C�i���`���ōĔЕz����ꍇ�A�Еz���ɕt���̃h�L�������g���̎����ɁA��L��
---    ���쌠�\���A�{�����ꗗ�A����щ��L�Ɛӏ������܂߂邱�ƁB
---  3.���ʂɂ�鎖�O�̋��Ȃ��ɁA�{�\�t�g�E�F�A��̔��A����я��ƓI�Ȑ��i�⊈��
---    �Ɏg�p���Ȃ����ƁB
+--  1.ソースコード形式で再頒布する場合、上記の著作権表示、本条件一覧、および下記
+--    免責条項をそのままの形で保持すること。
+--  2.バイナリ形式で再頒布する場合、頒布物に付属のドキュメント等の資料に、上記の
+--    著作権表示、本条件一覧、および下記免責条項を含めること。
+--  3.書面による事前の許可なしに、本ソフトウェアを販売、および商業的な製品や活動
+--    に使用しないこと。
 --
---  �{�\�t�g�E�F�A�́A���쌠�҂ɂ���āu����̂܂܁v�񋟂���Ă��܂��B���쌠�҂́A
---  ����ړI�ւ̓K�����̕ۏ؁A���i���̕ۏ؁A�܂�����Ɍ��肳��Ȃ��A�����Ȃ閾��
---  �I�������͈ÖقȕۏؐӔC�������܂���B���쌠�҂́A���R�̂�������킸�A���Q
---  �����̌�����������킸�A���ӔC�̍������_��ł��邩���i�ӔC�ł��邩�i�ߎ�
---  ���̑��́j�s�@�s�ׂł��邩���킸�A���ɂ��̂悤�ȑ��Q����������\����m��
---  ����Ă����Ƃ��Ă��A�{�\�t�g�E�F�A�̎g�p�ɂ���Ĕ��������i��֕i�܂��͑�p�T
---  �[�r�X�̒��B�A�g�p�̑r���A�f�[�^�̑r���A���v�̑r���A�Ɩ��̒��f���܂߁A�܂���
---  ��Ɍ��肳��Ȃ��j���ڑ��Q�A�Ԑڑ��Q�A�����I�ȑ��Q�A���ʑ��Q�A�����I���Q�A��
---  ���͌��ʑ��Q�ɂ��āA��ؐӔC�𕉂�Ȃ����̂Ƃ��܂��B
+--  本ソフトウェアは、著作権者によって「現状のまま」提供されています。著作権者は、
+--  特定目的への適合性の保証、商品性の保証、またそれに限定されない、いかなる明示
+--  的もしくは暗黙な保証責任も負いません。著作権者は、事由のいかんを問わず、損害
+--  発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失
+--  その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知ら
+--  されていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サ
+--  ービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそ
+--  れに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、ま
+--  たは結果損害について、一切責任を負わないものとします。
 --
 --  Note that above Japanese version license is the formal document.
 --  The following translation is only for reference.
@@ -64,7 +64,7 @@
 -------------------------------------------------------------------------------
 -- Memo
 --   Japanese comment lines are starts with "JP:".
---   JP: ���{��̃R�����g�s�� JP:�𓪂ɕt���鎖�ɂ���
+--   JP: 日本語のコメント行は JP:を頭に付ける事にする
 --
 -------------------------------------------------------------------------------
 -- Revision History
@@ -74,20 +74,27 @@
 --   - Add the document part below.
 --
 -- 12th,August,2006 created by Kunihiko Ohnaka
--- JP: VDP�̃R�A�̎����ƃX�N���[�����[�h�̎����𕪗�����
+-- JP: VDPのコアの実装とスクリーンモードの実装を分離した
 --
 -- 13th,March,2008
 -- Fixed Blink by caro
 --
 -- 22nd,March,2008
--- JP: �^�C�~���O�ɘa�ƁA���t�@�N�^�����O by t.hara
+-- JP: タイミング緩和と、リファクタリング by t.hara
+--
+-- 11th, September,2019 modified by Oduvaldo Pavan Junior
+-- Fixed the lack of page flipping (R13) capability
+--
+-- Added the undocumented feature where R1 bit #2 change the blink counter
+-- clock source from VSYNC to HSYNC
 --
 -------------------------------------------------------------------------------
 -- Document
 --
--- JP: TEXT���[�h1,2�̃��C��������H�ł��B
+-- JP: TEXTモード1,2のメイン処理回路です。
 --
 -------------------------------------------------------------------------------
+--
 
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
@@ -108,6 +115,7 @@ ENTITY VDP_TEXT12 IS
         VDPMODETEXT2                : IN    STD_LOGIC;
 
         -- REGISTERS
+        REG_R1_BL_CLKS              : IN    STD_LOGIC;
         REG_R7_FRAME_COL            : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
         REG_R12_BLINK_MODE          : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
         REG_R13_BLINK_PERIOD        : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
@@ -147,19 +155,19 @@ ARCHITECTURE RTL OF VDP_TEXT12 IS
     SIGNAL TXCOLORCODE              : STD_LOGIC;             -- ONLY 2 COLORS
     SIGNAL TXCOLOR                  : STD_LOGIC_VECTOR(  7 DOWNTO 0 );
 
-    SIGNAL FF_BLINK_FRAME_CNT       : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL FF_BLINK_CLK_CNT         : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
     SIGNAL FF_BLINK_STATE           : STD_LOGIC;
     SIGNAL FF_BLINK_PERIOD_CNT      : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
-    SIGNAL W_BLINK_CNT_MAX          : STD_LOGIC_VECTOR( 3 DOWNTO 0 );
-    SIGNAL W_FRAME_SYNC             : STD_LOGIC;
+    SIGNAL W_BLINK_CNT_MAX          : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL W_BLINK_SYNC             : STD_LOGIC;
 
 BEGIN
 
-    -- JP: RAM�� DOTSTATE��"10","00"�̎��ɃA�h���X���o����"01"�ŃA�N�Z�X����B
-    -- JP: EIGHTDOTSTATE�Ō���ƁA
+    -- JP: RAMは DOTSTATEが"10","00"の時にアドレスを出して"01"でアクセスする。
+    -- JP: EIGHTDOTSTATEで見ると、
     -- JP:  0-1     READ PATTERN NUM.
     -- JP:  1-2     READ PATTERN
-    -- JP: �ƂȂ�B
+    -- JP: となる。
     --
 
     ----------------------------------------------------------------
@@ -194,7 +202,7 @@ BEGIN
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF( DOTSTATE = "10" )THEN
                 IF( DOTCOUNTERX = 12 )THEN
-                    -- JP: DOTCOUNTER��"10"�̃^�C�~���O�ł͊��ɃJ�E���g�A�b�v���Ă���̂Œ���
+                    -- JP: DOTCOUNTERは"10"のタイミングでは既にカウントアップしているので注意
                     DOTCOUNTER24 <= (OTHERS => '0');
                 ELSE
                     -- THE DOTCOUNTER24(2 DOWNTO 0) COUNTS UP 0 TO 5,
@@ -347,23 +355,23 @@ BEGIN
             BLINK           <= (OTHERS => '0');
         ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
             -- COLOR CODE DECISION
-            -- JP: "01"��"10"�̃^�C�~���O�ł����[�R�[�h���o�͂��Ă�����΁A
-            -- JP: VDP�G���e�B�e�B�̕��Ńp���b�g���f�R�[�h���ĐF���o�͂��Ă����B
-            -- JP: "01"��"10"�œ����F���o�͂���Ή�256�h�b�g�ɂȂ�A�Ⴄ�F��
-            -- JP: �o�͂���Ή�512�h�b�g�\���ƂȂ�B
+            -- JP: "01"と"10"のタイミングでかラーコードを出力してあげれば、
+            -- JP: VDPエンティティの方でパレットをデコードして色を出力してくれる。
+            -- JP: "01"と"10"で同じ色を出力すれば横256ドットになり、違う色を
+            -- JP: 出力すれば横512ドット表示となる。
             CASE DOTSTATE IS
                 WHEN "00" =>
                     IF( DOTCOUNTER24(2 DOWNTO 0) = "100" ) THEN
                         -- LOAD NEXT 8 DOT DATA
-                        -- JP: �L�����N�^�̕`��� DOTCOUNTER24���A
-                        -- JP:   "0:4"����"1:3"��6�h�b�g
-                        -- JP:   "1:4"����"2:3"��6�h�b�g
-                        -- JP:   "2:4"����"3:3"��6�h�b�g
-                        -- JP:   "3:4"����"0:3"��6�h�b�g
-                        -- JP: �ōs����̂�"100"�̃^�C�~���O�Ń��[�h����
+                        -- JP: キャラクタの描画は DOTCOUNTER24が、
+                        -- JP:   "0:4"から"1:3"の6ドット
+                        -- JP:   "1:4"から"2:3"の6ドット
+                        -- JP:   "2:4"から"3:3"の6ドット
+                        -- JP:   "3:4"から"0:3"の6ドット
+                        -- JP: で行われるので"100"のタイミングでロードする
                         PATTERN <= PREPATTERN;
                     ELSIF( (DOTCOUNTER24(2 DOWNTO 0) = "001") AND (VDPMODETEXT2 = '1') ) THEN
-                        -- JP: TEXT2�ł�"001"�̃^�C�~���O�ł����[�h����B
+                        -- JP: TEXT2では"001"のタイミングでもロードする。
                         PATTERN <= PREPATTERN;
                     END IF;
                     IF( (DOTCOUNTER24(2 DOWNTO 0) = "100") OR
@@ -376,16 +384,16 @@ BEGIN
                         END IF;
                     END IF;
                 WHEN "01" =>
-                    -- �p�^�[���ɉ����ăJ���[�R�[�h������
+                    -- パターンに応じてカラーコードを決定
                     TXCOLORCODE <= PATTERN(7);
-                    -- �p�^�[�����V�t�g
+                    -- パターンをシフト
                     PATTERN <= PATTERN(6 DOWNTO 0) & '0';
                 WHEN "11" =>
                     NULL;
                 WHEN "10" =>
                     IF( VDPMODETEXT2 = '1' ) THEN
                         TXCOLORCODE <= PATTERN(7);
-                        -- �p�^�[�����V�t�g
+                        -- パターンをシフト
                         PATTERN <= PATTERN(6 DOWNTO 0) & '0';
                     END IF;
 
@@ -399,55 +407,43 @@ BEGIN
     --------------------------------------------------------------------------
     W_BLINK_CNT_MAX <=  REG_R13_BLINK_PERIOD( 3 DOWNTO 0 )  WHEN( FF_BLINK_STATE = '0' )ELSE
                         REG_R13_BLINK_PERIOD( 7 DOWNTO 4 );
-    W_FRAME_SYNC    <=  '1' WHEN( (DOTCOUNTERX = 0) AND (DOTCOUNTERY = 0) AND (DOTSTATE = "00") )ELSE
+    W_BLINK_SYNC    <=  '1' WHEN( (DOTCOUNTERX = 0) AND (DOTCOUNTERY = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '0') )ELSE
+                        '1' WHEN( (DOTCOUNTERX = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '1') )ELSE
                         '0';
 
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
-            FF_BLINK_FRAME_CNT <= (OTHERS => '0');
-        ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
-            IF( W_FRAME_SYNC = '1' )THEN
-                IF (FF_BLINK_FRAME_CNT = "1001") THEN
-                    FF_BLINK_FRAME_CNT <= (OTHERS => '0');
-                ELSE
-                    FF_BLINK_FRAME_CNT <= FF_BLINK_FRAME_CNT + 1;
-                END IF;
-            END IF;
-        END IF;
-    END PROCESS;
-
-    PROCESS( RESET, CLK21M )
-    BEGIN
-        IF( RESET = '1' )THEN
+            FF_BLINK_CLK_CNT <= (OTHERS => '0');
             FF_BLINK_STATE <= '0';
-        ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
-            IF( (W_FRAME_SYNC = '1') AND (FF_BLINK_FRAME_CNT = "1001") )THEN
-                IF(    REG_R13_BLINK_PERIOD( 7 DOWNTO 4 ) = "0000" )THEN
-                    -- WHEN ON PERIOD IS 0, THE BLINK COLOR IS ALWAYS OFF
-                    FF_BLINK_STATE <= '0';
-                ELSIF( REG_R13_BLINK_PERIOD( 3 DOWNTO 0 ) = "0000" )THEN
-                    -- WHEN OFF PERIOD IS 0, THE BLINK COLOR IS ALWAYS ON
-                    FF_BLINK_STATE <= '1';
-                ELSIF( FF_BLINK_PERIOD_CNT >= W_BLINK_CNT_MAX )THEN
-                    FF_BLINK_STATE <= NOT FF_BLINK_STATE;
-                END IF;
-            END IF;
-        END IF;
-    END PROCESS;
-
-    PROCESS( RESET, CLK21M )
-    BEGIN
-        IF( RESET = '1' )THEN
             FF_BLINK_PERIOD_CNT <= (OTHERS => '0');
         ELSIF (CLK21M'EVENT AND CLK21M = '1') THEN
-            IF( (W_FRAME_SYNC = '1') AND (FF_BLINK_FRAME_CNT = "1001") )THEN
+            IF( W_BLINK_SYNC = '1' )THEN
+
+                IF (FF_BLINK_CLK_CNT = "1001") THEN
+                    FF_BLINK_CLK_CNT <= (OTHERS => '0');
+                    FF_BLINK_PERIOD_CNT <= FF_BLINK_PERIOD_CNT + 1;
+                ELSE
+                    FF_BLINK_CLK_CNT <= FF_BLINK_CLK_CNT + 1;
+                END IF;
+
                 IF( FF_BLINK_PERIOD_CNT >= W_BLINK_CNT_MAX )THEN
                     FF_BLINK_PERIOD_CNT <= (OTHERS => '0');
-                ELSE
-                    FF_BLINK_PERIOD_CNT <= FF_BLINK_PERIOD_CNT + 1;
+                    IF (REG_R13_BLINK_PERIOD( 7 DOWNTO 4 ) = "0000")THEN
+                         -- WHEN ON PERIOD IS 0, THE PAGE SELECTED SHOULD BE ALWAYS ODD / R#2
+                         FF_BLINK_STATE <= '0';
+                    ELSIF( REG_R13_BLINK_PERIOD( 3 DOWNTO 0 ) = "0000")THEN
+                         -- WHEN OFF PERIOD IS 0 AND ON NOT, THE PAGE SELECT SHOULD BE ALWAYS THE R#2 EVEN PAIR
+                         FF_BLINK_STATE <= '1';
+                    ELSE
+                         -- NEITHER ARE 0, SO JUST KEEP SWITCHING WHEN PERIOD ENDS
+                         FF_BLINK_STATE <= NOT FF_BLINK_STATE;
+                    END IF;
                 END IF;
+
             END IF;
+
         END IF;
     END PROCESS;
+
 END RTL;

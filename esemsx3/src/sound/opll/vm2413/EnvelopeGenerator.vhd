@@ -58,7 +58,7 @@ entity envelopegenerator is
         rks     : in    rks_type;
         key     : in    std_logic;
 
-        egout   : out   std_logic_vector( 12 downto 0 )     --  ¬”•” 6bit
+        egout   : out   std_logic_vector( 12 downto 0 )     --  å°æ•°éƒ¨ 6bit
     );
 end envelopegenerator;
 
@@ -81,7 +81,7 @@ architecture rtl of envelopegenerator is
         port(
             clk     : in    std_logic;
             clkena  : in    std_logic;
-            addr    : in    std_logic_vector( 21 downto 0 );    -- ¬”•” 15bit
+            addr    : in    std_logic_vector( 21 downto 0 );    -- å°æ•°éƒ¨ 15bit
             data    : out   std_logic_vector( 12 downto 0 )
         );
     end component;
@@ -92,10 +92,10 @@ architecture rtl of envelopegenerator is
     signal memwr    : std_logic;
 
     signal aridx    : std_logic_vector( 21 downto 0 );
-    signal ardata   : std_logic_vector( 12 downto 0 );  --  ¬”•” 6bit
+    signal ardata   : std_logic_vector( 12 downto 0 );  --  å°æ•°éƒ¨ 6bit
 begin
 
-    --  Attack ƒe[ƒuƒ‹
+    --  Attack ãƒ†ãƒ¼ãƒ–ãƒ«
     u_attack_table: AttackTable
     port map (
         clk     =>  clk,
@@ -115,7 +115,7 @@ begin
         rdata   =>  memout
     );
 
-    --  EnvelopeMemory ‚ÌƒvƒŠƒtƒFƒbƒ`
+    --  EnvelopeMemory ã®ãƒ—ãƒªãƒ•ã‚§ãƒƒãƒ
     process( reset, clk )
     begin
         if( reset = '1' )then
@@ -136,7 +136,7 @@ begin
     process( reset, clk )
         variable lastkey    : std_logic_vector(18-1 downto 0);
         variable rm         : std_logic_vector(4 downto 0);
-        variable egtmp      : std_logic_vector(db_type'high + 8 downto 0);  --  ¬”•” 6bit
+        variable egtmp      : std_logic_vector(db_type'high + 8 downto 0);  --  å°æ•°éƒ¨ 6bit
         variable amphase    : std_logic_vector(19 downto 0);
         variable egphase    : egphase_type;
         variable egstate    : egstate_type;
@@ -179,7 +179,7 @@ begin
                     case egstate is
                         when Attack =>
                             rm := '0'&ar;
-                            egtmp := ("00"&tl&"000000") + ("00"&ardata);        -- ƒJ[ƒu‚ğ•`‚¢‚Äã¸‚·‚é
+                            egtmp := ("00"&tl&"000000") + ("00"&ardata);        -- ã‚«ãƒ¼ãƒ–ã‚’æã„ã¦ä¸Šæ˜‡ã™ã‚‹
                         when Decay  =>
                             rm := '0'&dr;
                             egtmp := ("00"&tl&"000000") + ("00"&egphase(22-1 downto 22-7-6));
@@ -199,16 +199,16 @@ begin
                     -- Amplitude LFO
                     if am ='1' then
                         if (amphase(amphase'high) = '0') then
-                            -- ã‚è‚Ìê‡
-                            egtmp := egtmp + ("00000"&(amphase(amphase'high-1 downto amphase'high-4-6)-'1'));
+                            -- ä¸Šã‚Šã®å ´åˆ
+                            egtmp := egtmp + ("00000"&(amphase(amphase'high-1 downto amphase'high-4-6)-"0001000000"));
                         else
-                            -- ‰º‚è‚Ìê‡
-                            egtmp := egtmp + ("00000"&("1111"-amphase(amphase'high-1 downto amphase'high-4-6)));
+                            -- ä¸‹ã‚Šã®å ´åˆ
+                            egtmp := egtmp + ("00000"&("1111000000"-amphase(amphase'high-1 downto amphase'high-4-6)));
                         end if;
                     end if;
 
                     -- Generate output
-                    if egtmp(egtmp'high downto egtmp'high-1) = "00" then    -- ƒŠƒ~ƒbƒ^
+                    if egtmp(egtmp'high downto egtmp'high-1) = "00" then    -- ãƒªãƒŸãƒƒã‚¿
                         egout <= egtmp(egout'range);
                     else
                         egout <= (others=>'1');

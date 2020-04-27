@@ -36,34 +36,34 @@ library ieee;
 
 entity scc_interpo is
     port(
-        reset       : in    std_logic;                          -- ”ñ“¯ŠúƒŠƒZƒbƒg
-        clk         : in    std_logic;                          -- ƒx[ƒXƒNƒƒbƒN
-        clkena      : in    std_logic;                          -- ƒNƒƒbƒNƒCƒl[ƒuƒ‰
-        clear       : in    std_logic;                          -- “¯ŠúƒŠƒZƒbƒg
-        left        : in    std_logic_vector(  7 downto 0 );    -- •âŠÔ¶‘¤ƒTƒ“ƒvƒ‹
-        right       : in    std_logic_vector(  7 downto 0 );    -- •âŠÔ‰E‘¤ƒTƒ“ƒvƒ‹
-        wave        : out   std_logic_vector(  7 downto 0 );    -- o—ÍƒTƒ“ƒvƒ‹
-        reg_en      : in    std_logic;                          -- •âŠÔ—LŒø/–³Œø
-        reg_th1     : in    std_logic_vector(  7 downto 0 );    -- è‡’l1
-        reg_th2     : in    std_logic_vector(  7 downto 0 );    -- è‡’l2
-        reg_th3     : in    std_logic_vector(  7 downto 0 );    -- è‡’l3
-        reg_cnt     : in    std_logic_vector( 11 downto 0 )     -- •ªü”ä
+        reset       : in    std_logic;                          -- éåŒæœŸãƒªã‚»ãƒƒãƒˆ
+        clk         : in    std_logic;                          -- ãƒ™ãƒ¼ã‚¹ã‚¯ãƒ­ãƒƒã‚¯
+        clkena      : in    std_logic;                          -- ã‚¯ãƒ­ãƒƒã‚¯ã‚¤ãƒãƒ¼ãƒ–ãƒ©
+        clear       : in    std_logic;                          -- åŒæœŸãƒªã‚»ãƒƒãƒˆ
+        left        : in    std_logic_vector(  7 downto 0 );    -- è£œé–“å·¦å´ã‚µãƒ³ãƒ—ãƒ«
+        right       : in    std_logic_vector(  7 downto 0 );    -- è£œé–“å³å´ã‚µãƒ³ãƒ—ãƒ«
+        wave        : out   std_logic_vector(  7 downto 0 );    -- å‡ºåŠ›ã‚µãƒ³ãƒ—ãƒ«
+        reg_en      : in    std_logic;                          -- è£œé–“æœ‰åŠ¹/ç„¡åŠ¹
+        reg_th1     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤1
+        reg_th2     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤2
+        reg_th3     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤3
+        reg_cnt     : in    std_logic_vector( 11 downto 0 )     -- åˆ†å‘¨æ¯”
     );
 end scc_interpo;
 
 architecture rtl of scc_interpo is
-    signal ff_sign      : std_logic_vector(  1 downto 0 );      -- •„†•t‚«
+    signal ff_sign      : std_logic_vector(  1 downto 0 );      -- ç¬¦å·ä»˜ã
     signal ff_abs       : std_logic_vector(  7 downto 0 );
-    signal ff_left_d1   : std_logic_vector(  7 downto 0 );      -- •„†•t‚«
+    signal ff_left_d1   : std_logic_vector(  7 downto 0 );      -- ç¬¦å·ä»˜ã
     signal ff_itg       : std_logic_vector( 12 downto 0 );
-    signal ff_add       : std_logic_vector(  8 downto 0 );      -- •„†•t‚«
-    signal ff_ch_x      : std_logic_vector(  7 downto 0 );      -- •„†•t‚«
+    signal ff_add       : std_logic_vector(  8 downto 0 );      -- ç¬¦å·ä»˜ã
+    signal ff_ch_x      : std_logic_vector(  7 downto 0 );      -- ç¬¦å·ä»˜ã
 
-    signal w_diff       : std_logic_vector(  8 downto 0 );      -- •„†•t‚«
-    signal w_dir        : std_logic_vector(  8 downto 0 );      -- •„†•t‚«
-    signal w_sign       : std_logic_vector(  1 downto 0 );      -- •„†•t‚«
+    signal w_diff       : std_logic_vector(  8 downto 0 );      -- ç¬¦å·ä»˜ã
+    signal w_dir        : std_logic_vector(  8 downto 0 );      -- ç¬¦å·ä»˜ã
+    signal w_sign       : std_logic_vector(  1 downto 0 );      -- ç¬¦å·ä»˜ã
     signal w_msbfil     : std_logic_vector(  7 downto 0 );
-    signal w_comp       : std_logic_vector(  7 downto 0 );      -- ‚P‚Ì•â”
+    signal w_comp       : std_logic_vector(  7 downto 0 );      -- ï¼‘ã®è£œæ•°
     signal w_abs        : std_logic_vector(  7 downto 0 );
     signal w_abssft     : std_logic_vector(  7 downto 0 );
     signal w_preitg     : std_logic_vector( 12 downto 0 );
@@ -72,9 +72,9 @@ architecture rtl of scc_interpo is
     signal w_carry      : std_logic_vector( 11 downto 0 );
     signal w_addsign    : std_logic_vector(  1 downto 0 );
     signal w_addsign_s  : std_logic_vector(  8 downto 1 );
-    signal w_preadd     : std_logic_vector(  8 downto 0 );      -- •„†•t‚«
-    signal w_prech_x    : std_logic_vector(  9 downto 0 );      -- •„†•t‚«
-    signal w_ch_x       : std_logic_vector(  7 downto 0 );      -- •„†•t‚«
+    signal w_preadd     : std_logic_vector(  8 downto 0 );      -- ç¬¦å·ä»˜ã
+    signal w_prech_x    : std_logic_vector(  9 downto 0 );      -- ç¬¦å·ä»˜ã
+    signal w_ch_x       : std_logic_vector(  7 downto 0 );      -- ç¬¦å·ä»˜ã
 begin
 
     --  stage1
@@ -154,10 +154,10 @@ begin
         elsif( clk'event and clk = '1' )then
             if( clkena = '1' )then
                 if( reg_en = '1' )then
-                    --  •âŠÔ—LŒø
+                    --  è£œé–“æœ‰åŠ¹
                     ff_ch_x <=  w_ch_x;
                 else
-                    --  •âŠÔ–³Œø
+                    --  è£œé–“ç„¡åŠ¹
                     ff_ch_x <=  ff_left_d1;
                 end if;
             end if;

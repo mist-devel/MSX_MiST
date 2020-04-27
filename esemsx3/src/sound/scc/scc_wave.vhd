@@ -38,9 +38,9 @@ library ieee;
 
 entity scc_wave_mul is
     port(
-        a           : in    std_logic_vector(  7 downto 0 );    -- 8bit ‚Q‚Ì•â”
-        b           : in    std_logic_vector(  3 downto 0 );    -- 4bit ƒoƒCƒiƒŠ
-        c           : out   std_logic_vector( 11 downto 0 )     -- 12bit ‚Q‚Ì•â”
+        a           : in    std_logic_vector(  7 downto 0 );    -- 8bit ï¼’ã®è£œæ•°
+        b           : in    std_logic_vector(  3 downto 0 );    -- 4bit ãƒã‚¤ãƒŠãƒª
+        c           : out   std_logic_vector( 11 downto 0 )     -- 12bit ï¼’ã®è£œæ•°
     );
 end scc_wave_mul;
 
@@ -58,9 +58,9 @@ library ieee;
 
 entity scc_mix_mul is
     port(
-        a           : in    std_logic_vector( 15 downto 0 );    -- 16bit ‚Q‚Ì•â”
-        b           : in    std_logic_vector(  2 downto 0 );    -- 3bit ƒoƒCƒiƒŠ
-        c           : out   std_logic_vector( 18 downto 0 )     -- 19bit ‚Q‚Ì•â”
+        a           : in    std_logic_vector( 15 downto 0 );    -- 16bit ï¼’ã®è£œæ•°
+        b           : in    std_logic_vector(  2 downto 0 );    -- 3bit ãƒã‚¤ãƒŠãƒª
+        c           : out   std_logic_vector( 18 downto 0 )     -- 19bit ï¼’ã®è£œæ•°
     );
 end scc_mix_mul;
 
@@ -105,9 +105,9 @@ architecture rtl of scc_wave is
 
     component scc_wave_mul
         port(
-            a   : in    std_logic_vector(  7 downto 0 );    -- 8bit ‚Q‚Ì•â”
-            b   : in    std_logic_vector(  3 downto 0 );    -- 4bit ƒoƒCƒiƒŠ
-            c   : out   std_logic_vector( 11 downto 0 )     -- 12bit ‚Q‚Ì•â”
+            a   : in    std_logic_vector(  7 downto 0 );    -- 8bit ï¼’ã®è£œæ•°
+            b   : in    std_logic_vector(  3 downto 0 );    -- 4bit ãƒã‚¤ãƒŠãƒª
+            c   : out   std_logic_vector( 11 downto 0 )     -- 12bit ï¼’ã®è£œæ•°
         );
     end component;
 
@@ -389,13 +389,13 @@ begin
         reg_vol_ch_e        when "101",
         (others => '0') when others;
 
-    w_wave  <=  (w_ch_mask and ff_wave_dat);        -- 8bit “ñ‚Ì•â”
+    w_wave  <=  (w_ch_mask and ff_wave_dat);        -- 8bit äºŒã®è£œæ•°
 
     u_mul: scc_wave_mul
     port map (
-        a   => w_wave   ,   -- 8bit “ñ‚Ì•â”
-        b   => w_ch_vol ,   -- 4bit ƒoƒCƒiƒŠi•„†–³‚µj
-        c   => w_mul        -- 12bit “ñ‚Ì•â”
+        a   => w_wave   ,   -- 8bit äºŒã®è£œæ•°
+        b   => w_ch_vol ,   -- 4bit ãƒã‚¤ãƒŠãƒªï¼ˆç¬¦å·ç„¡ã—ï¼‰
+        c   => w_mul        -- 12bit äºŒã®è£œæ•°
     );
 
     -- -------------------------------------------------------------
@@ -432,7 +432,7 @@ begin
     --  ff_mix                        X a   X ab  X a-c X a-d X a-e       X 0   X a   X ab  X
     --  wave                                                              X a-e
     --                                                                     ~~~~~
-    --  wave ‚ÍAff_wave_ce_dl = 0 and ff_ch_num_dl = 0 ‚Ì‚Æ‚« ff_mix ‚ğæ‚è‚Ş
+    --  wave ã¯ã€ff_wave_ce_dl = 0 and ff_ch_num_dl = 0 ã®ã¨ã ff_mix ã‚’å–ã‚Šè¾¼ã‚€
     ----------------------------------------------------------------
     process( reset, clk21m )
     begin
@@ -459,7 +459,7 @@ begin
                 if( ff_ch_num_dl = "000" )then
                     ff_mix  <=  (others => '0');
                 else
-                    ff_mix  <=  (w_mul(11) & w_mul(11) & w_mul(11) & w_mul) + ff_mix;   -- 15bit “ñ‚Ì•â”
+                    ff_mix  <=  (w_mul(11) & w_mul(11) & w_mul(11) & w_mul) + ff_mix;   -- 15bit äºŒã®è£œæ•°
                 end if;
             end if;
         end if;
@@ -473,7 +473,7 @@ begin
         elsif( clk21m'event and clk21m = '1' )then
             if( ff_wave_ce_dl = '0' )then
                 if( ff_ch_num_dl = "000" )then
-                    ff_wave <= ff_mix;  -- 15bit “ñ‚Ì•â”
+                    ff_wave <= ff_mix;  -- 15bit äºŒã®è£œæ•°
                 else
                     --  hold
                 end if;

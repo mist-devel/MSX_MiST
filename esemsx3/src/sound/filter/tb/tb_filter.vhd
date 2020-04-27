@@ -79,7 +79,7 @@ begin
         reset <= '0';
         wait until( clk'event and clk = '1');
 
-        -- tapram に インクリメント値を詰める
+        -- tapram 縺ｫ 繧､繝ｳ繧ｯ繝ｪ繝｡繝ｳ繝亥､繧定ｩｰ繧√ｋ
         for J in 0 to 12 loop
             wavin <= conv_std_logic_vector( J, 12 );
             for I in 0 to 5 loop
@@ -87,7 +87,7 @@ begin
             end loop;
         end loop;
 
-        -- tapram に 0 が詰まるのを待つ
+        -- tapram 縺ｫ 0 縺瑚ｩｰ縺ｾ繧九�ｮ繧貞ｾ�縺､
         wavin <= (others => '0');
         for J in 0 to 6 loop
             for I in 0 to 5 loop
@@ -95,7 +95,7 @@ begin
             end loop;
         end loop;
 
-        -- インパルス応答を見る
+        -- 繧､繝ｳ繝代Ν繧ｹ蠢懃ｭ斐ｒ隕九ｋ
         wavin <= (others => '1');
         for I in 0 to 5 loop
             wait until( clk'event and clk = '1');
@@ -115,7 +115,7 @@ begin
             end loop;
         end loop;
 
-        -- 矩形応答を見る
+        -- 遏ｩ蠖｢蠢懃ｭ斐ｒ隕九ｋ
         wavin <= (others => '1');
         for J in 0 to 6 loop
             for I in 0 to 5 loop
@@ -131,7 +131,7 @@ begin
             end loop;
         end loop;
 
-        -- ランダム応答を見る
+        -- 繝ｩ繝ｳ繝繝蠢懃ｭ斐ｒ隕九ｋ
         wavin <= (others => '1');
         for I in 0 to 5 loop
             wait until( clk'event and clk = '1');

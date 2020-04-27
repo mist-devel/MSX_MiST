@@ -17,18 +17,18 @@ architecture behavior of tb is
     -- test target
     component scc_interpo
         port(
-            reset       : in    std_logic;                          -- ”ñ“¯ŠúƒŠƒZƒbƒg
-            clk         : in    std_logic;                          -- ƒx[ƒXƒNƒƒbƒN
-            clkena      : in    std_logic;                          -- ƒNƒƒbƒNƒCƒl[ƒuƒ‰
-            clear       : in    std_logic;                          -- “¯ŠúƒŠƒZƒbƒg
-            left        : in    std_logic_vector(  7 downto 0 );    -- •âŠÔ¶‘¤ƒTƒ“ƒvƒ‹
-            right       : in    std_logic_vector(  7 downto 0 );    -- •âŠÔ‰E‘¤ƒTƒ“ƒvƒ‹
-            wave        : out   std_logic_vector(  7 downto 0 );    -- o—ÍƒTƒ“ƒvƒ‹
-            reg_en      : in    std_logic;                          -- •âŠÔ—LŒø/–³Œø
-            reg_th1     : in    std_logic_vector(  7 downto 0 );    -- è‡’l1
-            reg_th2     : in    std_logic_vector(  7 downto 0 );    -- è‡’l2
-            reg_th3     : in    std_logic_vector(  7 downto 0 );    -- è‡’l3
-            reg_cnt     : in    std_logic_vector( 11 downto 0 )     -- •ªü”ä
+            reset       : in    std_logic;                          -- éåŒæœŸãƒªã‚»ãƒƒãƒˆ
+            clk         : in    std_logic;                          -- ãƒ™ãƒ¼ã‚¹ã‚¯ãƒ­ãƒƒã‚¯
+            clkena      : in    std_logic;                          -- ã‚¯ãƒ­ãƒƒã‚¯ã‚¤ãƒãƒ¼ãƒ–ãƒ©
+            clear       : in    std_logic;                          -- åŒæœŸãƒªã‚»ãƒƒãƒˆ
+            left        : in    std_logic_vector(  7 downto 0 );    -- è£œé–“å·¦å´ã‚µãƒ³ãƒ—ãƒ«
+            right       : in    std_logic_vector(  7 downto 0 );    -- è£œé–“å³å´ã‚µãƒ³ãƒ—ãƒ«
+            wave        : out   std_logic_vector(  7 downto 0 );    -- å‡ºåŠ›ã‚µãƒ³ãƒ—ãƒ«
+            reg_en      : in    std_logic;                          -- è£œé–“æœ‰åŠ¹/ç„¡åŠ¹
+            reg_th1     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤1
+            reg_th2     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤2
+            reg_th3     : in    std_logic_vector(  7 downto 0 );    -- é–¾å€¤3
+            reg_cnt     : in    std_logic_vector( 11 downto 0 )     -- åˆ†å‘¨æ¯”
         );
     end component;
 
@@ -116,7 +116,7 @@ begin
         wait until( clk'event and clk = '1' );
         reset <= '0';
 
-        -- ·‚ª +5 ‚Ìê‡
+        -- å·®ãŒ +5 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -130,7 +130,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -5 ‚Ìê‡
+        -- å·®ãŒ -5 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -144,7 +144,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +10 ‚Ìê‡
+        -- å·®ãŒ +10 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -158,7 +158,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -10 ‚Ìê‡
+        -- å·®ãŒ -10 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -172,7 +172,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +20 ‚Ìê‡
+        -- å·®ãŒ +20 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -186,7 +186,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -20 ‚Ìê‡
+        -- å·®ãŒ -20 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -200,7 +200,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +50 ‚Ìê‡
+        -- å·®ãŒ +50 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -214,7 +214,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -50 ‚Ìê‡
+        -- å·®ãŒ -50 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -228,7 +228,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +70 ‚Ìê‡
+        -- å·®ãŒ +70 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -242,7 +242,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -70 ‚Ìê‡
+        -- å·®ãŒ -70 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
@@ -256,13 +256,13 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- 40 ¨ -80 ‚Ö˜A—
+        -- 40 â†’ -80 ã¸é€£çµ¡
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
         left            <= conv_std_logic_vector( 40      , left'high  + 1 );
-        right           <= conv_std_logic_vector( 256 - 80, right'high + 1 );   --  -80 ‚ÌˆÓ–¡
+        right           <= conv_std_logic_vector( 256 - 80, right'high + 1 );   --  -80 ã®æ„å‘³
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
         for i in 0 to 500 loop
@@ -270,12 +270,12 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +160 ‚Ìê‡
+        -- å·®ãŒ +160 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
-        left            <= conv_std_logic_vector( 256 - 80, left'high  + 1 );   --  -80 ‚ÌˆÓ–¡
+        left            <= conv_std_logic_vector( 256 - 80, left'high  + 1 );   --  -80 ã®æ„å‘³
         right           <= conv_std_logic_vector(       80, right'high + 1 );
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
@@ -284,13 +284,13 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -160 ‚Ìê‡
+        -- å·®ãŒ -160 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
         left            <= conv_std_logic_vector(       80, right'high + 1 );
-        right           <= conv_std_logic_vector( 256 - 80, left'high  + 1 );   --  -80 ‚ÌˆÓ–¡
+        right           <= conv_std_logic_vector( 256 - 80, left'high  + 1 );   --  -80 ã®æ„å‘³
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
         for i in 0 to 500 loop
@@ -298,13 +298,13 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- -80 ¨ -100 ‚Ö˜A—
+        -- -80 â†’ -100 ã¸é€£çµ¡
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
-        left            <= conv_std_logic_vector( 256 - 80, right'high + 1 );   --  -80 ‚ÌˆÓ–¡
-        right           <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ‚ÌˆÓ–¡
+        left            <= conv_std_logic_vector( 256 - 80, right'high + 1 );   --  -80 ã®æ„å‘³
+        right           <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ã®æ„å‘³
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
         for i in 0 to 500 loop
@@ -312,12 +312,12 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +200 ‚Ìê‡
+        -- å·®ãŒ +200 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
-        left            <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ‚ÌˆÓ–¡
+        left            <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ã®æ„å‘³
         right           <= conv_std_logic_vector(      100, right'high + 1 );
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
@@ -326,13 +326,13 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª -200 ‚Ìê‡
+        -- å·®ãŒ -200 ã®å ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
         left            <= conv_std_logic_vector(      100, right'high + 1 );
-        right           <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ‚ÌˆÓ–¡
+        right           <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ã®æ„å‘³
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
         for i in 0 to 500 loop
@@ -340,12 +340,12 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- -100 ¨ 40 ‚Ö˜A—
+        -- -100 â†’ 40 ã¸é€£çµ¡
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );
 
-        left            <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ‚ÌˆÓ–¡
+        left            <= conv_std_logic_vector( 256 -100, left'high  + 1 );   --  -100 ã®æ„å‘³
         right           <= conv_std_logic_vector( 40     , left'high  + 1 );
         clear   <= '0';
         tb_clkcnt_clr   <= '0';
@@ -354,7 +354,7 @@ begin
         end loop;
         tb_clkcnt_clr   <= '1';
 
-        -- ·‚ª +20 ‚Ìê‡‚ÉA“Ë‘R”gŒ`‚Ì‰E‘¤‚ª•Ï‰»‚µ‚½ê‡
+        -- å·®ãŒ +20 ã®å ´åˆã«ã€çªç„¶æ³¢å½¢ã®å³å´ãŒå¤‰åŒ–ã—ãŸå ´åˆ
         clear           <= '1';
         clkena          <= '1';
         wait until( clk'event and clk = '1' );

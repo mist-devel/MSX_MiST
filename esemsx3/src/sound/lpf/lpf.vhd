@@ -175,7 +175,7 @@ BEGIN
     END PROCESS;
 END RTL;
 
--- üŒ`•âŠÔƒtƒBƒ‹ƒ^—p•„†•t‚«æŽZŠí --
+-- ç·šå½¢è£œé–“ãƒ•ã‚£ãƒ«ã‚¿ç”¨ç¬¦å·ä»˜ãä¹—ç®—å™¨ --
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
     USE IEEE.STD_LOGIC_SIGNED.ALL;
@@ -185,9 +185,9 @@ ENTITY INTERPO_MUL IS
         MSBI    : INTEGER
     );
     PORT (
-        DIFF    : IN    STD_LOGIC_VECTOR( MSBI+1 DOWNTO 0 );    --  •„†•t‚«
-        WEIGHT  : IN    STD_LOGIC_VECTOR( 2      DOWNTO 0 );    --  •„†–³‚µ
-        OFF     : OUT   STD_LOGIC_VECTOR( MSBI+4 DOWNTO 0 )     --  •„†•t‚«
+        DIFF    : IN    STD_LOGIC_VECTOR( MSBI+1 DOWNTO 0 );    --  ç¬¦å·ä»˜ã
+        WEIGHT  : IN    STD_LOGIC_VECTOR( 2      DOWNTO 0 );    --  ç¬¦å·ç„¡ã—
+        OFF     : OUT   STD_LOGIC_VECTOR( MSBI+4 DOWNTO 0 )     --  ç¬¦å·ä»˜ã
     );
 END INTERPO_MUL;
 
@@ -198,7 +198,7 @@ BEGIN
     OFF     <= W_OFF( MSBI+4 DOWNTO 0 );
 END RTL;
 
---  üŒ`•âŠÔƒtƒBƒ‹ƒ^ --
+--  ç·šå½¢è£œé–“ãƒ•ã‚£ãƒ«ã‚¿ --
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
     USE IEEE.STD_LOGIC_UNSIGNED.ALL;
@@ -222,9 +222,9 @@ ARCHITECTURE RTL OF INTERPO IS
             MSBI    : INTEGER
         );
         PORT (
-            DIFF    : IN    STD_LOGIC_VECTOR( MSBI+1 DOWNTO 0 );    --  •„†•t‚«
-            WEIGHT  : IN    STD_LOGIC_VECTOR( 2      DOWNTO 0 );    --  •„†–³‚µ
-            OFF     : OUT   STD_LOGIC_VECTOR( MSBI+4 DOWNTO 0 )     --  •„†•t‚«
+            DIFF    : IN    STD_LOGIC_VECTOR( MSBI+1 DOWNTO 0 );    --  ç¬¦å·ä»˜ã
+            WEIGHT  : IN    STD_LOGIC_VECTOR( 2      DOWNTO 0 );    --  ç¬¦å·ç„¡ã—
+            OFF     : OUT   STD_LOGIC_VECTOR( MSBI+4 DOWNTO 0 )     --  ç¬¦å·ä»˜ã
         );
     END COMPONENT;
 
@@ -238,7 +238,7 @@ ARCHITECTURE RTL OF INTERPO IS
     SIGNAL W_OUT        : STD_LOGIC_VECTOR( MSBI+1 DOWNTO 0 );
 BEGIN
 
-    --  ’x‰„ƒ‰ƒCƒ“ --
+    --  é…å»¶ãƒ©ã‚¤ãƒ³ --
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
@@ -252,7 +252,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-    --  •âŠÔŒW” --
+    --  è£œé–“ä¿‚æ•° --
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
@@ -266,9 +266,9 @@ BEGIN
         END IF;
     END PROCESS;
 
-    --  •âŠÔ --
+    --  è£œé–“ --
     --  O = ((D1 * (6-W)) + D2 * W) / 6 = (D1 * 6 - D1 * W + D2 * W) / 6 = D1 + ((D2 - D1) * W) / 6;
-    W_DIFF  <= ('0' & FF_D2) - ('0' & FF_D1);   --  •„†•t‚«    --
+    W_DIFF  <= ('0' & FF_D2) - ('0' & FF_D1);   --  ç¬¦å·ä»˜ã    --
 
     U_INTERPO_MUL: INTERPO_MUL
     GENERIC MAP (
@@ -291,7 +291,7 @@ BEGIN
             IF( W_OUT( W_OUT'HIGH ) = '0' )THEN
                 ODATA <= W_OUT( MSBI DOWNTO 0 );
             ELSE
-                ODATA <= (OTHERS => '1');   --  –O˜a
+                ODATA <= (OTHERS => '1');   --  é£½å’Œ
             END IF;
         END IF;
     END PROCESS;
