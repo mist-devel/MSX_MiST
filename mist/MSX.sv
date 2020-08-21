@@ -80,10 +80,11 @@ pll pll
 (
 	.inclk0(CLOCK_27[0]),
 	.c0(clk_sys),
-    .c1(memclk),
-	.c2(SDRAM_CLK),
+	.c1(memclk),
 	.locked(locked)
 );
+
+assign SDRAM_CLK = memclk;
 
 //////////////////   MiST I/O   ///////////////////
 wire  [7:0] joy_0;
@@ -206,11 +207,11 @@ reg  [7:0] dipsw;
 wire [7:0] leds;
 
 reg reset;
-wire resetW = status[0] | buttons[1] | ~locked;
+wire resetW = status[0] | buttons[1];
 
 always @(posedge clk_sys) begin
 	reset <= resetW;
-    dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
+	dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
 	audio_li <= audio_l;
 	if (status[9]) begin		
 		audio_ri <= audio_r;
@@ -370,18 +371,20 @@ assign      VGA_HS = (scandoubler_disable || ypbpr) ? CSync : HSync;
 assign      VGA_VS = (scandoubler_disable || ypbpr)? 1'b1 : VSync;
 
 //////////////////   AUDIO   //////////////////
-dac dac_l
+dac #(6) dac_l
 (
-	.clk(clk_sys),
-	.audio_in(audio_li),
-	.dac_out(AUDIO_L)
+	.clk_i(clk_sys),
+	.res_n_i(1'b1),
+	.dac_i(audio_li),
+	.dac_o(AUDIO_L)
 );
 
-dac dac_r
+dac #(6) dac_r
 (
-	.clk(clk_sys),
-	.audio_in(audio_ri),
-	.dac_out(AUDIO_R)
+	.clk_i(clk_sys),
+	.res_n_i(1'b1),
+	.dac_i(audio_ri),
+	.dac_o(AUDIO_R)
 );
 
 endmodule
