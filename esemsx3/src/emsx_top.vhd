@@ -137,7 +137,10 @@ entity emsx_top is
         pIopRsv18       : in    std_logic;
         pIopRsv19       : in    std_logic;
         pIopRsv20       : in    std_logic;
-        pIopRsv21       : in    std_logic
+        pIopRsv21       : in    std_logic;
+
+				-- Real Time Clock
+				iRTC            : in    std_logic_vector(63 downto 0)
     );
 end emsx_top;
 
@@ -2585,8 +2588,10 @@ begin
         port map(clk21m, reset, clkena, Kmap, Caps, Kana, Paus, Scro, Reso, Fkeys,
                         pPs2Clk, pPs2Dat, PpiPortC, PpiPortB, CmtScro);
 
-    U07 : rtc
-        port map(clk21m, reset, w_10Hz, RtcReq, open, wrt, adr, RtcDbi, dbo);
+--    U07 : rtc
+--        port map(clk21m, reset, w_10Hz, RtcReq, open, wrt, adr, RtcDbi, dbo);
+    U07 : work.rtc_mist
+        port map(clk21m, reset, iRTC, RtcReq, open, wrt, adr, RtcDbi, dbo);
 
     U08 : kanji
         port map(clk21m, reset, clkena, KanReq, open, wrt, adr, KanDbi, dbo,

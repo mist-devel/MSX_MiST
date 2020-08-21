@@ -117,6 +117,8 @@ wire  [8:0] mouse_y;
 wire  [7:0] mouse_flags;
 wire        mouse_strobe;
 
+wire [63:0] rtc;
+
 user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
 (
         .clk_sys(clk_sys),
@@ -132,6 +134,8 @@ user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
         .scandoubler_disable(scandoubler_disable),
         .ypbpr(ypbpr),
         .buttons(buttons),
+        .rtc(rtc),
+
         .joystick_0(joy_0),
         .joystick_1(joy_1),
 
@@ -281,6 +285,7 @@ emsx_top emsx
         .clk21m     (clk_sys),
         .memclk     (memclk),
         .pSltRst_n  (~reset),
+
 //        -- SD-RAM ports
         .pMemAdr   ( SDRAM_A ),
         .pMemDat   ( SDRAM_DQ ),
@@ -311,7 +316,7 @@ emsx_top emsx
 
 //        -- DIP switch, Lamp ports
         .pDip       (dipsw),
-		.pLed		(leds),
+        .pLed       (leds),
 
 //        -- Video, Audio/CMT ports
         .pDac_VR    (R_O),      // RGB_Red / Svideo_C
@@ -320,9 +325,11 @@ emsx_top emsx
         .pVideoHS_n (HSync),    // HSync(RGB15K, VGA31K)
         .pVideoVS_n (VSync),    // VSync(RGB15K, VGA31K)
 
-		  .CmtIn			(UART_RX),
+        .CmtIn      (UART_RX),
         .pDac_SL    (audio_l),
-        .pDac_SR    (audio_r)
+        .pDac_SR    (audio_r),
+
+        .iRTC       (rtc)
 );
 
 //////////////////   VIDEO   //////////////////
