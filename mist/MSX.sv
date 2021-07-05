@@ -336,7 +336,7 @@ emsx_top emsx
 wire  [5:0] R_O;
 wire  [5:0] G_O;
 wire  [5:0] B_O;
-wire        HSync, VSync, CSync;
+wire        HSync, VSync;
 
 wire [5:0] osd_r_o, osd_g_o, osd_b_o;
 
@@ -356,26 +356,36 @@ osd osd
     .B_out(osd_b_o)
     );
 
-wire [5:0] Y, Pb, Pr;
+wire [5:0] r, g, b;
+wire       cs, hs, vs;
 
-rgb2ypbpr rgb2ypbpr 
+RGBtoYPbPr #(6) RGBtoYPbPr
 (
-	.red   ( osd_r_o ),
-	.green ( osd_g_o ),
-	.blue  ( osd_b_o ),
-	.y     ( Y       ),
-	.pb    ( Pb      ),
-	.pr    ( Pr      )
+	.clk      ( clk_sys ),
+	.ena      ( ypbpr   ),
+	.red_in   ( osd_r_o ),
+	.green_in ( osd_g_o ),
+	.blue_in  ( osd_b_o ),
+	.hs_in    ( HSync   ),
+	.vs_in    ( VSync   ),
+	.cs_in    ( ~(HSync ^ VSync) ),
+	.red_out  ( r       ),
+	.green_out( g       ),
+	.blue_out ( b       ),
+	.hs_out   ( hs      ),
+	.vs_out   ( vs      ),
+	.cs_out   ( cs      )
 );
 
-assign VGA_R = ypbpr?Pr:osd_r_o;
-assign VGA_G = ypbpr? Y:osd_g_o;
-assign VGA_B = ypbpr?Pb:osd_b_o;
-assign CSync = ~(HSync ^ VSync);
-// a minimig vga->scart cable expects a composite sync signal on the VGA_HS output.
-// and VCC on VGA_VS (to switch into rgb mode)
-assign      VGA_HS = (scandoubler_disable || ypbpr) ? CSync : HSync;
-assign      VGA_VS = (scandoubler_disable || ypbpr)? 1'b1 : VSync;
+always @(posedge clk_sys) begin
+	VGA_R <= r;
+	VGA_G <= g;
+	VGA_B <= b;
+	// a minimig vga->scart cable expects a composite sync signal on the VGA_HS output.
+	// and VCC on VGA_VS (to switch into rgb mode)
+	VGA_HS <= (scandoubler_disable || ypbpr) ? cs : hs;
+	VGA_VS <= (scandoubler_disable || ypbpr) ? cs : vs;
+end
 
 //////////////////   AUDIO   //////////////////
 dac #(6) dac_l
