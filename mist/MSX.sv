@@ -61,7 +61,7 @@ parameter CONF_STR = {
 	"O2,CPU Clock,Normal,Turbo;",
 	"O3,Slot1,Empty,MegaSCC+ 1MB;",
 	"O45,Slot2,Empty,MegaSCC+ 2MB,MegaRAM 1MB,MegaRAM 2MB;",    
-    "O6,RAM,2048kB,4096kB;",
+	"O6,RAM,2048kB,4096kB;",
 	"O7,Swap joysticks,No,Yes;",
 	"O8,VGA Output,CRT,LCD;",
 	"O9,Tape sound,OFF,ON;",
@@ -90,8 +90,9 @@ assign SDRAM_CLK = memclk;
 wire  [7:0] joy_0;
 wire  [7:0] joy_1;
 wire  [1:0] buttons;
-wire [31:0] status;
+wire [63:0] status;
 wire        ypbpr;
+wire        no_csync;
 wire        scandoubler_disable;
 
 reg  [31:0] sd_lba;
@@ -107,7 +108,7 @@ wire  [7:0] sd_buff_din;
 wire        sd_buff_wr;
 wire        img_mounted;
 wire        img_readonly;
-wire [31:0] img_size;
+wire [63:0] img_size;
 
 wire        ps2_kbd_clk;
 wire        ps2_kbd_data;
@@ -133,6 +134,7 @@ user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
         .status(status),
         .scandoubler_disable(scandoubler_disable),
         .ypbpr(ypbpr),
+        .no_csync(no_csync),
         .buttons(buttons),
         .rtc(rtc),
 
@@ -383,8 +385,8 @@ always @(posedge clk_sys) begin
 	VGA_B <= b;
 	// a minimig vga->scart cable expects a composite sync signal on the VGA_HS output.
 	// and VCC on VGA_VS (to switch into rgb mode)
-	VGA_HS <= (scandoubler_disable || ypbpr) ? cs : hs;
-	VGA_VS <= (scandoubler_disable || ypbpr) ? cs : vs;
+	VGA_HS <= ((~no_csync & scandoubler_disable) || ypbpr)? cs : hs;
+	VGA_VS <= ((~no_csync & scandoubler_disable) || ypbpr)? 1'b1 : vs;
 end
 
 //////////////////   AUDIO   //////////////////
