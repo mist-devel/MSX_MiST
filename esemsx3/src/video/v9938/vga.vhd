@@ -67,17 +67,17 @@
 --   - Insert the license text.
 --   - Add the document part below.
 --
--- ?th,August,2006 modified by Kunihiko Ohnaka
+-- ??th,August,2006 modified by Kunihiko Ohnaka
 --   - Move the equalization pulse generator from
 --     vdp.vhd.
 --
 -- 20th,August,2006 modified by Kunihiko Ohnaka
 --  - Change field mapping algorithm when interlace
 --    mode is enabled.
---        even field  -> even line (odd  line is blacK)
---        odd  field  -> odd line  (even line is blacK)
+--        even field  -> even line (odd  line is black)
+--        odd  field  -> odd line  (even line is black)
 --
--- 13th,October,2003 created by Kunihiko Ohnaka
+-- 13rd,October,2003 created by Kunihiko Ohnaka
 -- JP: VDPのコアの実装と表示デバイスへの出力を別ソースにした．
 --
 -------------------------------------------------------------------------------

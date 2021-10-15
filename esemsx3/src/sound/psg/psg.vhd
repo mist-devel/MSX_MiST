@@ -184,7 +184,7 @@ begin
                 joyb <= (others => 'Z');
             else
                 -- trigger a/b output joystick portb
-                case regb( 3 downto 2 ) is
+                case regb(3 downto 2) is
                     when "00"   => joyb(5 downto 4) <= "00";
                     when "01"   => joyb(5 downto 4) <= "0Z";
                     when "10"   => joyb(5 downto 4) <= "Z0";

@@ -100,9 +100,6 @@ package vdp_package is
   constant ADJUST0_Y : std_logic_vector( 6 downto 0) := "0101110";     -- = 3+3+13+26+1 = 46
   constant ADJUST0_Y_212 : std_logic_vector( 6 downto 0) := "0100100"; -- = 3+3+13+16+1 = 36
 
-  shared variable DEBUG_ENA : integer;
-  shared variable BREAK_POINT : std_logic_vector( 7 downto 0 );
-
   component ram
     port(
       adr     : in  std_logic_vector(7 downto 0);

@@ -139,10 +139,10 @@
 -- JP: パターンネームテーブルのマスクを実装→ANMAデモ対応
 -- JP: MultiColorMode(SCREEN3)実装→マジラビデモ対応
 --
--- 12th,September,2004 modified by Kazuhiro Tsujikawa
+-- 12nd,September,2004 modified by Kazuhiro Tsujikawa
 -- JP: VdpR0DispNum等をライン単位で反映→スペースマンボウでのチラツキ対策
 --
--- 11th,September,2004 modified by Kazuhiro Tsujikawa
+-- 11st,September,2004 modified by Kazuhiro Tsujikawa
 -- JP: 水平帰線割り込み修正→MGSEL(テンポ早送り)対策
 --
 -- 22nd,August,2004 modified by Kazuhiro Tsujikawa
@@ -154,7 +154,7 @@
 -- 2nd,August,2004 modified by Kazuhiro Tsujikawa
 -- JP: Screen7/8でのスプライト読み込みアドレスを修正→Snatcher対策
 --
--- 31th,July,2004 modified by Kazuhiro Tsujikawa
+-- 31st,July,2004 modified by Kazuhiro Tsujikawa
 -- JP: Screen7/8でのVRAM読み込みアドレスを修正→Snatcher対策
 --
 -- 24th,July,2004 modified by Kazuhiro Tsujikawa
@@ -177,7 +177,7 @@
 -- JP: R1/IE0(垂直帰線割り込み許可)の動作を修正
 -- JP: Ys2でバノアの家に入れる様になった
 --
--- 13th,June,2004 modified by Kazuhiro Tsujikawa
+-- 13rd,June,2004 modified by Kazuhiro Tsujikawa
 -- JP: 拡大スプライトが右に1ドットずれる不具合を修正
 -- JP: SCREEN5でスプライト右端32ドットが表示されない不具合を修正
 -- JP: SCREEN5で211ライン(最下)のスプライトが表示されない不具合を修正
@@ -193,7 +193,7 @@
 -- JP: VDPコマンドの実装を開始
 -- JP: HMMC,HMMM,YMMM,HMMV,LMMC,LMMM,LMMVを実装.まだ不具合あり.
 --
--- 12th,January,2004 modified by Kunihiko Ohnaka
+-- 12nd,January,2004 modified by Kunihiko Ohnaka
 -- JP: コメントの修正
 --
 -- 30th,December,2003 modified by Kazuhiro Tsujikawa
@@ -210,7 +210,7 @@
 -- JP: きたつもりだったが，少し収まりが悪い部分があり，あまりきれいな
 -- JP: 対応になっていない部分もあります．
 --
--- 13th,October,2003 modified by Kunihiko Ohnaka
+-- 13rd,October,2003 modified by Kunihiko Ohnaka
 -- JP: ESE-MSX基板では 2S300Eを複数用いる事ができるようにり，VDP単体で
 -- JP: 2S300Eや SRAMを占有する事が可能となった．
 -- JP: これに伴い以下のような変更を行う．
@@ -235,7 +235,7 @@
 -- 15th,July,2002 modified by Kazuhiro Tsujikawa
 -- no comment;
 --
--- 5th, September,2019 modified by Oduvaldo Pavan Junior
+-- 5th,September,2019 modified by Oduvaldo Pavan Junior
 -- Fixed the lack of page flipping (R13) capability
 --
 -- Added the undocumented feature where R1 bit #2 change the blink counter
@@ -290,6 +290,8 @@ ENTITY VDP IS
 
         PVIDEODHCLK         : OUT   STD_LOGIC;
         PVIDEODLCLK         : OUT   STD_LOGIC;
+
+        BLANK_O             : OUT   STD_LOGIC;
 
         -- DISPLAY RESOLUTION (0=15KHZ, 1=31KHZ)
         DISPRESO            : IN    STD_LOGIC;
@@ -461,6 +463,8 @@ ARCHITECTURE RTL OF VDP IS
             VIDEOBOUT           : OUT   STD_LOGIC_VECTOR(  5 DOWNTO 0 );
             VIDEOHSOUT_N        : OUT   STD_LOGIC;
             VIDEOVSOUT_N        : OUT   STD_LOGIC;
+            -- HDMI SUPPORT
+            BLANK_O             : OUT   STD_LOGIC;
             -- SWITCHED I/O SIGNALS
             RATIOMODE           : IN    STD_LOGIC_VECTOR(  2 DOWNTO 0 )
             );
@@ -535,8 +539,10 @@ ARCHITECTURE RTL OF VDP IS
             PALETTEDATAG_OUT    : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
 
             VDPMODETEXT1        : IN    STD_LOGIC;
+            VDPMODETEXT1Q       : IN    STD_LOGIC;
             VDPMODETEXT2        : IN    STD_LOGIC;
             VDPMODEMULTI        : IN    STD_LOGIC;
+            VDPMODEMULTIQ       : IN    STD_LOGIC;
             VDPMODEGRAPHIC1     : IN    STD_LOGIC;
             VDPMODEGRAPHIC2     : IN    STD_LOGIC;
             VDPMODEGRAPHIC3     : IN    STD_LOGIC;
@@ -576,8 +582,10 @@ ARCHITECTURE RTL OF VDP IS
             DOTSTATE                    : IN    STD_LOGIC_VECTOR(  1 DOWNTO 0 );
             DOTCOUNTERX                 : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
             DOTCOUNTERY                 : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
+            DOTCOUNTERYP                : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
 
             VDPMODETEXT1                : IN    STD_LOGIC;
+            VDPMODETEXT1Q               : IN    STD_LOGIC;
             VDPMODETEXT2                : IN    STD_LOGIC;
 
             -- REGISTERS
@@ -610,6 +618,7 @@ ARCHITECTURE RTL OF VDP IS
             DOTCOUNTERY                 : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
 
             VDPMODEMULTI                : IN    STD_LOGIC;
+            VDPMODEMULTIQ               : IN    STD_LOGIC;
             VDPMODEGRAPHIC1             : IN    STD_LOGIC;
             VDPMODEGRAPHIC2             : IN    STD_LOGIC;
             VDPMODEGRAPHIC3             : IN    STD_LOGIC;
@@ -763,8 +772,10 @@ ARCHITECTURE RTL OF VDP IS
 
             --  MODE
             VDPMODETEXT1                : OUT   STD_LOGIC;
+            VDPMODETEXT1Q               : OUT   STD_LOGIC;
             VDPMODETEXT2                : OUT   STD_LOGIC;
             VDPMODEMULTI                : OUT   STD_LOGIC;
+            VDPMODEMULTIQ               : OUT   STD_LOGIC;
             VDPMODEGRAPHIC1             : OUT   STD_LOGIC;
             VDPMODEGRAPHIC2             : OUT   STD_LOGIC;
             VDPMODEGRAPHIC3             : OUT   STD_LOGIC;
@@ -876,9 +887,12 @@ ARCHITECTURE RTL OF VDP IS
     SIGNAL REG_R26_H_SCROLL             : STD_LOGIC_VECTOR(  8 DOWNTO 3 );
     SIGNAL REG_R27_H_SCROLL             : STD_LOGIC_VECTOR(  2 DOWNTO 0 );
 
+    SIGNAL TEXT_MODE                    : STD_LOGIC;    -- TEXT MODE 1, 2 or 1Q
     SIGNAL VDPMODETEXT1                 : STD_LOGIC;    -- TEXT MODE 1      (SCREEN0 WIDTH 40)
+    SIGNAL VDPMODETEXT1Q                : STD_LOGIC;    -- TEXT MODE 1      (??)
     SIGNAL VDPMODETEXT2                 : STD_LOGIC;    -- TEXT MODE 2      (SCREEN0 WIDTH 80)
     SIGNAL VDPMODEMULTI                 : STD_LOGIC;    -- MULTICOLOR MODE  (SCREEN3)
+    SIGNAL VDPMODEMULTIQ                : STD_LOGIC;    -- MULTICOLOR MODE  (??)
     SIGNAL VDPMODEGRAPHIC1              : STD_LOGIC;    -- GRAPHIC MODE 1   (SCREEN1)
     SIGNAL VDPMODEGRAPHIC2              : STD_LOGIC;    -- GRAPHIC MODE 2   (SCREEN2)
     SIGNAL VDPMODEGRAPHIC3              : STD_LOGIC;    -- GRAPHIC MODE 2   (SCREEN4)
@@ -1056,6 +1070,7 @@ BEGIN
         VIDEOBOUT           => IVIDEOB_VGA,
         VIDEOHSOUT_N        => IVIDEOHS_N_VGA,
         VIDEOVSOUT_N        => IVIDEOVS_N_VGA,
+        BLANK_O             => BLANK_O,
         RATIOMODE           => RATIOMODE
     );
 
@@ -1280,6 +1295,8 @@ BEGIN
         END IF;
     END PROCESS;
 
+    TEXT_MODE <= VDPMODETEXT1 OR VDPMODETEXT1Q OR VDPMODETEXT2;
+
     PROCESS( RESET, CLK21M )
         VARIABLE VDPVRAMACCESSADDRV : STD_LOGIC_VECTOR( 16 DOWNTO 0 );
         VARIABLE VRAMACCESSSWITCH   : INTEGER RANGE 0 TO 7;
@@ -1321,11 +1338,11 @@ BEGIN
                     --  EIGHTDOTSTATE が 5～7 で、表示中で、テキストモードの場合
                     VRAMACCESSSWITCH := VRAM_ACCESS_DRAW;
                 ELSIF( (PREWINDOW_X = '1') AND (PREWINDOW_Y_SP = '1') AND (SPVRAMACCESSING = '1') AND
-                        (EIGHTDOTSTATE="101") AND (VDPMODETEXT1 = '0') AND (VDPMODETEXT2 = '0') ) THEN
+                        (EIGHTDOTSTATE="101") AND (TEXT_MODE = '0') ) THEN
                     -- FOR SPRITE Y-TESTING
                     VRAMACCESSSWITCH := VRAM_ACCESS_SPRT;
                 ELSIF( (PREWINDOW_X = '0') AND (PREWINDOW_Y_SP = '1') AND (SPVRAMACCESSING = '1') AND
-                        (VDPMODETEXT1 = '0') AND (VDPMODETEXT2 = '0') AND
+                        (TEXT_MODE = '0') AND
                         ((EIGHTDOTSTATE="000") OR (EIGHTDOTSTATE="001") OR (EIGHTDOTSTATE="010") OR
                         (EIGHTDOTSTATE="011") OR (EIGHTDOTSTATE="100") OR (EIGHTDOTSTATE="101")) ) THEN
                     -- FOR SPRITE PREPAREING
@@ -1375,7 +1392,7 @@ BEGIN
                 ELSE
                     IRAMADR <= VDPVRAMACCESSADDR;
                 END IF;
-                IF( (VDPMODETEXT1 = '1') OR (VDPMODEMULTI = '1') OR
+                IF( (VDPMODETEXT1 = '1') OR (VDPMODETEXT1Q = '1') OR (VDPMODEMULTI = '1') OR (VDPMODEMULTIQ = '1') OR
                     (VDPMODEGRAPHIC1 = '1') OR (VDPMODEGRAPHIC2 = '1') ) THEN
                     VDPVRAMACCESSADDR(13 DOWNTO 0) <= VDPVRAMACCESSADDR(13 DOWNTO 0) + 1;
                 ELSE
@@ -1402,7 +1419,7 @@ BEGIN
                 ELSE
                     IRAMADR <= VDPVRAMACCESSADDRV;
                 END IF;
-                IF( (VDPMODETEXT1 = '1') OR (VDPMODEMULTI = '1') OR
+                IF( (VDPMODETEXT1 = '1') OR (VDPMODETEXT1Q = '1') OR (VDPMODEMULTI = '1') OR (VDPMODEMULTIQ = '1') OR
                     (VDPMODEGRAPHIC1 = '1') OR (VDPMODEGRAPHIC2 = '1') )THEN
                     VDPVRAMACCESSADDR(13 DOWNTO 0) <= VDPVRAMACCESSADDRV(13 DOWNTO 0) + 1;
                 ELSE
@@ -1454,10 +1471,10 @@ BEGIN
                         PRAMDBO <= (OTHERS => 'Z');
                         PRAMOE_N <= '0';
                         PRAMWE_N <= '1';
-                        IF( (VDPMODETEXT1 = '1') OR (VDPMODETEXT2 = '1') )THEN
+                        IF( TEXT_MODE = '1' )THEN
                             IRAMADR <= PRAMADRT12;
                         ELSIF(  (VDPMODEGRAPHIC1 = '1') OR (VDPMODEGRAPHIC2 = '1') OR
-                                (VDPMODEGRAPHIC3 = '1') OR (VDPMODEMULTI = '1') )THEN
+                                (VDPMODEGRAPHIC3 = '1') OR (VDPMODEMULTI = '1') OR (VDPMODEMULTIQ = '1') )THEN
                             IRAMADR <= PRAMADRG123M;
                         ELSIF(  (VDPMODEGRAPHIC4 = '1') OR (VDPMODEGRAPHIC5 = '1') OR
                                 (VDPMODEGRAPHIC6 = '1') OR (VDPMODEGRAPHIC7 = '1') )THEN
@@ -1497,8 +1514,10 @@ BEGIN
         PALETTEDATAG_OUT    => PALETTEDATAG_OUT     ,
 
         VDPMODETEXT1        => VDPMODETEXT1         ,
+        VDPMODETEXT1Q       => VDPMODETEXT1Q        ,
         VDPMODETEXT2        => VDPMODETEXT2         ,
         VDPMODEMULTI        => VDPMODEMULTI         ,
+        VDPMODEMULTIQ       => VDPMODEMULTIQ        ,
         VDPMODEGRAPHIC1     => VDPMODEGRAPHIC1      ,
         VDPMODEGRAPHIC2     => VDPMODEGRAPHIC2      ,
         VDPMODEGRAPHIC3     => VDPMODEGRAPHIC3      ,
@@ -1537,8 +1556,10 @@ BEGIN
         RESET                       => RESET,
         DOTSTATE                    => DOTSTATE,
         DOTCOUNTERX                 => PREDOTCOUNTER_X,
-        DOTCOUNTERY                 => PREDOTCOUNTER_YP,
+        DOTCOUNTERY                 => PREDOTCOUNTER_Y,         -- 2021/July/1st Modified by t.hara
+        DOTCOUNTERYP                => PREDOTCOUNTER_YP,
         VDPMODETEXT1                => VDPMODETEXT1,
+        VDPMODETEXT1Q               => VDPMODETEXT1Q,
         VDPMODETEXT2                => VDPMODETEXT2,
         REG_R1_BL_CLKS              => REG_R1_BL_CLKS,
         REG_R7_FRAME_COL            => REG_R7_FRAME_COL,
@@ -1562,6 +1583,7 @@ BEGIN
         DOTCOUNTERX                 => PREDOTCOUNTER_X,
         DOTCOUNTERY                 => PREDOTCOUNTER_Y,
         VDPMODEMULTI                => VDPMODEMULTI,
+        VDPMODEMULTIQ               => VDPMODEMULTIQ,
         VDPMODEGRAPHIC1             => VDPMODEGRAPHIC1,
         VDPMODEGRAPHIC2             => VDPMODEGRAPHIC2,
         VDPMODEGRAPHIC3             => VDPMODEGRAPHIC3,
@@ -1738,8 +1760,10 @@ BEGIN
         REG_R27_H_SCROLL            => REG_R27_H_SCROLL             ,
 
         VDPMODETEXT1                => VDPMODETEXT1                 ,
+        VDPMODETEXT1Q               => VDPMODETEXT1Q                ,
         VDPMODETEXT2                => VDPMODETEXT2                 ,
         VDPMODEMULTI                => VDPMODEMULTI                 ,
+        VDPMODEMULTIQ               => VDPMODEMULTIQ                ,
         VDPMODEGRAPHIC1             => VDPMODEGRAPHIC1              ,
         VDPMODEGRAPHIC2             => VDPMODEGRAPHIC2              ,
         VDPMODEGRAPHIC3             => VDPMODEGRAPHIC3              ,

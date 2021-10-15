@@ -1,5 +1,5 @@
 --
---  vdp_colordec.vhd
+--  vdp_register.vhd
 --
 --  Copyright (C) 2000-2006 Kunihiko Ohnaka
 --  All rights reserved.
@@ -54,7 +54,7 @@
 --  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 --  POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
---  23th,March,2008
+--  23rd,March,2008
 --      JP: VDP.VHD から分離 by t.hara
 --
 --  28th,March,2008
@@ -66,11 +66,19 @@
 --  26th,January,2017
 --      patch yuukun status R0 S#5 timing
 --
---  5th, September,2019 modified by Oduvaldo Pavan Junior
+--  5th,September,2019 modified by Oduvaldo Pavan Junior
 --      Fixed the lack of page flipping (R13) capability
 --
 --      Added the undocumented feature where R1 bit #2 change the blink counter
 --      clock source from VSYNC to HSYNC
+--
+--  30th,May,2021 by t.hara
+--      In the register writing by address auto-increment mode,
+--      the bug that the address is incremented even if it exceeds R#47 is corrected.
+--
+--  2nd,June,2021 by t.hara
+--      Fixed behavior of address auto-increment.
+--      Fixed the write operation to the invalid register.
 --
 
 LIBRARY IEEE;
@@ -173,8 +181,10 @@ ENTITY VDP_REGISTER IS
 
         --  MODE
         VDPMODETEXT1                : OUT   STD_LOGIC;
+        VDPMODETEXT1Q               : OUT   STD_LOGIC;
         VDPMODETEXT2                : OUT   STD_LOGIC;
         VDPMODEMULTI                : OUT   STD_LOGIC;
+        VDPMODEMULTIQ               : OUT   STD_LOGIC;
         VDPMODEGRAPHIC1             : OUT   STD_LOGIC;
         VDPMODEGRAPHIC2             : OUT   STD_LOGIC;
         VDPMODEGRAPHIC3             : OUT   STD_LOGIC;
@@ -234,8 +244,10 @@ ARCHITECTURE RTL OF VDP_REGISTER IS
     SIGNAL FF_R1_DISP_MODE          : STD_LOGIC_VECTOR(  1 DOWNTO 0 );
     SIGNAL FF_R25_SP2               : STD_LOGIC;
     SIGNAL FF_R26_H_SCROLL          : STD_LOGIC_VECTOR(  8 DOWNTO 3 );
-    SIGNAL VDPR0DISPNUM             : STD_LOGIC_VECTOR(  3 DOWNTO 1 );
-    SIGNAL VDPR0DISPNUMX            : STD_LOGIC_VECTOR(  3 DOWNTO 1 );
+    SIGNAL REG_R18_VERT             : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL REG_R18_HORZ             : STD_LOGIC_VECTOR(  3 DOWNTO 0 );
+    SIGNAL REG_R0_DISP_MODE         : STD_LOGIC_VECTOR(  3 DOWNTO 1 );
+    SIGNAL FF_R0_DISP_MODE          : STD_LOGIC_VECTOR(  3 DOWNTO 1 );
     SIGNAL FF_SPVDPS0RESETREQ       : STD_LOGIC;
 
     SIGNAL W_EVEN_DOTSTATE          : STD_LOGIC;
@@ -244,33 +256,25 @@ BEGIN
     ACK                     <= FF_ACK;
     SPVDPS0RESETREQ         <= FF_SPVDPS0RESETREQ;
 
-    VDPMODETEXT1        <=  '1' WHEN( VDPR0DISPNUM = "000" AND REG_R1_DISP_MODE = "10" )ELSE
+    VDPMODEGRAPHIC1         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "00000" )ELSE '0';
+    VDPMODETEXT1            <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "00001" )ELSE '0';
+    VDPMODEMULTI            <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "00010" )ELSE '0';
+    VDPMODEGRAPHIC2         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "00100" )ELSE '0';
+    VDPMODETEXT1Q           <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "00101" )ELSE '0';
+    VDPMODEMULTIQ           <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "00110" )ELSE '0';
+    VDPMODEGRAPHIC3         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "01000" )ELSE '0';
+    VDPMODETEXT2            <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "01001" )ELSE '0';
+    VDPMODEGRAPHIC4         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "01100" )ELSE '0';
+    VDPMODEGRAPHIC5         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "10000" )ELSE '0';
+    VDPMODEGRAPHIC6         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "10100" )ELSE '0';
+    VDPMODEGRAPHIC7         <=  '1' WHEN( ( REG_R0_DISP_MODE & REG_R1_DISP_MODE(0) & REG_R1_DISP_MODE(1) ) = "11100" )ELSE '0';
+
+    VDPMODEISHIGHRES        <=  '1' WHEN( REG_R0_DISP_MODE(3 DOWNTO 2) = "10" AND REG_R1_DISP_MODE = "00" )ELSE
                             '0';
-    VDPMODETEXT2        <=  '1' WHEN( VDPR0DISPNUM = "010" AND REG_R1_DISP_MODE = "10" )ELSE
-                            '0';
-    VDPMODEMULTI        <=  '1' WHEN( VDPR0DISPNUM = "000" AND REG_R1_DISP_MODE = "01" )ELSE
-                            '0';
-    VDPMODEGRAPHIC1     <=  '1' WHEN( VDPR0DISPNUM = "000" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    VDPMODEGRAPHIC2     <=  '1' WHEN( VDPR0DISPNUM = "001" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    VDPMODEGRAPHIC3     <=  '1' WHEN( VDPR0DISPNUM = "010" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    VDPMODEGRAPHIC4     <=  '1' WHEN( VDPR0DISPNUM = "011" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    VDPMODEGRAPHIC5     <=  '1' WHEN( VDPR0DISPNUM = "100" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    VDPMODEGRAPHIC6     <=  '1' WHEN( VDPR0DISPNUM = "101" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    VDPMODEGRAPHIC7     <=  '1' WHEN( VDPR0DISPNUM = "111" AND REG_R1_DISP_MODE = "00" )ELSE
+    SPMODE2                 <=  '1' WHEN( REG_R1_DISP_MODE = "00" AND (REG_R0_DISP_MODE(3) OR REG_R0_DISP_MODE(2)) = '1' )ELSE
                             '0';
 
-    VDPMODEISHIGHRES    <=  '1' WHEN( VDPR0DISPNUM(3 DOWNTO 2) = "10" AND REG_R1_DISP_MODE = "00" )ELSE
-                            '0';
-    SPMODE2             <=  '1' WHEN( REG_R1_DISP_MODE = "00" AND (VDPR0DISPNUM(3) OR VDPR0DISPNUM(2)) = '1' )ELSE
-                            '0';
-
-    VDPMODEISVRAMINTERLEAVE <=  '1' WHEN( (VDPR0DISPNUM(3) AND VDPR0DISPNUM(1)) = '1' )ELSE
+    VDPMODEISVRAMINTERLEAVE <=  '1' WHEN( (REG_R0_DISP_MODE(3) AND REG_R0_DISP_MODE(1)) = '1' )ELSE
                                 '0';
 
     ----------------------------------------------------------------------------------------
@@ -287,23 +291,26 @@ BEGIN
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
+            REG_R1_DISP_ON      <= '0';
+            REG_R0_DISP_MODE    <= "000";
             REG_R1_DISP_MODE    <= "00";
-            VDPR0DISPNUM        <= "000";
             REG_R25_SP2         <= '0';
             REG_R26_H_SCROLL    <= (OTHERS => '0');
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF( HSYNC = '1' )THEN
                 REG_R1_DISP_ON      <= FF_R1_DISP_ON;
+                REG_R0_DISP_MODE    <= FF_R0_DISP_MODE;
                 REG_R1_DISP_MODE    <= FF_R1_DISP_MODE;
-                VDPR0DISPNUM        <= VDPR0DISPNUMX;
+
                 REG_R25_SP2         <= FF_R25_SP2;
                 REG_R26_H_SCROLL    <= FF_R26_H_SCROLL;
+
             END IF;
         END IF;
     END PROCESS;
 
     ----------------------------------------------------------------------------------------
-    W_IS_BITMAP_MODE    <=  '1' WHEN( VDPR0DISPNUM(3) = '1' OR VDPR0DISPNUM = "011" )ELSE
+    W_IS_BITMAP_MODE    <=  '1' WHEN( REG_R0_DISP_MODE(3) = '1' OR REG_R0_DISP_MODE = "011" )ELSE
                             '0';
 
     PROCESS( CLK21M )
@@ -469,65 +476,68 @@ BEGIN
         END IF;
     END PROCESS;
 
+    REG_R18_ADJ <= REG_R18_VERT & REG_R18_HORZ;
+
     --------------------------------------------------------------------------
     -- PROCESS OF CPU WRITE REQUEST
     --------------------------------------------------------------------------
     PROCESS( RESET, CLK21M, FORCED_V_MODE )
     BEGIN
         IF( RESET = '1' )THEN
-            VDPP1DATA <= (OTHERS => '0');
-            VDPP1IS1STBYTE <= '1';
-            VDPP2IS1STBYTE <= '1';
-            VDPREGWRPULSE <= '0';
-            VDPREGPTR <= (OTHERS => '0');
-            VDPVRAMWRREQ <= '0';
-            VDPVRAMRDREQ <= '0';
-            VDPVRAMADDRSETREQ <= '0';
-            VDPVRAMACCESSADDRTMP <= (OTHERS => '0');
-            VDPVRAMACCESSDATA <= (OTHERS => '0');
-            VDPR0DISPNUMX <= (OTHERS => '0');
+            VDPP1DATA               <= (OTHERS => '0');
+            VDPP1IS1STBYTE          <= '1';
+            VDPP2IS1STBYTE          <= '1';
+            VDPREGWRPULSE           <= '0';
+            VDPREGPTR               <= (OTHERS => '0');
+            VDPVRAMWRREQ            <= '0';
+            VDPVRAMRDREQ            <= '0';
+            VDPVRAMADDRSETREQ       <= '0';
+            VDPVRAMACCESSADDRTMP    <= (OTHERS => '0');
+            VDPVRAMACCESSDATA       <= (OTHERS => '0');
+            FF_R0_DISP_MODE         <= (OTHERS => '0');
 
-            REG_R0_HSYNC_INT_EN <= '0';
-            FF_R1_DISP_MODE <= (OTHERS => '0');
-            REG_R1_SP_SIZE <= '0';
-            REG_R1_SP_ZOOM <= '0';
-            REG_R1_BL_CLKS <= '0';
-            REG_R1_VSYNC_INT_EN <= '0';
-            FF_R1_DISP_ON <= '0';
-            FF_R2_PT_NAM_ADDR <= (OTHERS => '0');
-            REG_R12_BLINK_MODE <= (OTHERS => '0');
-            REG_R13_BLINK_PERIOD <= (OTHERS => '0');
-            REG_R7_FRAME_COL <= (OTHERS => '0');
-            REG_R8_SP_OFF <= '1';
-            REG_R8_COL0_ON <= '0';
-            REG_R9_PAL_MODE <= FORCED_V_MODE;
-            FF_R9_2PAGE_MODE <= '0';
-            REG_R9_INTERLACE_MODE <= '0';
-            REG_R9_Y_DOTS <= '0';
-            VDPR15STATUSREGNUM <= (OTHERS => '0');
-            VDPR16PALNUM <= (OTHERS => '0');
-            VDPR17REGNUM <= (OTHERS => '0');
-            VDPR17INCREGNUM <= '0';
-            REG_R18_ADJ <= (OTHERS => '0');
-            REG_R19_HSYNC_INT_LINE <= (OTHERS => '0');
-            REG_R23_VSTART_LINE <= (OTHERS => '0');
-            REG_R25_CMD <= '0';
-            REG_R25_YAE <= '0';
-            REG_R25_YJK <= '0';
-            REG_R25_MSK <= '0';
-            FF_R25_SP2 <= '0';
-            FF_R26_H_SCROLL     <= (OTHERS => '0');
-            REG_R27_H_SCROLL    <= (OTHERS => '0');
-            VDPCMDREGNUM <= (OTHERS => '0');
-            VDPCMDREGDATA <= (OTHERS => '0');
-            VDPCMDREGWRREQ <= '0';
-            VDPCMDTRCLRREQ <= '0';
+            REG_R0_HSYNC_INT_EN     <= '0';
+            FF_R1_DISP_MODE         <= (OTHERS => '0');
+            REG_R1_SP_SIZE          <= '0';
+            REG_R1_SP_ZOOM          <= '0';
+            REG_R1_BL_CLKS          <= '0';
+            REG_R1_VSYNC_INT_EN     <= '0';
+            FF_R1_DISP_ON           <= '0';
+            FF_R2_PT_NAM_ADDR       <= (OTHERS => '0');
+            REG_R12_BLINK_MODE      <= (OTHERS => '0');
+            REG_R13_BLINK_PERIOD    <= (OTHERS => '0');
+            REG_R7_FRAME_COL        <= (OTHERS => '0');
+            REG_R8_SP_OFF           <= '1';
+            REG_R8_COL0_ON          <= '0';
+            REG_R9_PAL_MODE         <= FORCED_V_MODE;
+            FF_R9_2PAGE_MODE        <= '0';
+            REG_R9_INTERLACE_MODE   <= '0';
+            REG_R9_Y_DOTS           <= '0';
+            VDPR15STATUSREGNUM      <= (OTHERS => '0');
+            VDPR16PALNUM            <= (OTHERS => '0');
+            VDPR17REGNUM            <= (OTHERS => '0');
+            VDPR17INCREGNUM         <= '0';
+            REG_R18_VERT            <= (OTHERS => '0');
+            REG_R18_HORZ            <= (OTHERS => '0');
+            REG_R19_HSYNC_INT_LINE  <= (OTHERS => '0');
+            REG_R23_VSTART_LINE     <= (OTHERS => '0');
+            REG_R25_CMD             <= '0';
+            REG_R25_YAE             <= '0';
+            REG_R25_YJK             <= '0';
+            REG_R25_MSK             <= '0';
+            FF_R25_SP2              <= '0';
+            FF_R26_H_SCROLL         <= (OTHERS => '0');
+            REG_R27_H_SCROLL        <= (OTHERS => '0');
+            VDPCMDREGNUM            <= (OTHERS => '0');
+            VDPCMDREGDATA           <= (OTHERS => '0');
+            VDPCMDREGWRREQ          <= '0';
+            VDPCMDTRCLRREQ          <= '0';
 
             -- PALETTE
-            PALETTEDATARB_IN <= (OTHERS => '0');
-            PALETTEDATAG_IN  <= (OTHERS => '0');
-            FF_PALETTE_WR_REQ <= '0';
-            PALETTEWRNUM <= (OTHERS => '0');
+            PALETTEDATARB_IN        <= (OTHERS => '0');
+            PALETTEDATAG_IN         <= (OTHERS => '0');
+            FF_PALETTE_WR_REQ       <= '0';
+            PALETTEWRNUM            <= (OTHERS => '0');
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF (REQ = '1' AND WRT = '0') THEN
                 -- READ REQUEST
@@ -624,7 +634,7 @@ BEGIN
                     -- IT IS A NOT A COMMAND ENGINE REGISTER:
                     CASE VDPREGPTR(4 DOWNTO 0) IS
                         WHEN "00000" =>     -- #00
-                            VDPR0DISPNUMX <= VDPP1DATA(3 DOWNTO 1);
+                            FF_R0_DISP_MODE <= VDPP1DATA( 3 DOWNTO 1);
                             REG_R0_HSYNC_INT_EN <= VDPP1DATA(4);
                         WHEN "00001" =>     -- #01
                             REG_R1_SP_ZOOM      <= VDPP1DATA(0);
@@ -673,7 +683,8 @@ BEGIN
                             VDPR17REGNUM <= VDPP1DATA( 5 DOWNTO 0 );
                             VDPR17INCREGNUM <= NOT VDPP1DATA(7);
                         WHEN "10010" =>     -- #18
-                            REG_R18_ADJ     <= VDPP1DATA;
+                            REG_R18_VERT <= VDPP1DATA( 7 DOWNTO 4 );
+                            REG_R18_HORZ <= VDPP1DATA( 3 DOWNTO 0 );
                         WHEN "10011" =>     -- #19
                             REG_R19_HSYNC_INT_LINE  <= VDPP1DATA;
                         WHEN "10111" =>     -- #23
@@ -690,7 +701,7 @@ BEGIN
                             REG_R27_H_SCROLL <= VDPP1DATA( 2 DOWNTO 0 );
                         WHEN OTHERS => NULL;
                     END CASE;
-                ELSE
+                ELSIF ( VDPREGPTR(4) = '0') THEN
                     -- REGISTERS FOR VDP COMMAND
                     VDPCMDREGNUM <= VDPREGPTR(3 DOWNTO 0);
                     VDPCMDREGDATA <= VDPP1DATA;

@@ -67,11 +67,11 @@
 --   - Insert the license text.
 --   - Add the document part below.
 --
--- ?th,August,2006 modified by Kunihiko Ohnaka
+-- ??th,August,2006 modified by Kunihiko Ohnaka
 --   - Move the equalization pulse generator from
 --     vdp.vhd.
 --
--- 13th,October,2003 created by Kunihiko Ohnaka
+-- 13rd,October,2003 created by Kunihiko Ohnaka
 -- JP: VDPのコアの実装と表示デバイスへの出力を別ソースにした．
 --
 -------------------------------------------------------------------------------

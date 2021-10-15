@@ -1,4 +1,4 @@
-----
+--
 -- emsx_top.vhd
 --   ESE MSX-SYSTEM3 / MSX clone on a Cyclone FPGA (ALTERA)
 --   Revision 1.00
@@ -29,10 +29,12 @@
 -- OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 -- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
---------------------------------------------------------------------------------------
--- OCM-PLD Pack v3.8 by KdL (2020.01.09) / MSX2+ Stable Release / MSXtR Experimental
+---------------------------------------------------------------------------------
+-- OCM-PLD Pack v3.9 by KdL (2021.08.23) / MSX2+ Stable Release for 1chipMSX
 -- Special thanks to t.hara, caro, mygodess & all MRC users (http://www.msx.org)
---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+-- Setup for XTAL 21.47727MHz
+---------------------------------------------------------------------------------
 --
 
 library ieee;
@@ -113,9 +115,8 @@ entity emsx_top is
         pDac_VR         : inout std_logic_vector(  5 downto 0);     -- RGB_Red / Svideo_C
         pDac_VG         : inout std_logic_vector(  5 downto 0);     -- RGB_Grn / Svideo_Y
         pDac_VB         : inout std_logic_vector(  5 downto 0);     -- RGB_Blu / CompositeVideo
-        pDac_SL         : inout   std_logic_vector(  5 downto 0);     -- Sound-L
-        pDac_SR         : inout std_logic_vector(  5 downto 0);     -- Sound-R / CMT
-		  cmtIn			: in std_logic;	-- Nuevo CMT
+        pDac_SL         : out   std_logic_vector(  5 downto 0 ) := "ZZZZZZ";    -- Sound-L
+        pDac_SR         : inout std_logic_vector(  5 downto 0 ) := "ZZZZZZ";    -- Sound-R / CMT
 
         pVideoHS_n      : out   std_logic;                          -- Csync(RGB15K), HSync(VGA31K)
         pVideoVS_n      : out   std_logic;                          -- Audio(RGB15K), VSync(VGA31K)
@@ -123,9 +124,19 @@ entity emsx_top is
         pVideoClk       : out   std_logic;                          -- (Reserved)
         pVideoDat       : out   std_logic;                          -- (Reserved)
 
+        -- CMT
+        CmtIn           :  in   std_logic;
+        CmtOut          :  out  std_logic;
+
+        -- Real Time Clock
+        iRTC            : in    std_logic_vector(63 downto 0);
+
+        -- MIDI Out
+        oMidi           : out   std_logic;
+
         -- Reserved ports (USB)
-        pUsbP1          : inout std_logic;
-        pUsbN1          : inout std_logic;
+        pUsbP1          : in    std_logic := 'Z';
+        pUsbN1          : out   std_logic := 'Z';
         pUsbP2          : inout std_logic;
         pUsbN2          : inout std_logic;
 
@@ -137,10 +148,7 @@ entity emsx_top is
         pIopRsv18       : in    std_logic;
         pIopRsv19       : in    std_logic;
         pIopRsv20       : in    std_logic;
-        pIopRsv21       : in    std_logic;
-
-				-- Real Time Clock
-				iRTC            : in    std_logic_vector(63 downto 0)
+        pIopRsv21       : in    std_logic
     );
 end emsx_top;
 
@@ -350,6 +358,7 @@ architecture RTL of emsx_top is
 
             pVideoDHClk     : out   std_logic;
             pVideoDLClk     : out   std_logic;
+            BLANK_o         : out   std_logic;
 
             -- CXA1645(RGB->NTSC encoder) signals
 --          pVideoSC        : out   std_logic;                          -- for V9938 MSX2 VDP
@@ -445,12 +454,12 @@ architecture RTL of emsx_top is
 
     component esepwm
         generic (
-            MSBI : integer
+            msbi    : integer
         );
         port(
             clk     : in    std_logic;
             reset   : in    std_logic;
-            DACin   : in    std_logic_vector( MSBI downto 0 );
+            DACin   : in    std_logic_vector( msbi downto 0 );
             DACout  : out   std_logic
         );
     end component;
@@ -470,6 +479,7 @@ architecture RTL of emsx_top is
             reset   : in    std_logic;
             req     : in    std_logic;
             ack     : out   std_logic;
+            wrt     : in    std_logic;
             adr     : in    std_logic_vector( 15 downto 0 );
             dbi     : out   std_logic_vector(  7 downto 0 );
             dbo     : in    std_logic_vector(  7 downto 0 )
@@ -533,7 +543,7 @@ architecture RTL of emsx_top is
             io40_n          : inout std_logic_vector(  7 downto 0 );        -- ID Manufacturers/Devices :   $08 (008), $D4 (212=1chipMSX), $FF (255=null)
             io41_id212_n    : inout std_logic_vector(  7 downto 0 );        -- $41 ID212 states         :   Smart Commands
             io42_id212      : inout std_logic_vector(  7 downto 0 );        -- $42 ID212 states         :   Virtual DIP-SW states
-            io43_id212      : inout std_logic_vector(  7 downto 0 );        -- $43 ID212 states         :   Lock Mask for port $42 functions, cmt and reset key
+            io43_id212      : inout std_logic_vector(  7 downto 0 );            -- $43 ID212 states         :   Lock Mask for port $42 functions, CMT and reset key
             io44_id212      : inout std_logic_vector(  7 downto 0 );            -- $44 ID212 states         :   Lights Mask have the green leds control when Lights Mode is On
             OpllVol         : inout std_logic_vector(  2 downto 0 );        -- OPLL Volume
             SccVol          : inout std_logic_vector(  2 downto 0 );        -- SCC-I Volume
@@ -551,7 +561,7 @@ architecture RTL of emsx_top is
             io41_id008_n    : inout std_logic;                              -- $41 ID008 BIT-0 state    :   0=5.37MHz, 1=3.58MHz (write_n only)
             swioKmap        : inout std_logic;                              -- Keyboard layout selector
             CmtScro         : inout std_logic;                              -- CMT state
-            swioCmt         : inout std_logic;                              -- CMT enabler
+            swioCmt         : inout std_logic;                                  -- CMT enabler              :   This toggle is used for the internal OPL3 on SM-X and SX-2
             LightsMode      : inout std_logic;                              -- Custom green led states
             Red_sta         : inout std_logic;                              -- Custom red led state
             LastRst_sta     : inout std_logic;                                  -- Last reset state         :   0=Cold Reset, 1=Warm Reset (MSX2+) / 1=Cold Reset, 0=Warm Reset (MSXtR)
@@ -563,12 +573,11 @@ architecture RTL of emsx_top is
             forced_v_mode   : inout std_logic;                              -- Forced Video Mode        :   0=60Hz, 1=50Hz
             right_inverse   : inout std_logic;                              -- Right Inverse Audio      :   0=Off (Normal Wave), 1=On (Inverse Wave)
             vram_slot_ids   : inout std_logic_vector(  7 downto 0 );        -- VRAM Slot IDs            :   MSB(4bits)=0-15 for Page 1, LSB(4bits)=0-15 for Page 0
-            DefKmap         : inout std_logic;                              -- Default keyboard layout  :   0=JP, 1=Non-JP (as UK,FR,..)
+            DefKmap         : inout std_logic;                                  -- Default keyboard layout  :   0=JP, 1=Non-JP (BR, ES, FR, US, ...)
             -- 'DIP-SW' group
             ff_dip_req      : in    std_logic_vector(  7 downto 0 );        -- DIP-SW states/reqs
             ff_dip_ack      : inout std_logic_vector(  7 downto 0 );        -- DIP-SW acks
             -- 'KEYS' group
---          SdPaus          : in    std_logic;                              -- dismissed
             Scro            : in    std_logic;
             ff_Scro         : in    std_logic;
             Reso            : in    std_logic;
@@ -581,8 +590,6 @@ architecture RTL of emsx_top is
             swioRESET_n     : inout std_logic;                              -- Reset Pulse
             warmRESET       : inout std_logic;                              -- 0=Cold Reset, 1=Warm Reset
             WarmMSXlogo     : inout std_logic;                              -- Show MSX logo with Warm Reset
-            -- 'MACHINES' group
-            ZemmixNeo       : inout std_logic;                              -- Machine type             :   0=1chipMSX, 1=Zemmix Neo
             -- 'IPL-ROM' group
             JIS2_ena        : inout std_logic;                              -- JIS2 enabler             :   0=JIS1 only (BIOS 384 kB), 1=JIS1+JIS2 (BIOS 512 kB)
             portF4_mode     : inout std_logic;                              -- Port F4 mode             :   0=F4 Device Inverted (MSX2+), 1=F4 Device Normal (MSXtR)
@@ -594,7 +601,9 @@ architecture RTL of emsx_top is
             iSlt1_linear    : inout std_logic;                                  -- Internal Slot1 Linear    :   0=Disabled, 1=Enabled
             iSlt2_linear    : inout std_logic;                                  -- Internal Slot2 Linear    :   0=Disabled, 1=Enabled
             Slot0_req       : inout std_logic;                                  -- Slot0 Primary Mode req   :   Warm Reset is necessary to complete the request
-            Slot0Mode       : inout std_logic                                   -- Current Slot0 state      :   0=Primary, 1=Expanded
+            Slot0Mode       : inout std_logic;                                  -- Current Slot0 state      :   0=Primary, 1=Expanded
+            vga_scanlines   : inout std_logic_vector(  1 downto 0 );            -- VGA Scanlines 0%, 25%, 50% or 75% (default is 0%)
+            btn_scan        : in    std_logic                                   -- Scanlines button
         );
     end component;
 
@@ -619,8 +628,8 @@ architecture RTL of emsx_top is
     signal  io40_n          : std_logic_vector(  7 downto 0 ) := (others => '1');
     signal  io41_id212_n    : std_logic_vector(  7 downto 0 );              -- here to reduce LEs
     signal  io42_id212      : std_logic_vector(  7 downto 0 );
-    signal  io43_id212      : std_logic_vector(  7 downto 0 );
-    alias   RstKeyLock      : std_logic is io43_id212(5);
+    signal  io43_id212      : std_logic_vector(  7 downto 0 ) := (others => '0');
+    alias   RstKeyLock      : std_logic is io43_id212(5);                           -- RESET_n lock does not work on Cyclone I machine slot pins without a hardware patch
     signal  io44_id212      : std_logic_vector(  7 downto 0 );
     alias   GreenLeds       : std_logic_vector(  7 downto 0 ) is io44_id212;
     signal  CustomSpeed     : std_logic_vector(  3 downto 0 );
@@ -634,8 +643,8 @@ architecture RTL of emsx_top is
     signal  MegaSD_ack      : std_logic;
     signal  io41_id008_n    : std_logic;
     signal  swioKmap        : std_logic;
-    signal  CmtScro         : std_logic;
-    signal  swioCmt         : std_logic;
+    signal  CmtScro         : std_logic := '0';
+    signal  swioCmt         : std_logic := '0';
     signal  LightsMode      : std_logic;
     signal  Red_sta         : std_logic;
     signal  LastRst_sta     : std_logic;                                    -- here to reduce LEs
@@ -651,10 +660,9 @@ architecture RTL of emsx_top is
     signal  ff_dip_ack      : std_logic_vector(  7 downto 0 );              -- here to reduce LEs
     signal  LevCtrl         : std_logic_vector(  2 downto 0 );
     signal  GreenLvEna      : std_logic;
-    signal  swioRESET_n     : std_logic;
+    signal  swioRESET_n     : std_logic := '1';
     signal  warmRESET       : std_logic := '0';
     signal  WarmMSXlogo     : std_logic;                                    -- here to reduce LEs
-    signal  ZemmixNeo       : std_logic;
     signal  JIS2_ena        : std_logic;
     signal  portF4_mode     : std_logic;
     signal  RatioMode       : std_logic_vector(  2 downto 0 ) := (others => '0');
@@ -664,13 +672,15 @@ architecture RTL of emsx_top is
     signal  iSlt2_linear    : std_logic;
     signal  Slot0_req       : std_logic;                                    -- here to reduce LEs
     signal  Slot0Mode       : std_logic;
+    signal  vga_scanlines   : std_logic_vector(  1 downto 0 ) := "00";
+    signal  btn_scan        : std_logic := '1';
 
     -- System timer (S1990)
     signal  systim_req      : std_logic;
     signal  systim_dbi      : std_logic_vector(  7 downto 0 );
 
     -- Operation mode
-    signal  w_key_mode      : std_logic;                                    -- Kana key board layout: 1=JIS layout
+    signal  w_key_mode      : std_logic;                                            -- Kana keyboard layout: 1=JIS layout (PSG)
     signal  Kmap            : std_logic;                                    -- '0': Japanese-106    '1': Non-Japanese (English-101, French, ..)
     signal  DisplayMode     : std_logic_vector(  1 downto 0 ) := "10";
     signal  Slot1Mode       : std_logic;
@@ -692,14 +702,17 @@ architecture RTL of emsx_top is
     signal  reset           : std_logic;
     signal  RstSeq          : std_logic_vector(  4 downto 0 ) := (others => '0');
     signal  FreeCounter     : std_logic_vector( 15 downto 0 ) := (others => '0');
-    signal  HoldRst_ena     : std_logic := '0';
     signal  HardRst_cnt     : std_logic_vector(  3 downto 0 ) := (others => '0');
     signal  LogoRstCnt      : std_logic_vector(  4 downto 0 ) := (others => '0');
     signal  logo_timeout    : std_logic_vector(  1 downto 0 );
-    signal  trueClk         : std_logic;
+    signal  iCpuClk         : std_logic;
+    signal  power_on_reset  : std_logic := '0';
 
     -- MSX cartridge slot control signals
+    signal  iSltRst_n       : std_logic := '0';
+    signal  xSltRst_n       : std_logic := '1';
     signal  BusDir          : std_logic;
+    signal  BusDir_o        : std_logic;
     signal  iSltRfsh_n      : std_logic;
     signal  iSltMerq_n      : std_logic;
     signal  iSltIorq_n      : std_logic;
@@ -753,7 +766,8 @@ architecture RTL of emsx_top is
 
     -- IPL-ROM signals
     signal  RomDbi          : std_logic_vector(  7 downto 0 );
-    signal  ff_ldbios_n     : std_logic;
+    signal  ff_ldbios_n     : std_logic := '0';
+    signal  ff_reload_n     : std_logic := '0';
 
     -- ESE-RAM signals
     signal  ErmReq          : std_logic;
@@ -766,6 +780,7 @@ architecture RTL of emsx_top is
     signal  MmcAct          : std_logic;
     signal  MmcDbi          : std_logic_vector(  7 downto 0 );
     signal  MmcEnaLed       : std_logic;
+    signal  Blink_s         : std_logic;
 
     -- EPCS/ASMI signals
     signal  EPC_CK          : std_logic;
@@ -803,7 +818,8 @@ architecture RTL of emsx_top is
     signal  Fkeys           : std_logic_vector(  7 downto 0 );
 
     -- CMT signals
-    alias   CmtOut          : std_logic is PpiPortC(5);
+--    signal  CmtIn           : std_logic;
+--    alias   CmtOut          : std_logic is PpiPortC(5);
 
     -- 1bit sound port signal
     alias   KeyClick        : std_logic is PpiPortC(7);
@@ -811,6 +827,9 @@ architecture RTL of emsx_top is
     -- RTC signals
     signal  RtcReq          : std_logic;
     signal  RtcDbi          : std_logic_vector(  7 downto 0 );
+    signal  rtcclk          : std_logic := '1';
+    signal  rtcena          : std_logic := '0';
+    signal  rtcdiv3         : std_logic_vector(  1 downto 0 ) := "10";
 
     -- Kanji signals
     signal  KanReq          : std_logic;
@@ -868,15 +887,15 @@ architecture RTL of emsx_top is
 
     signal  Scc1Type        : std_logic_vector(  1 downto 0 );
 
-    -- Opll signals
+    -- OPLL signals
     signal  OpllReq         : std_logic;
     signal  OpllAck         : std_logic;
     signal  OpllAmp         : std_logic_vector(  9 downto 0 );
     signal  OpllEnaWait     : std_logic;
 
     -- Sound signals
-    constant DAC_MSBI       : integer := 13;
-    signal  DACin           : std_logic_vector(DAC_MSBI downto 0);
+    constant DAC_msbi       : integer := 13;
+    signal  DACin           : std_logic_vector(DAC_msbi downto 0);
     signal  DACout          : std_logic;
 
     signal  OpllVol         : std_logic_vector(  2 downto 0 ) := "100";
@@ -904,7 +923,6 @@ architecture RTL of emsx_top is
     signal  SdrLdq          : std_logic;
     signal  SdrAdr          : std_logic_vector( 12 downto 0 );
     signal  SdrDat          : std_logic_vector( 15 downto 0 );
---  signal  SdPaus          : std_logic := '0';                             -- dismissed
 
     constant SdrCmd_de      : std_logic_vector(  3 downto 0 ) := "1111";    -- deselect
     constant SdrCmd_pr      : std_logic_vector(  3 downto 0 ) := "0010";    -- precharge all
@@ -917,25 +935,22 @@ architecture RTL of emsx_top is
     constant SdrCmd_wr      : std_logic_vector(  3 downto 0 ) := "0100";    -- write
 
     -- Clock divider
-    signal  clkdiv3         : std_logic_vector(  1 downto 0 );
-    signal  PausFlash       : std_logic;
+    signal  clkdiv3         : std_logic_vector(  1 downto 0 ) := "10";
     signal  ff_mem_seq      : std_logic_vector(  1 downto 0 );
 
     -- Operation mode
-    signal  ff_clk21m_cnt   : std_logic_vector( 20 downto 0 );              -- free run counter
-    signal  flash_cnt       : std_logic_vector(  3 downto 0 );              -- flash counter
+    signal  ff_clk21m_cnt   : std_logic_vector( 20 downto 0 ) := (others => '0');   -- free run counter
     signal  GreenLv         : std_logic_vector(  6 downto 0 );              -- green level
     signal  GreenLv_cnt     : std_logic_vector(  3 downto 0 );              -- green level counter
-    signal  ff_rst_seq      : std_logic_vector(  1 downto 0 );
-    signal  FadedRed        : std_logic;
-    signal  FadedGreen      : std_logic;
+    alias   FadedRed        : std_logic is ff_clk21m_cnt(0);
+    alias   FadedGreen      : std_logic is ff_clk21m_cnt(12);
 
-    -- RTC lfsr counter
-    signal  rtcbase_cnt     : std_logic_vector( 21 downto 0 );
-    signal  rtcbase_d0      : std_logic;
+    -- w_10hz with LFSR counter
+    signal  w_10hz_lfsr     : std_logic_vector( 21 downto 0 ) := (others => '0');
+    signal  w_10hz_d0       : std_logic;
     signal  w_10hz          : std_logic := '1';
 
-    -- Sound output, Toggle keys
+    -- Sound output, toggle keys
     signal  vFKeys          : std_logic_vector(  7 downto 0 );
     signal  ff_Scro         : std_logic;
     signal  ff_Reso         : std_logic;
@@ -945,6 +960,10 @@ architecture RTL of emsx_top is
 
     -- SD-RAM controller
     signal  ff_sdr_seq      : std_logic_vector(  2 downto 0 );
+
+    -- Port F2 device (ESP8266 BIOS)
+    signal  portF2_req      : std_logic;
+    signal  portF2          : std_logic_vector(  7 downto 0 ) := (others => '1');
 
     -- Port F4 device
     signal portF4_req       : std_logic;
@@ -977,9 +996,16 @@ architecture RTL of emsx_top is
 --  signal  ff_lpf_div      : std_logic_vector( 3 downto 0 );               -- sccic
 --  signal  w_lpf2ena       : std_logic;                                    -- sccic
 
---  test PCM
---  signal  ff_pcm          : std_logic_vector( 11 downto 0 );
---  signal  pcm_req         : std_logic;
+    -- ESP signals
+    signal  esp_dout_s      : std_logic_vector(  7 downto 0 ) := (others => '1');
+    signal  esp_wait_s      : std_logic := '1';
+    signal  esp_tx_i        : std_logic;
+    signal  esp_rx_o        : std_logic;
+
+    -- MIDI signals
+    signal  midi_o          : std_logic;
+    signal  midi_active_o   : std_logic;
+    signal  midi_dout_s     : std_logic_vector(  7 downto 0 ) := (others => '1');
 
 begin
 
@@ -1016,7 +1042,7 @@ begin
         end if;
     end process;
 
-    -- Prescaler : 21.48MHz / 6
+    -- CPUCLK Prescaler : 21.48MHz / 6
     process( reset, clk21m )
     begin
         if( reset = '1' )then
@@ -1030,7 +1056,7 @@ begin
         end if;
     end process;
 
-    -- Prescaler : 21.48MHz / 4
+    -- Turbo Clocks Prescaler : 21.48MHz / 4
     process( reset, clk21m )
     begin
         if( reset = '1' )then
@@ -1095,7 +1121,6 @@ begin
                     LogoRstCnt <= "11111";                                                  -- 3100ms
                     logo_timeout <= "00";
                 end if;
---          elsif( w_10hz = '1' and LogoRstCnt /= "00000" and SdPaus = '0' )then        -- dismissed
             elsif( w_10hz = '1' and LogoRstCnt /= "00000" )then
                 LogoRstCnt <= LogoRstCnt - 1;
                 if( LogoRstCnt = "10010" )then -- 1800ms
@@ -1112,7 +1137,7 @@ begin
     begin
         if( clk21m'event and clk21m = '0' )then
             if( cpuclk = '0' and clkdiv = "00" and wait_n_s = '0' )then
-                    if( ff_ldbios_n = '0' or logo_timeout = "00" )then                  -- ultra-fast bootstrap
+                if( ff_ldbios_n = '0' or logo_timeout = "00" )then                      -- ultra-fast boot
                         ff_clksel5m_n   <=  '1';
                         ff_clksel       <=  '1';
                     elsif( logo_timeout = "10" )then
@@ -1134,7 +1159,6 @@ begin
     -- virtual DIP-SW assignment (2/2)
     process( clk21m )
     begin
---      if( clk21m'event and clk21m = '1' and SdPaus = '0' )then                        -- dismissed
         if( clk21m'event and clk21m = '1' )then
             Kmap <= swioKmap;                                                           -- keyboard layout assignment
             CmtScro           <=  swioCmt;
@@ -1147,16 +1171,58 @@ begin
     end process;
 
     -- cpu clock assignment
-    trueClk     <=  -- '1'          when( SdPaus /= '0' )else                                               -- dismissed
-                    clkdiv(0)       when( ff_clksel = '1' and reset /= '1' )else                            -- 10.74 MHz
-                    clkdiv(1)       when( ff_clksel5m_n = '0' and reset /= '1' )else                        --  5.37 MHz
+    iCpuClk <=  '1'         when( power_on_reset = '0' )else
+                rtcclk      when( reset = '1' )else                                     --  3.58MHz
+                clkdiv(0)   when( ff_clksel = '1' )else                                 -- 10.74MHz
+                clkdiv(1)   when( ff_clksel5m_n = '0' )else                             --  5.37MHz
                     cpuclk;                                                                                 --  3.58 MHz
 
-    -- slots clock assignment
-    pCpuClk     <=  -- '1'          when( SdPaus /= '0' )else                                               -- dismissed
-                    clkdiv(0)       when( ff_clksel = '1' and extclk3m = '0' and reset /= '1' )else         -- 10.74 MHz
-                    clkdiv(1)       when( ff_clksel5m_n = '0' and extclk3m = '0' and reset /= '1' )else     --  5.37 MHz
+    -- clock assignment of external slots
+    pCpuClk <=  '1'         when( power_on_reset = '0' )else
+                rtcclk      when( reset = '1' )else                                     --  3.58MHz
+                clkdiv(0)   when( ff_clksel = '1' and extclk3m = '0' )else              -- 10.74MHz
+                clkdiv(1)   when( ff_clksel5m_n = '0' and extclk3m = '0' )else          --  5.37MHz
                     cpuclk;                                                                                 --  3.58 MHz
+
+    ----------------------------------------------------------------
+    -- Real Time Clock enabler
+    ----------------------------------------------------------------
+
+    -- RTC enabler : 3.58MHz = 21.48MHz / 6
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if( rtcdiv3 = "00" )then
+                rtcena <= rtcclk;
+            else
+                rtcena <= '0';
+            end if;
+        end if;
+    end process;
+
+    -- RTCCLK : 3.58MHz = 21.48MHz / 6
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if( rtcdiv3 = "10" )then
+                rtcclk <= not rtcclk;
+            else
+                -- hold
+            end if;
+        end if;
+    end process;
+
+    -- RTC Prescaler : 21.48MHz / 6
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if( rtcdiv3 = "00" )then
+                rtcdiv3 <= "10";
+            else
+                rtcdiv3 <= rtcdiv3 - 1;
+            end if;
+        end if;
+    end process;
 
     ----------------------------------------------------------------
     -- Reset control
@@ -1166,6 +1232,7 @@ begin
     process( memclk )
     begin
         if( memclk'event and memclk = '1' )then
+            -- 00 > 01 > 11 > 10
             ff_mem_seq <= ff_mem_seq(0) & (not ff_mem_seq(1));
         end if;
     end process;
@@ -1180,90 +1247,111 @@ begin
     end process;
 
     -- hard reset timer
-    process( clk21m, RstKeyLock )
+    process( clk21m )
     begin
-        if( clk21m'event and clk21m = '1' and RstKeyLock = '0' )then
-            if( pSltRst_n /= '0' )then
-                HoldRst_ena <= '0';
-                if( HardRst_cnt /= "0011" or HardRst_cnt /= "0010" )then
-                    HardRst_cnt <= "0000";
-                end if;
+        if( clk21m'event and clk21m = '1' )then
+            if( xSltRst_n = '0' )then
+                -- hard reset is held down
+                iSltRst_n <= '0';                                                       -- reset = '1'
+                if( HardRst_cnt = "0000" )then
+                    if( ff_reload_n = '0' )then
+                        HardRst_cnt <= "0010";                                          -- 100ms to timeout
             else
-                if( HoldRst_ena = '0' )then
-                    HardRst_cnt <= "1110";              -- 1500ms hold reset
-                    HoldRst_ena <= '1';
-                elsif( w_10hz = '1' and HardRst_cnt /= "0001" )then
+                        HardRst_cnt <= "1100";                                          -- short click < 1000ms
+                    end if;
+                elsif( w_10hz = '1' and HardRst_cnt /= "0001" )then                     -- timeout
                     HardRst_cnt <= HardRst_cnt - 1;
                 end if;
+            else
+                -- hard reset has been released
+                HardRst_cnt <= "0000";
+                iSltRst_n <= '1';                                                       -- reset = '0'
             end if;
         end if;
     end process;
 
+    -- RstSeq count
     process( memclk )
     begin
         if( memclk'event and memclk = '1' )then
-			if( HardRst_cnt = "0011" )then                  -- 200ms from "0001"
-				if( w_10hz = '1' and RstSeq /= "00000" )then
-					RstSeq <= (others => '0');
-				end if;
+            if( HardRst_cnt = "0010" )then                                              -- long click > 1000ms
+                RstSeq <= "00000";                                                      -- RstSeq is required
+                ff_reload_n <= '0';                                                     -- OCM-BIOS is partial
 			elsif( ff_mem_seq = "00" and FreeCounter = X"FFFF" and RstSeq /= "11111" )then
                 RstSeq <= RstSeq + 1;                   -- 3ms (= 65536 / 21.48MHz)
+            elsif( ff_ldbios_n = '1' )then
+                ff_reload_n <= '1';                                                     -- OCM-BIOS is complete
             end if;
         end if;
     end process;
 
-    reset       <=  '1' when( pSltRst_n = '0' and RstKeyLock = '0' and HardRst_cnt /= "0001" )else
-                    '1' when( swioRESET_n = '0' or HardRst_cnt = "0011" or HardRst_cnt = "0010" or RstSeq /= "11111" )else
-                    '0';
+    -- hard reset button
+    process( memclk )
+    begin
+        if( memclk'event and memclk = '1' )then
+            xSltRst_n <= pSltRst_n or RstKeyLock;                                       -- hard reset /w lock
+        end if;
+    end process;
+
+    -- reset assignment
+    process( memclk )
+    begin
+        if( memclk'event and memclk = '1' )then
+            if( RstSeq = "11111" )then
+                -- RstSeq has finished
+                reset <= not (iSltRst_n and swioRESET_n);                               -- global reset
+            else
+                -- RstSeq is in progress
+                reset <= '1';                                                           -- SD-RAM integrity protection
+            end if;
+        end if;
+    end process;
+
+    -- power on reset
+    process( memclk )
+    begin
+        if( memclk'event and memclk = '1' )then
+            if( ff_clk21m_cnt( 19 downto 15 ) = "11001" )then                           -- about 38ms
+                power_on_reset <= '1';
+            end if;
+        end if;
+    end process;
 
     ----------------------------------------------------------------
     -- Operation mode
     ----------------------------------------------------------------
 
     -- free run counter
-    process( reset, clk21m )
+    process( clk21m )
     begin
-        if( reset = '1' )then
-            ff_clk21m_cnt <= (others => '0');
-        elsif( clk21m'event and clk21m = '1' )then
+        if( clk21m'event and clk21m = '1' )then
             ff_clk21m_cnt <= ff_clk21m_cnt + 1;
         end if;
     end process;
 
-    -- RTC lfsr counter => range 0 to 2147726 (crystal oscillator) = 100ms
+    -- w_10hz with LFSR counter = 100ms
     -- http://outputlogic.com/?page_id=275
-    rtcbase_d0  <=  (rtcbase_cnt(21) xnor rtcbase_cnt(20));
+    w_10hz_d0 <= w_10hz_lfsr(21) xnor w_10hz_lfsr(20);
 
-    w_10hz      <=  '1' when( rtcbase_cnt = "0010001111000001111010" )else
-                    '0';
-
-    process ( clk21m )
+    process( w_10hz_lfsr )
     begin
-        if( clk21m'event and clk21m = '1' )then
-            if( w_10hz = '1' )then
-                    rtcbase_cnt <= (others => '0');
+        -- for XTAL 21.47727MHz
+        if( w_10hz_lfsr = "1000111100000111101010" )then    -- x"23C1EA" / LFSR count = 2147728 clock ticks
+        -- for XTAL 50.00000MHz
+--      if( w_10hz_lfsr = "0011101100100110000010" )then    -- x"0EC982" / LFSR count = 2148438 clock ticks
+            w_10hz <= '1';
                 else
-                    rtcbase_cnt <= (rtcbase_cnt( 20 downto 0 ) & rtcbase_d0);
-                end if;
+            w_10hz <= '0';
             end if;
     end process;
 
-    -- flash counter
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
-            if( Paus = '0' )then
-                if( ff_clksel5m_n = '1' )then
-                    flash_cnt <= "0000";
+            if( w_10hz = '1' )then
+                w_10hz_lfsr <= (others => '0');
                 else
-                    flash_cnt <= "0100";
-                end if;
-            elsif( w_10hz = '1' )then
-                if( flash_cnt = "0000" )then
-                    flash_cnt <= "1011";                -- 1200ms
-                else
-                    flash_cnt <= flash_cnt - 1;
-                end if;
+                w_10hz_lfsr <= (w_10hz_lfsr( 20 downto 0 ) & w_10hz_d0);
             end if;
         end if;
     end process;
@@ -1275,9 +1363,9 @@ begin
             GreenLv_cnt <= "0000";
         elsif( clk21m'event and clk21m = '1' )then
             if( GreenLvEna = '1' )then
-                GreenLv_cnt <= "1111";
+                GreenLv_cnt <= "1111";                      -- 1600ms
             elsif( w_10hz = '1' and GreenLv_cnt /= "0000" )then
-                GreenLv_cnt <= GreenLv_cnt - 1;         -- 1600ms
+                GreenLv_cnt <= GreenLv_cnt - 1;
             end if;
         end if;
     end process;
@@ -1301,127 +1389,38 @@ begin
         end if;
     end process;
 
-    -- reset enable wait counter
-    --
-    --  ff_rst_seq(0)   X___X~~~X~~~X___X___X ...
-    --  ff_rst_seq(1)   X___X___X~~~X~~~X___X ...
-    --
-    process( reset, clk21m )
-    begin
-        if( reset = '1' )then
-            ff_rst_seq <= "00";
-        elsif( clk21m'event and clk21m = '1' )then
-            if( w_10hz = '1' )then
-                ff_rst_seq <= ff_rst_seq(0) & (not ff_rst_seq(1));
-            else
-                --  hold
-            end if;
-        end if;
-    end process;
-
-    -- power LED
-    process( reset, clk21m, ZemmixNeo )
-    begin
-        if( reset = '1' )then
-            pLedPwr <= clk21m or ZemmixNeo;                 -- lights test holding the hard reset
-        elsif( clk21m'event and clk21m = '1' )then
---          if( SdPaus = '1' )then                          -- dismissed
---              if( PausFlash = '1' and ZemmixNeo = '0' )then
---                  pLedPwr <= FadedRed;                    -- Pause        is Flash + Faded Red
---              else
---                  pLedPwr <= '0';
---              end if;
---          -- Lights On/Off toggle
---          elsif( Red_sta = '1' and GreenLv_cnt = "0000" and Paus = '0' )then
-            if( (Red_sta = '1' and GreenLv_cnt = "0000" and Paus = '0') or (PausFlash = '1' and DEBUG_ENA = 1) )then
---          elsif( ff_clksel5m_n = '0' )then                -- test for tMegaSD
-                if( ZemmixNeo = '1' )then
-                    pLedPwr <= '1';                         -- On
-                else
-                    pLedPwr <= FadedRed;                    -- 5.37MHz On   is Faded Red only
-                end if;
-            else
---              pLedPwr <= logo_timeout(0);                 -- test for the logo speed limiter
-                pLedPwr <= '0';                             -- Off / Blink
-            end if;
-        end if;
-    end process;
-
-    -- DIP-SW latch
+    -- blink assignment (specific for 1chipMSX)
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
---          if( SdPaus = '0' )then                          -- dismissed
-            ff_dip_req <= not pDip;                        -- convert negative logic to positive logic, and latch
---          end if;
-        end if;
-    end process;
-
-    -- LEDs luminance
-    process( clk21m )
-    begin
-        if( clk21m'event and clk21m = '1' )then
-            if( ZemmixNeo = '0' )then
-                FadedGreen  <=  ff_clk21m_cnt(12);
-                FadedRed    <=  ff_clk21m_cnt(0);
+            Blink_s <= ff_clk21m_cnt(20) or (not ff_clk21m_cnt(19));
+            if( Blink_ena = '1' and MmcEna = '1' )then
+                MmcEnaLed <= Blink_s and FadedGreen;
+            elsif( Blink_ena = '0' and LightsMode = '0' )then
+                MmcEnaLed <= MmcMode and FadedGreen;
+            elsif( LightsMode = '1' )then
+                MmcEnaLed <= GreenLeds(7) and FadedGreen;
             else
-                FadedGreen  <=  '1';
-                FadedRed    <=  '1';
+                MmcEnaLed <= '0';
             end if;
         end if;
     end process;
 
-    -- Kana keyboard layout: 1=JIS layout
-    w_key_mode  <=  '1';
+    -- power LED assignment (specific for 1chipMSX)
+    pLedPwr <=  (clk21m                              )      -- LED light test on reset
+                                                            when( iSltRst_n = '0' or power_on_reset = '0' )else
+                (FadedRed                            )      -- On
+                                                            when( Paus = '0' and Red_sta = '1' and GreenLv_cnt = "0000" )else
+                ('0'                                 );     -- Off
 
-    -- Pause Flash (800ms On + 400ms Off = 1200ms per cycle)
-    PausFlash   <=  '0' when( flash_cnt( 3 downto 2 ) = "00" )else
-                    '1';
-    -- Blink assignment
-    MmcEnaLed   <=  ((ff_clk21m_cnt(20) or (not ff_clk21m_cnt(19))) and FadedGreen)
-                            when( Blink_ena = '1' and MmcEna = '1' )else
-                    (MmcMode        and FadedGreen)
-                            when( Blink_ena = '0' and LightsMode = '0' )else
-                    (GreenLeds(7)   and FadedGreen)
-                            when( LightsMode = '1' )else
-                    '0';
+    -- LEDs assignment (specific for 1chipMSX)
+    pLed    <=  (others     => FreeCounter(0)        )      -- LED lights test on reset
+                                                            when( iSltRst_n = '0' or power_on_reset = '0' )else
 
-    -- LEDs assignment
-    pLed        <=  -- "000" &                              -- Pause Flash for Zemmix Neo               -- dismissed
-                    -- (PausFlash          and  FadedGreen) &
-                    -- "0000"                               when( ZemmixNeo = '1' and SdPaus = '1' )else
+                (others     => '0'                   )      -- Blackout Mode
+                                                            when( Paus = '1' )else
 
-                    "00000000"                              -- Lights On/Off toggle
-                                                            when( Paus = '1' and DEBUG_ENA /= 1 )else
-
-                    BREAK_POINT(7)                       &  -- DEBUG MODE for Zemmix Neo
-                    BREAK_POINT(6)                       &
-                    BREAK_POINT(5)                       &
-                    BREAK_POINT(4)                       &
-                    BREAK_POINT(3)                       &
-                    BREAK_POINT(2)                       &
-                    BREAK_POINT(1)                       &
-                    BREAK_POINT(0)                          when( Paus = '1' and ZemmixNeo = '1' )else
-
-                    (BREAK_POINT(0)     and  FadedGreen) &  -- DEBUG MODE for 1chipMSX
-                    (BREAK_POINT(1)     and  FadedGreen) &
-                    (BREAK_POINT(2)     and  FadedGreen) &
-                    (BREAK_POINT(3)     and  FadedGreen) &
-                    (BREAK_POINT(4)     and  FadedGreen) &
-                    (BREAK_POINT(5)     and  FadedGreen) &
-                    (BREAK_POINT(6)     and  FadedGreen) &
-                    (BREAK_POINT(7)     and  FadedGreen)    when( Paus = '1' )else
-
-                    GreenLeds(0)                         &  -- LightsMode + Blink for Zemmix Neo
-                    GreenLeds(1)                         &
-                    GreenLeds(2)                         &
-                    GreenLeds(3)                         &
-                    GreenLeds(4)                         &
-                    GreenLeds(5)                         &
-                    GreenLeds(6)                         &
-                    MmcEnaLed                               when( LightsMode = '1' and ZemmixNeo = '1' )else
-
-                    MmcEnaLed                            &  -- Blink + LightsMode for 1chipMSX
+                (MmcEnaLed                           ) &    -- Blink + Lights Mode
                     (GreenLeds(6)       and  FadedGreen) &
                     (GreenLeds(5)       and  FadedGreen) &
                     (GreenLeds(4)       and  FadedGreen) &
@@ -1430,37 +1429,16 @@ begin
                     (GreenLeds(1)       and  FadedGreen) &
                     (GreenLeds(0)       and  FadedGreen)    when( LightsMode = '1' )else
 
-                    GreenLv(0)                           &  -- Volume + High-Speed Level + Blink for Zemmix Neo
-                    GreenLv(1)                           &
-                    GreenLv(2)                           &
-                    GreenLv(3)                           &
-                    GreenLv(4)                           &
-                    GreenLv(5)                           &
-                    GreenLv(6)                           &
-                    MmcEnaLed                               when( GreenLv_cnt /= "0000" and ZemmixNeo = '1' )else
+                (MmcEnaLed                           ) &    -- Blink + Volume
+                (GreenLv(6)     and FadedGreen       ) &
+                (GreenLv(5)     and FadedGreen       ) &
+                (GreenLv(4)     and FadedGreen       ) &
+                (GreenLv(3)     and FadedGreen       ) &
+                (GreenLv(2)     and FadedGreen       ) &
+                (GreenLv(1)     and FadedGreen       ) &
+                (GreenLv(0)     and FadedGreen       )      when( GreenLv_cnt /= "0000" )else
 
-                    MmcEnaLed                            &  -- Blink + Volume + High-Speed Level for 1chipMSX
-                    (GreenLv(6)     and  FreeCounter(1)) &
-                    (GreenLv(5)     and  FreeCounter(1)) &
-                    (GreenLv(4)     and  FreeCounter(1)) &
-                    (GreenLv(3)     and  FreeCounter(1)) &
-                    (GreenLv(2)     and  FreeCounter(1)) &
-                    (GreenLv(1)     and  FreeCounter(1)) &
-                    (GreenLv(0)     and  FreeCounter(1))    when( GreenLv_cnt /= "0000" )else
-
-                                                            -- lights test holding the hard reset
-                    (others =>          FreeCounter(0))     when( pSltRst_n = '0' and RstKeyLock = '0' )else
-
-                    io42_id212(0)                        &  -- Virtual DIP-SW (Auto) + Blink for Zemmix Neo
-                    DisplayMode(1)                       &
-                    DisplayMode(0)                       &
-                    Slot1Mode                            &
-                    Slot2Mode(1)                         &
-                    Slot2Mode(0)                         &
-                    FullRAM                              &
-                    MmcEnaLed                               when( ZemmixNeo = '1' )else
-
-                    MmcEnaLed                            &  -- Blink + Virtual DIP-SW (Auto) for 1chipMSX
+                (MmcEnaLed                           ) &    -- Blink + Virtual DIP-SW (Auto)
                     (FullRAM            and  FadedGreen) &
                     (Slot2Mode(0)       and  FadedGreen) &
                     (Slot2Mode(1)       and  FadedGreen) &
@@ -1468,6 +1446,17 @@ begin
                     (DisplayMode(0)     and  FadedGreen) &
                     (DisplayMode(1)     and  FadedGreen) &
                     (io42_id212(0)      and  FadedGreen);
+
+    -- DIP-SW latch
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            ff_dip_req <= not pDip;                         -- convert negative logic to positive logic, and latch
+        end if;
+    end process;
+
+    -- Kana keyboard layout: 1=JIS layout (PSG)
+    w_key_mode  <=  '1';
 
     ----------------------------------------------------------------
     -- MSX cartridge slot control
@@ -1482,26 +1471,29 @@ begin
     pSltInt_n   <=  '0' when( pVdpInt_n = '0' )else
                     'Z';
 
-    pSltSltsl_n <=  '1' when Scc1Type /= "00" else
+    pSltSltsl_n <=  '1' when( Scc1Type /= "00" )else
                     '0' when( pSltMerq_n = '0' and CpuRfsh_n = '1' and PriSltNum = "01" )else
                     '1';
 
-    pSltSlts2_n <=  '1' when Slot2Mode /= "00" else
-                    '0' when pSltMerq_n = '0' and CpuRfsh_n = '1' and PriSltNum  = "10" else
+    pSltSlts2_n <=  '1' when( Slot2Mode /= "00" )else
+                    '0' when( pSltMerq_n = '0' and CpuRfsh_n = '1' and PriSltNum = "10" )else
                     '1';
 
     pSltBdir_n  <=  'Z';
 
-    pSltDat     <=  (others => 'Z') when pSltRd_n = '1' else
-                    dbi when( pSltIorq_n = '0' and BusDir    = '1' )else
-                    dbi when( pSltMerq_n = '0' and PriSltNum = "00" )else
-                    dbi when( pSltMerq_n = '0' and PriSltNum = "11" )else
-                    dbi when( pSltMerq_n = '0' and PriSltNum = "01" and Scc1Type /= "00" )else
-                    dbi when( pSltMerq_n = '0' and PriSltNum = "10" and Slot2Mode /= "00" )else
+    BusDir_o    <=  '0' when( pSltRd_n = '1' )else
+                    '1' when( pSltIorq_n = '0' and BusDir = '1' )else
+                    '1' when( pSltMerq_n = '0' and PriSltNum = "00" )else
+                    '1' when( pSltMerq_n = '0' and PriSltNum = "11" )else
+                    '1' when( pSltMerq_n = '0' and PriSltNum = "01" and Scc1Type /= "00" )else
+                    '1' when( pSltMerq_n = '0' and PriSltNum = "10" and Slot2Mode /= "00" )else
+                    '0';
+
+    pSltDat     <=  dbi when( BusDir_o = '1' )else
                     (others => 'Z');
 
     pSltRsv5    <= 'Z';
-    pSltRsv16   <= 'Z';
+    pSltRsv16   <=  (not reset) and power_on_reset;                     -- can perform RESET_n lock on Cyclone I machine slot pins by applying a hardware patch
     pSltSw1     <= 'Z';
     pSltSw2     <= 'Z';
 
@@ -1510,7 +1502,7 @@ begin
     ----------------------------------------------------------------
     -- Z80 CPU wait control
     ----------------------------------------------------------------
-    process( trueClk, reset )
+    process( iCpuClk, reset )
 
         variable iCpuM1_n   : std_logic;                                -- slack 1.759ns
         variable jSltMerq_n : std_logic;
@@ -1524,9 +1516,9 @@ begin
             jSltIorq_n  := '1';
             jSltMerq_n  := '1';
             count       := "0000";
-            wait_n_s    <= '1';
+            wait_n_s    <= '1';                                         -- WAIT_n fix by Victor Trucco
 
-        elsif( trueClk'event and trueClk = '1' )then
+        elsif( iCpuClk'event and iCpuClk = '1' )then
 
             if( pSltMerq_n = '0' and jSltMerq_n = '1' )then
                 if( ff_clksel = '1' )then
@@ -1548,7 +1540,7 @@ begin
                 count := count - 1;
             end if;
 
-            if( (CpuM1_n = '0' and iCpuM1_n = '1') or pSltWait_n ='0' )then
+            if( (CpuM1_n = '0' and iCpuM1_n = '1') or pSltWait_n = '0' or esp_wait_s = '0' )then
                 wait_n_s <= '0';
             elsif( count /= "0000" )then
                 wait_n_s <= '0';
@@ -1640,10 +1632,16 @@ begin
                 dlydbi <= swio_dbi;
             elsif( mem = '0' and adr(  7 downto 0 ) = "10100111" and portF4_mode = '1' )then    -- Pause R800 (read only)
                 dlydbi <= (others => '0');
+            elsif( mem = '0' and adr(  7 downto 0 ) = "11110010" )then                          -- Port F2 (ESP8266 BIOS)
+                dlydbi <= portF2;
             elsif( mem = '0' and adr(  7 downto 0 ) = "11110100" and portF4_mode = '1' )then    -- Port F4 normal (Z80 mode)
                 dlydbi <= portF4_bit7 & "0000000";
             elsif( mem = '0' and adr(  7 downto 0 ) = "11110100" )then                          -- Port F4 inverted
                 dlydbi <= portF4_bit7 & "1111111";
+            elsif( mem = '0' and adr(  7 downto 1 ) = "0000011" )then                           -- ESP ports 06-07h
+                dlydbi <= esp_dout_s;
+            elsif( mem = '0' and adr(  7 downto 0 ) = "11101001" )then                          -- MIDI port E9h
+                dlydbi <= midi_dout_s;
             else
                 dlydbi <= (others => '1');
             end if;
@@ -1717,8 +1715,8 @@ begin
 
     -- access acknowledge, Components > CPU
     ack     <=  RamAck      when( RamReq = '1' )else                    -- ErmAck, MapAck, KanAck
-                Scc1Ack     when( mem = '1' and iSltScc1 = '1' )else    -- Scc1Ack
-                Scc2Ack     when( mem = '1' and iSltScc2 = '1' )else    -- Scc2Ack
+                Scc1Ack     when( jSltScc1 = '1' )else                  -- Scc1Ack
+                Scc2Ack     when( jSltScc2 = '1' )else                  -- Scc2Ack
                 OpllAck     when( OpllReq = '1' )else                   -- OpllAck
                 req;                                                    -- PsgAck, PpiAck, VdpAck, RtcAck, ...
 
@@ -1726,6 +1724,24 @@ begin
                 Scc2Dbi     when( jSltScc2 = '1' )else
                 RamDbi      when( jSltMem  = '1' )else
                 dlydbi;
+
+    ----------------------------------------------------------------
+    -- Port F2 (ESP8266 BIOS)
+    ----------------------------------------------------------------
+    -- this device allows to program operating states of ESP8266 and
+    -- to distinguish whether the system boot was cold (power off or
+    -- hard reset) or warm (RESET or GETRESET from command line)
+    ----------------------------------------------------------------
+    process( clk21m, reset )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if( reset = '1' and warmRESET /= '1' )then
+                portF2 <= (others => '1');
+            elsif( portF2_req = '1' and wrt = '1' )then
+                portF2 <= dbo;
+            end if;
+        end if;
+    end process;
 
     ----------------------------------------------------------------
     -- Port F4
@@ -1749,13 +1765,13 @@ begin
         if( reset = '1' )then
             PpiPortA    <= "11111111";          -- primary slot : page 0 => boot-rom, page 1/2 => ese-mmc, page 3 => mapper
             PpiPortC    <= (others => '0');
-            ff_ldbios_n <= '0';                 -- OCM-BIOS is waiting to be loaded by IPL-ROM
+            ff_ldbios_n <= '0';                 -- OCM-BIOS is required
         elsif( clk21m'event and clk21m = '1' )then
             -- I/O port access on A8-ABh ... PPI(8255) access
             if( PpiReq = '1' )then
                 if( wrt = '1' and adr(1 downto 0) = "00" )then
                     PpiPortA    <= dbo;
-                    ff_ldbios_n <= '1';         -- OCM-BIOS has been loaded by IPL-ROM
+                    ff_ldbios_n <= '1';         -- OCM-BIOS is ready
                 elsif( wrt = '1' and adr(1 downto 0) = "10" )then
                     PpiPortC  <= dbo;
                 elsif( wrt = '1' and adr(1 downto 0) = "11" and dbo(7) = '0' )then
@@ -1781,26 +1797,6 @@ begin
                 PpiPortB when adr(1 downto 0) = "01" else
                 PpiPortC when adr(1 downto 0) = "10" else
                 (others => '1');
-
-    ----------------------------------------------------------------
-    --  test PCM
-    ----------------------------------------------------------------
---  process( reset, clk21m )
---  begin
---      if( reset = '1' )then
---          ff_pcm <= "100000000000";
---      elsif( clk21m'event and clk21m = '1' )then
---          if( pcm_req = '1' )then
---              if(    wrt = '1' and adr(0) = '0' )then
---                  ff_pcm(  7 downto 0 ) <= dbo;
---              elsif( wrt = '1' and adr(0) = '1' )then
---                  ff_pcm( 11 downto 8 ) <= dbo( 3 downto 0 );
---              else
---                  -- hold
---              end if;
---          end if;
---      end if;
---  end process;
 
     ----------------------------------------------------------------
     -- Expansion slot
@@ -1951,9 +1947,9 @@ begin
     RtcReq  <=  req when( mem = '0' and adr(7 downto 1) = "1011010" )else '0';                      -- I/O:B4-B5h   / RTC (RP-5C01)
     systim_req  <=  req when( mem = '0' and adr(7 downto 1) = "1110011" )else '0';                  -- I/O:E6-E7h   / System timer (S1990)
     swio_req    <=  req when( mem = '0' and adr(7 downto 4) = "0100" )else '0';                     -- I/O:40-4Fh   / Switched I/O ports
+    portF2_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110010" )else '0';                 -- I/O:F2h      / Port F2 device (ESP8266 BIOS)
     portF4_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110100" )else '0';                 -- I/O:F4h      / Port F4 device
     tr_pcm_req  <=  req when( mem = '0' and adr(7 downto 1) = "1010010" )else '0';                  -- I/O:A4h-A5h  / turboR PCM device
-    --  pcm_req <=  req when( mem = '0' and adr(7 downto 1) = "1110100" )else '0';                  -- I/O:E8-E9h   / test PCM
 
     BusDir  <=  '1' when( pSltAdr(7 downto 2) = "100110"                         )else  -- I/O:98-9Bh / VDP (V9938/V9958)
                 '1' when( pSltAdr(7 downto 2) = "101000"                         )else  -- I/O:A0-A3h / PSG (AY-3-8910)
@@ -1965,9 +1961,11 @@ begin
                 '1' when( pSltAdr(7 downto 1) = "1110011"                        )else  -- I/O:E6-E7h / System timer (S1990)
                 '1' when( pSltAdr(7 downto 4) = "0100" and io40_n /= "11111111"  )else  -- I/O:40-4Fh / Switched I/O ports
                 '1' when( pSltAdr(7 downto 0) = "10100111" and portF4_mode = '1' )else  -- I/O:A7h    / Pause R800 (read only)
+                '1' when( pSltAdr(7 downto 0) = "11110010"                       )else  -- I/O:F2h    / Port F2 device (ESP8266 BIOS)
                 '1' when( pSltAdr(7 downto 0) = "11110100"                       )else  -- I/O:F4h    / Port F4 device
                 '1' when( pSltAdr(7 downto 1) = "1010010"                        )else  -- I/O:A4-A5h / turboR PCM device
---              '1' when( pSltAdr(7 downto 1) = "1110100"                        )else  -- I/O:E8-E9h / test PCM
+                '1' when( pSltAdr(7 downto 1) = "0000011"                        )else  -- I/O:06-07h / ESP
+                '1' when( pSltAdr(7 downto 0) = "11101001"                       )else  -- I/O:E9h    / MIDI
                 '0';
 
     ----------------------------------------------------------------
@@ -1981,8 +1979,8 @@ begin
         if( clk21m'event and clk21m = '1' )then
             case DisplayMode is
             when "00" =>                                            -- TV 15KHz
-                pDac_VR     <= videoC;                              -- Luminance of S-Video Out
-                pDac_VG     <= videoY;                              -- Chrominance of S-Video Out
+                pDac_VR     <= videoC;                              -- Chrominance of S-Video Out
+                pDac_VG     <= videoY;                              -- Luminance of S-Video Out
                 pDac_VB     <= videoV;                              -- Composite Video Out
                 Reso_v      <= '0';                                 -- Hsync:15kHz
                 pVideoHS_n  <= 'Z';                                 -- CSync Disabled
@@ -1990,33 +1988,21 @@ begin
 --              legacy_vga  <= '0';                                 -- behaves like vAllow_n        (for V9938 MSX2 VDP)
 
             when "01" =>                                            -- RGB 15kHz
-                if( ZemmixNeo = '1')then                            -- Luminance 100%
-                    pDac_VR     <= VideoR;
-                    pDac_VG     <= VideoG;
-                    pDac_VB     <= VideoB;
-                else                                                -- Luminance 50%
-                    pDac_VR     <= "0" & VideoR( 5 downto 1 );
-                    pDac_VG     <= "0" & VideoG( 5 downto 1 );
-                    pDac_VB     <= "0" & VideoB( 5 downto 1 );
-                end if;
+                pDac_VR     <= VideoR;                              -- Luminance 100%
+                pDac_VG     <= VideoG;
+                pDac_VB     <= VideoB;
                 Reso_v      <= '0';                                 -- Hsync:15kHz
-					 -- MiST change
+                -- MiST change
                 pVideoHS_n  <= VideoHS_n;
                 pVideoVS_n  <= VideoVS_n;
 --                pVideoHS_n  <= VideoCS_n;                           -- CSync Enabled
---                pVideoVS_n  <= DACout;                              -- Audio Out (Mono)
+                --pVideoVS_n  <= DACout;                              -- Audio Out (Mono)
 --              legacy_vga  <= '0';                                 -- behaves like vAllow_n        (for V9938 MSX2 VDP)
 
             when others =>                                          -- VGA / VGA+ 31kHz
-                if( ZemmixNeo = '1')then                            -- Luminance 100%
-                    pDac_VR     <= VideoR;
-                    pDac_VG     <= VideoG;
-                    pDac_VB     <= VideoB;
-                else                                                -- Luminance 50%
-                    pDac_VR     <= "0" & VideoR( 5 downto 1 );
-                    pDac_VG     <= "0" & VideoG( 5 downto 1 );
-                    pDac_VB     <= "0" & VideoB( 5 downto 1 );
-                end if;
+                pDac_VR     <= VideoR;                              -- Luminance 100%
+                pDac_VG     <= VideoG;
+                pDac_VB     <= VideoB;
                 Reso_v      <= '1';                                 -- Hsync:31kHz
                 pVideoHS_n  <= VideoHS_n;
                 pVideoVS_n  <= VideoVS_n;
@@ -2031,7 +2017,7 @@ begin
         end if;
     end process;
 
-    -- PRNSCR key
+    -- PRTSCR key
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
@@ -2082,7 +2068,6 @@ begin
             -- amplitude ramp of the PSG (full range)
             ff_prepsg <= ("0" & PsgAmp) + (KeyClick & "00000");
             c_Psg       := ("1" & PsgVol) - ("0" & MstrVol);
---          if( PsgVol = "000" or MstrVol = "111" or SdPaus = '1' )then             -- dismissed
             if( PsgVol = "000" or MstrVol = "111" )then
                 ff_psg      <= ( others => '0' );
             elsif( c_Psg > h_thrd )then
@@ -2095,10 +2080,10 @@ begin
                 chPsg       := "00" & ff_prepsg( ff_prepsg'high downto 2 );
                 ff_psg      <= "0" & ("0" & (chPsg * (PsgVol - MstrVol + l_ramp + x_thrd)) + chPsg( chPsg'high - 4 downto  0 )) & "00";
             end if;
+
             -- amplitude ramp of the SCC-I (full range)
             ff_prescc   <= (Scc1AmpL(14) & Scc1AmpL) + (Scc2AmpL(14) & Scc2AmpL);
             c_Scc       := ("1" & SccVol) - ("0" & MstrVol);
---          if( SccVol = "000" or MstrVol = "111" or SdPaus = '1' )then             -- dismissed
             if( SccVol = "000" or MstrVol = "111" )then
                 m_SccVol    <= "000";
                 ff_scc      <= ( others => w_scc(18) );
@@ -2112,9 +2097,9 @@ begin
                 m_SccVol    <= SccVol - MstrVol + l_ramp;
                 ff_scc      <= w_scc(18) & w_scc(18) & w_scc(18) & w_scc( 18 downto  6 );
             end if;
+
             -- amplitude ramp of the OPLL (full range)
             c_Opll      := ("1" & OpllVol) - ("0" & MstrVol);
---          if( OpllVol = "000" or MstrVol = "111" or SdPaus = '1' )then            -- dismissed
             if( OpllVol = "000" or MstrVol = "111" )then
                 ff_opll <= c_opll_offset;
             elsif( OpllAmp < c_opll_zero )then
@@ -2158,6 +2143,7 @@ begin
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
+
 		      -- ff_pre_dacin assignment
             ff_pre_dacin <= (not ff_psg) + ff_scc + ff_opll + ff_tr_pcm;
 
@@ -2168,18 +2154,40 @@ begin
                 when others => DACin <= (others => ff_pre_dacin( ff_pre_dacin'high ));
             end case;
 
---          DACin <= ff_pcm;        -- test PCM
         end if;
     end process;
 
-    pDac_SL   <=  "ZZZZZZ"  when( pseudoStereo = '1' and CmtScro = '0' )else
-                  DACout & "ZZZZ" & DACout;                     -- the DACout setting is used to balance the input line of external slots
+    -- left audio channel
+    pDac_SL <= null                                         when( power_on_reset = '0' )else
+               "ZZZZZZ"                                     when( pseudoStereo = '1' and (CmtScro = '0' or portF4_mode = '1') )else
+               DACout & "ZZZZ" & DACout;                    -- multiple DACout lines are used to balance the audio cartridges on Cyclone I machines
 
-    -- Cassette Magnetic Tape (CMT) interface
-	pDac_SR(4) <= cmtIn;
+    -- Cassette Magnetic Tape (CMT) interface / right audio channel
+    CmtOut <= PpiPortC(5);
+
+    process( clk21m )
+    begin
+        if( clk21m'event and clk21m = '1' )then
+            if( power_on_reset = '1' )then
+--                if( CmtScro = '1' and portF4_mode = '0' )then
+--                    pDac_SR(5 downto 4) <= "ZZ";
+--                    pDac_SR(3 downto 1) <= CmtIn & (not CmtIn) & "0";
+--                    pDac_SR(0)          <= CmtOut;
+--                    CmtIn               <= pDac_SR(5);      -- CMT enabled  (SCRLK = On, MSX2+)
+--                else                                        -- CMT data input is always '0' on MSXtR
+--                    CmtIn               <= '0';             -- CMT disabled (default)
+                    if( right_inverse = '1' )then
+                        pDac_SR         <= not DACout & "ZZZZ" & not DACout;
+                    else
+                        pDac_SR         <= DACout & "ZZZZ" & DACout;
+                    end if;
+--                end if;
+            end if;
+        end if;
+    end process;
 
     -- SCRLK key
-    process( reset, clk21m )
+    process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
             ff_Scro     <= Scro;
@@ -2205,7 +2213,7 @@ begin
     -- Slot 3-1 : ExtROM + KanjiROM     630000-63BFFF (  48 kB)
     -- Slot 3-2 : MegaSDHC / NEXTOR     600000-61FFFF ( 128 kB)
     --            EseRAM                600000-67FFFF (BIOS: 512 kB)
-    --            RAMDISK(unused)       680000-68FFFF (FREE: 512 kB) <= not implemented because it slows down the startup
+    --            RAMDISK(unused)       680000-6FFFFF (FREE: 512 kB) <= not implemented because it slows down the startup
     -- Slot 3-3 : IPL-ROM               (blockRAM: 1 kB, see IPLROM*.ASM) <= shared w/ XBASIC
     -- VRAM     : VRAM                  700000-7FFFFF (1024 kB)
     -- I/O      : Kanji-data            640000-67FFFF ( 256 kB)
@@ -2258,18 +2266,17 @@ begin
                 if( RstSeq(4 downto 2) = "000" )then
                     SdrSta <= "000";                                                -- idle
                 elsif( RstSeq(4 downto 2) = "001" )then
-                    case RstSeq(1 downto 0) is
-                        when "00"       => SdrSta <= "000";                         -- idle
-                        when "01"       => SdrSta <= "001";                         -- precharge all
-                        when "10"       => SdrSta <= "010";                         -- refresh (more than 8 cycles)
-                        when others     => SdrSta <= "011";                         -- mode register set
-                    end case;
+                --  case RstSeq(1 downto 0) is
+                --      when "00"       => SdrSta <= "000";                         -- idle
+                --      when "01"       => SdrSta <= "001";                         -- precharge all
+                --      when "10"       => SdrSta <= "010";                         -- refresh (more than 8 cycles)
+                --      when others     => SdrSta <= "011";                         -- mode register set
+                --  end case;
+                    SdrSta <= "0" & RstSeq(1 downto 0);
                 elsif( RstSeq(4 downto 3) /= "11" )then
                     SdrSta <= "101";                                                -- Write (Initialize memory content)
                 elsif( iSltRfsh_n = '0' and VideoDLClk = '1' )then
                     SdrSta <= "010";                                                -- refresh
---              elsif( SdPaus = '1' and VideoDLClk = '1' )then                      -- dismissed
---                  SdrSta <= "010";                                                -- refresh
                 else
                     --  Normal memory access mode
                     SdrSta(2) <= '1';                                               -- read/write cpu/vdp
@@ -2373,21 +2380,21 @@ begin
                 when "010" =>
                     SdrAdr(12 downto 9) <= "0010";                                  -- A10=1 => enable auto precharge
                     if( RstSeq(4 downto 2) = "010" )then
-                        SdrAdr(8 downto 0) <= "111" & "000" & ClrAdr(15 downto 13); -- clear VRAM (128 kB)        => start adr 700000h
-                    elsif( RstSeq(4 downto 2) = "011" )then
-                        SdrAdr(8 downto 0) <= "110" & "000" & ClrAdr(15 downto 13); -- clear ERAM (128 kB)        => start adr 600000h
-                    elsif( RstSeq(4 downto 2) = "100" )then
-                        SdrAdr(8 downto 0) <= "000" & "000" & ClrAdr(15 downto 13); -- clear MainRAM (128 kB)     => start adr 000000h
-                    elsif( RstSeq(4 downto 1) = "1010" )then
-                        SdrAdr(8 downto 0) <= "100" & "000" & ClrAdr(15 downto 13); -- clear ESE-SCC2             => start adr 400000h
-                    elsif( RstSeq(4 downto 1) = "1011" )then
-                        SdrAdr(8 downto 0) <= "101" & "000" & ClrAdr(15 downto 13); -- clear ESE-SCC1             => start adr 500000h
+                        SdrAdr(8 downto 0) <= "111" & "000" & "0" & ClrAdr(14 downto 13);   -- clear VRAM     (16 kB * 4)   =>  start adr 700000h
+                    elsif( RstSeq(4 downto 1) = "0110" )then
+                        SdrAdr(8 downto 0) <= "110" & "000" & "00" & ClrAdr(13);            -- clear ERAM     (16 kB * 2)   =>  start adr 600000h
+                    elsif( RstSeq(4 downto 0) = "01110" )then
+                        SdrAdr(8 downto 0) <= "101" & "000" & "000";                        -- clear ESE-SCC1 (16 kB * 1)   =>  start adr 500000h
+                    elsif( RstSeq(4 downto 0) = "01111" )then
+                        SdrAdr(8 downto 0) <= "100" & "000" & "000";                        -- clear ESE-SCC2 (16 kB * 1)   =>  start adr 400000h
+                    elsif( RstSeq(4 downto 3) = "10" )then
+                        SdrAdr(8 downto 0) <= "000" & "000" & ClrAdr(15 downto 13);         -- clear MainRAM  (16 kB * 8)   =>  start adr 000000h
                     elsif( VideoDLClk = '0' )then
                         SdrAdr(8 downto 0) <= CpuAdr(22 downto 14);
                     elsif( VdpAdr(15) = '0' )then
-                        SdrAdr(8 downto 0) <= "11" & "1" & vram_page(3 downto 0) & VdpAdr(14 downto 13);
+                        SdrAdr(8 downto 0) <= "111" & vram_page(3 downto 0) & VdpAdr(14 downto 13);
                     else
-                        SdrAdr(8 downto 0) <= "11" & "1" & vram_page(7 downto 4) & VdpAdr(14 downto 13);
+                        SdrAdr(8 downto 0) <= "111" & vram_page(7 downto 4) & VdpAdr(14 downto 13);
                     end if;
                 when others =>
                     null;
@@ -2460,24 +2467,6 @@ begin
         end if;
     end process;
 
---  --  'PAUSE' assignment (dismissed)
---  process( memclk )
---  begin
---      if( memclk'event and memclk = '1' )then
---          if( mmcena = '0' )then
---              if( ff_sdr_seq = "101" )then
---                  if( SdrSta(2) = '1' )then
---                      if( SdrSta(0) = '0' and pVdpInt_n /= '0' )then
---                          SdPaus <= Paus;
---                      end if;
---                  else
---                      SdPaus <= Paus;
---                  end if;
---              end if;
---          end if;
---      end if;
---  end process;
-
     -- SDRAM controller state
     process( memclk )
     begin
@@ -2530,8 +2519,8 @@ begin
     ----------------------------------------------------------------
     -- Reserved ports (USB)
     ----------------------------------------------------------------
-    pUsbP1      <= 'Z';
-    pUsbN1      <= 'Z';
+--  pUsbP1      <= 'Z';
+--  pUsbN1      <= 'Z';
     pUsbP2      <= 'Z';
     pUsbN2      <= 'Z';
 
@@ -2548,9 +2537,9 @@ begin
 
     U01 : t80a
         port map(
-            RESET_n     => ((pSltRst_n or RstKeyLock) and swioRESET_n),
+            RESET_n     => (not reset),
             R800_mode   => portF4_mode,
-            CLK_n       => trueClk,
+            CLK_n       => iCpuClk,
             WAIT_n      => wait_n_s,
             INT_n       => pSltInt_n,
             NMI_n       => '1',
@@ -2607,7 +2596,7 @@ begin
         port map(clk21m, reset, VdpReq, open, wrt, adr, VdpDbi, dbo, pVdpInt_n,
                         open, WeVdp_n, VdpAdr, VrmDbi, VrmDbo, VdpSpeedMode or (not hybridclk_n), RatioMode, centerYJK_R25_n,
                         VideoR, VideoG, VideoB, VideoHS_n, VideoVS_n, VideoCS_n,
-                        VideoDHClk, VideoDLClk, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga);
+                        VideoDHClk, VideoDLClk, open, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga);
 
     U21 : vencode
         port map(clk21m, reset, VideoR, VideoG, videoB, VideoHS_n, VideoVS_n,
@@ -2621,8 +2610,7 @@ begin
         port map(clk21m, reset, clkena, Scc1Req, Scc1Ack, wrt, adr, Scc1Dbi, dbo,
                         Scc1Ram, Scc1Wrt, Scc1Adr, RamDbi, open, Scc1Type, Scc1AmpL, open);
 
-    Scc1Type <= "00"    when( Slot1Mode = '0' )else
-                "10";
+    Scc1Type <= Slot1Mode & "0";
 
     U31_2 : megaram
         port map(clk21m, reset, clkena, Scc2Req, Scc2Ack, wrt, adr, Scc2Dbi, dbo,
@@ -2631,17 +2619,8 @@ begin
     U32 : eseopll
         port map(clk21m, reset, clkena, OpllEnaWait, OpllReq, OpllAck, wrt, adr, dbo, OpllAmp);
 
-    -- OPLL enabler
-    process( clk21m )
-    begin
-        if( clk21m'event and clk21m = '1' )then
-            if( ff_clksel = '1' or ff_clksel5m_n = '0' )then
-                OpllEnaWait <= '1';
-            else
-                OpllEnaWait <= '0';
-            end if;
-        end if;
-    end process;
+    -- OPLL wait enabler
+    OpllEnaWait <= ff_clksel xnor ff_clksel5m_n;
 
     --  sound output lowpass filter (sccic)
 --  process( reset, clk21m )
@@ -2684,18 +2663,19 @@ begin
     );
 
     U33: esepwm
-        generic map ( DAC_MSBI ) port map (clk21m, reset, lpf5_wave, DACout);
+        generic map(DAC_msbi) port map(clk21m, reset, lpf5_wave, DACout);
 
-    U34: system_timer
-    port map (
-        clk21m  => clk21m       ,
-        reset   => reset        ,
-        req     => systim_req   ,
+    U34 : system_timer
+        port map(
+            clk21m  => clk21m       ,
+            reset   => reset        ,
+            req     => systim_req   ,
             ack     => open         ,
-        adr     => adr          ,
-        dbi     => systim_dbi   ,
-        dbo     => dbo
-    );
+            wrt     => wrt          ,
+            adr     => adr          ,
+            dbi     => systim_dbi   ,
+            dbo     => dbo
+        );
 
     U35: switched_io_ports
     port map (
@@ -2746,7 +2726,6 @@ begin
         ff_dip_req      => ff_dip_req       ,
         ff_dip_ack      => ff_dip_ack       ,   -- here to reduce LEs
 
---      SdPaus          => SdPaus           ,   -- dismissed
         Scro            => Scro             ,
         ff_Scro         => ff_Scro          ,
         Reso            => Reso             ,
@@ -2760,8 +2739,6 @@ begin
         warmRESET       => warmRESET        ,
         WarmMSXlogo     => WarmMSXlogo      ,   -- here to reduce LEs
 
-        ZemmixNeo       => ZemmixNeo        ,
-
         JIS2_ena        => JIS2_ena         ,
         portF4_mode     => portF4_mode      ,
         ff_ldbios_n     => ff_ldbios_n      ,
@@ -2772,7 +2749,9 @@ begin
             iSlt1_linear    => iSlt1_linear     ,
             iSlt2_linear    => iSlt2_linear     ,
         Slot0_req       => Slot0_req        ,   -- here to reduce LEs
-        Slot0Mode       => Slot0Mode
+            Slot0Mode       => Slot0Mode        ,
+            vga_scanlines   => vga_scanlines    ,
+            btn_scan        => '1'
     );
 
     U40 : tr_pcm
@@ -2781,19 +2760,41 @@ begin
 
      tr_pcm_wave_in <= (others => '0');
 
-    -- debug enabler 'SHIFT+PAUSE'
-    process( clk21m )
-    constant DEBUG_MODE     : boolean := FALSE; -- TRUE = enabled, FALSE = disabled
-    begin
-        if( clk21m'event and clk21m = '1' )then
-            if( Fkeys(7) = '1' and Paus = '0' )then
-                DEBUG_ENA   := 2;
-            elsif( Fkeys(7) = '0' and Paus = '0' )then
-                DEBUG_ENA   := 0;
-            elsif( DEBUG_ENA = 2 AND DEBUG_MODE )then
-                DEBUG_ENA   := 1;
-            end if;
-        end if;
-    end process;
+    uwifi : work.wifi
+        port map(
+            clk_i           => clk21m,
+            wait_o          => esp_wait_s,
+            reset_i         => xSltRst_n,           -- swioRESET_n was purposely excluded here
+            iorq_i          => pSltIorq_n,
+            wrt_i           => pSltWr_n,
+            rd_i            => pSltRd_n,
+            tx_i            => esp_tx_i,
+            rx_o            => esp_rx_o,
+            adr_i           => adr,
+            db_i            => dbo,
+            db_o            => esp_dout_s
+        );
+
+    esp_tx_i <= pUsbP1;
+    pUsbN1 <= esp_rx_o;
+
+    umidi : work.midi
+        port map(
+            clk_i           => clk21m,
+            reset_i         => (not reset),
+            iorq_i          => pSltIorq_n,
+            wrt_i           => pSltWr_n,
+            rd_i            => pSltRd_n,
+            tx_i            => '0',
+            rx_o            => midi_o,              -- module output pin
+            adr_i           => adr,
+            db_i            => dbo,
+            db_o            => midi_dout_s,
+            tx_active_o     => midi_active_o
+        );
+
+    pJoyB(0) <= midi_o when( midi_active_o = '1' )else
+                'Z';
+    oMidi <= midi_o;
 
 end RTL;

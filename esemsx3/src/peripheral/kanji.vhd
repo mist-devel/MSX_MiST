@@ -30,10 +30,10 @@
 -- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 -------------------------------------------------------------------------------
--- 16th, August, 2017 modified by KdL
+-- 16th,August,2017 modified by KdL
 -- Fixed kanjiptr2 counter
 --
--- 05th, April, 2008 modified by t.hara
+-- 05th,April,2008 modified by t.hara
 -- リファクタリング。
 --
 

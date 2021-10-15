@@ -30,9 +30,14 @@
 -- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 -- 2013.08.12 modified by KdL
--- Added RWIN and LWIN usable as alternatives to the space-bar.
+-- Added RWIN and LWIN usable as an alternative to the space-bar.
 --
--- 2015.05.20 - Brazilian ABNT2 keymap by Fabio Belavenuto
+-- 2015.05.20 modified by Fabio Belavenuto
+-- Implemented the Brazilian ABNT2 keymap.
+--
+-- 2018.12.16 modified by KdL
+-- Added MENU usable as an alternative to the F7 key for KANA/CODE.
+-- Fixed scancode of SHIFT+F6 (GRAPH).
 --
 
 library ieee;
@@ -60,7 +65,7 @@ constant rom101 : rom_101 := (
 --       +-----+-----+-----+-----+-----+-----+-----+-----+
 -- #FBE5 | 7 ' | 6 & | 5 % | 4 $ | 3 # | 2 " | 1 ! |  0  |  0
 --       +-----+-----+-----+-----+-----+-----+-----+-----+
--- #FBE6 | ; + | [ { | @ ` | ¥ | | ^ ~ | - = | 9 ) | 8 ( |  1
+-- #FBE6 | ; + | [ { | @ ` | Â¥ | | ^ ~ | - = | 9 ) | 8 ( |  1
 --       +-----+-----+-----+-----+-----+-----+-----+-----+
 -- #FBE7 |  B  |  A  |  _  | / ? | . > | , < | ] } | : * |  2
 --       +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -108,15 +113,15 @@ constant rom101 : rom_101 := (
         X"7F", X"03", X"55", X"13", X"23", X"40", X"30", X"7F", -- 20..27
 --             Space  V      F      T      R      5/%
         X"7F", X"08", X"35", X"33", X"15", X"74", X"50", X"7F", -- 28..2F
---             N      B      H      G      Y      6/¨
+--             N      B      H      G      Y      6/Â¨
         X"7F", X"34", X"72", X"53", X"43", X"65", X"60", X"7F", -- 30..37
 --                    M      J      U      7/&    8/*
         X"7F", X"7F", X"24", X"73", X"25", X"70", X"01", X"7F", -- 38..3F
 --             ,/<    K      I      O      0/)    9/(
         X"7F", X"22", X"04", X"63", X"44", X"00", X"11", X"7F", -- 40..47
---             ./>    ;/:    L      Ç      P      -/_
+--             ./>    ;/:    L      Ã‡      P      -/_
         X"7F", X"32", X"71", X"14", X"03", X"54", X"21", X"7F", -- 48..4F
---             //?    ~/^           ´/`    =/+
+--             //?    ~/^           Â´/`    =/+
         X"7F", X"42", X"B1", X"7F", X"7F", X"A1", X"7F", X"7F", -- 50..57
 --      CapLk  RShft  Enter  [/{           ]/}
         X"36", X"06", X"77", X"61", X"7F", X"12", X"7F", X"7F", -- 58..5F
@@ -161,7 +166,7 @@ constant rom101 : rom_101 := (
 --                                                       RWin
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"08", -- 20..27  (RWIN = $27 = SPACE)
 --                                                       Menu
-        X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", -- 28..2F
+        X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"46", -- 28..2F  (MENU = $2F = KANA)
 --                                                       Power
         X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", X"7F", -- 30..37
 --                                                       Sleep
@@ -206,7 +211,7 @@ constant rom101 : rom_101 := (
 --             F9            F5     F3     F1     F2
         X"FF", X"FF", X"FF", X"97", X"F6", X"D6", X"E6", X"FF", -- 00..07
 --             F10    F8     F6     F4     Tab    '/"
-        X"FF", X"FF", X"E7", X"E6", X"87", X"B7", X"A0", X"FF", -- 08..0F
+        X"FF", X"FF", X"E7", X"A6", X"87", X"B7", X"A0", X"FF", -- 08..0F
 --             LAlt   LShft         LCtrl  Q      1/!
         X"FF", X"A6", X"86", X"C6", X"96", X"E4", X"90", X"FF", -- 10..17
 --                    Z      S      A      W      2/@
@@ -215,15 +220,15 @@ constant rom101 : rom_101 := (
         X"FF", X"83", X"D5", X"93", X"A3", X"C0", X"B0", X"FF", -- 20..27
 --             Space  V      F      T      R      5/%
         X"FF", X"88", X"B5", X"B3", X"95", X"F4", X"D0", X"FF", -- 28..2F
---             N      B      H      G      Y      6/¨
+--             N      B      H      G      Y      6/Â¨
         X"FF", X"B4", X"F2", X"D3", X"C3", X"E5", X"FF", X"FF", -- 30..37
 --                    M      J      U      7/&    8/*
         X"FF", X"FF", X"A4", X"F3", X"A5", X"E0", X"82", X"FF", -- 38..3F
 --             ,/<    K      I      O      0/)    9/(
         X"FF", X"A2", X"84", X"E3", X"C4", X"91", X"81", X"FF", -- 40..47
---             ./>    ;/:    L      Ç      P      -/_
+--             ./>    ;/:    L      Ã‡      P      -/_
         X"FF", X"B2", X"02", X"94", X"83", X"D4", X"D2", X"FF", -- 48..4F
---             //?    ~/^           ´/`    =/+
+--             //?    ~/^           Â´/`    =/+
         X"FF", X"C2", X"31", X"FF", X"F0", X"F1", X"FF", X"FF", -- 50..57
 --      CapLk  RShft  Enter  [/{           ]/}
         X"B6", X"86", X"F7", X"E1", X"FF", X"92", X"FF", X"FF", -- 58..5F
@@ -268,7 +273,7 @@ constant rom101 : rom_101 := (
 --                                                       RWin
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"88", -- 20..27  (RWIN = $27 = SHIFT + SPACE)
 --                                                       Menu
-        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 28..2F
+        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"C6", -- 28..2F  (MENU = $2F = SHIFT + KANA)
 --                                                       Power
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 30..37
 --                                                       Sleep
@@ -360,7 +365,7 @@ constant rom106 : rom_106 := (
         X"FF", X"26", X"FF", X"FF", X"16", X"FF", X"FF", X"FF", -- 10
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"08", -- 18  (LWIN = $1F = SPACE)
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"08", -- 20  (RWIN = $27 = SPACE)
-        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 28
+        X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"46", -- 28  (MENU = $2F = KANA)
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 30
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 38
         X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", X"FF", -- 40

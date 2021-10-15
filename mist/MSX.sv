@@ -32,6 +32,7 @@ module MSX
     output        AUDIO_R,
 
     input         UART_RX,
+	output        UART_TX,
 
     input         SPI_SCK,
     output        SPI_DO,
@@ -53,7 +54,7 @@ module MSX
     output        SDRAM_CKE
 );
 
-assign LED  = ~leds[7];
+assign LED  = ~leds[0];
 
 `include "build_id.v"
 parameter CONF_STR = {
@@ -191,10 +192,6 @@ sd_card sd_card
         .sd_sdi(Sd_Cm),
         .sd_sdo(Sd_Dt[0])
 );
-wire [5:0] audio_li;
-wire [5:0] audio_ri;
-wire [5:0] audio_l;
-wire [5:0] audio_r;
 
 wire [5:0] joya = status[7] ? ~joy_1[5:0] : ~joy_0[5:0];
 wire [5:0] joyb = status[7] ? ~joy_0[5:0] : ~joy_1[5:0];
@@ -218,11 +215,6 @@ wire resetW = status[0] | buttons[1];
 always @(posedge clk_sys) begin
 	reset <= resetW;
 	dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
-	audio_li <= audio_l;
-	if (status[9]) begin		
-		audio_ri <= audio_r;
-	end	
-		else audio_ri<= audio_l;
 end
 
 always_comb begin
@@ -281,6 +273,9 @@ always @(posedge clk_sys) begin
     end
 end
 
+wire  [5:0] Dac_SL, Dac_SR;
+wire        Cmt_Out;
+
 emsx_top emsx
 (
 //        -- Clock, Reset ports
@@ -321,18 +316,23 @@ emsx_top emsx
         .pLed       (leds),
 
 //        -- Video, Audio/CMT ports
+        .CmtIn      (UART_RX),
+        .CmtOut     (Cmt_Out),
         .pDac_VR    (R_O),      // RGB_Red / Svideo_C
         .pDac_VG    (G_O),      // RGB_Grn / Svideo_Y
         .pDac_VB    (B_O),      // RGB_Blu / CompositeVideo
         .pVideoHS_n (HSync),    // HSync(RGB15K, VGA31K)
         .pVideoVS_n (VSync),    // VSync(RGB15K, VGA31K)
 
-        .CmtIn      (UART_RX),
-        .pDac_SL    (audio_l),
-        .pDac_SR    (audio_r),
+        .pDac_SL    (Dac_SL),
+        .pDac_SR    (Dac_SR),
 
-        .iRTC       (rtc)
+        .iRTC       (rtc),
+		.oMidi      (UART_TX)
 );
+
+assign AUDIO_L = Dac_SL[0];
+assign AUDIO_R = status[9] ? Cmt_Out : Dac_SR[0];
 
 //////////////////   VIDEO   //////////////////
 wire  [5:0] R_O;
@@ -388,22 +388,5 @@ always @(posedge clk_sys) begin
 	VGA_HS <= ((~no_csync & scandoubler_disable) || ypbpr)? cs : hs;
 	VGA_VS <= ((~no_csync & scandoubler_disable) || ypbpr)? 1'b1 : vs;
 end
-
-//////////////////   AUDIO   //////////////////
-dac #(6) dac_l
-(
-	.clk_i(clk_sys),
-	.res_n_i(1'b1),
-	.dac_i(audio_li),
-	.dac_o(AUDIO_L)
-);
-
-dac #(6) dac_r
-(
-	.clk_i(clk_sys),
-	.res_n_i(1'b1),
-	.dac_i(audio_ri),
-	.dac_o(AUDIO_R)
-);
 
 endmodule

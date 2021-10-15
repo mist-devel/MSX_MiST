@@ -73,16 +73,16 @@
 --   - Insert the license text.
 --   - Add the document part below.
 --
--- 12th,August,2006 created by Kunihiko Ohnaka
+-- 12nd,August,2006 created by Kunihiko Ohnaka
 -- JP: VDPのコアの実装とスクリーンモードの実装を分離した
 --
--- 13th,March,2008
+-- 13rd,March,2008
 -- Fixed Blink by caro
 --
 -- 22nd,March,2008
 -- JP: タイミング緩和と、リファクタリング by t.hara
 --
--- 11th, September,2019 modified by Oduvaldo Pavan Junior
+-- 11st, September,2019 modified by Oduvaldo Pavan Junior
 -- Fixed the lack of page flipping (R13) capability
 --
 -- Added the undocumented feature where R1 bit #2 change the blink counter
@@ -110,8 +110,10 @@ ENTITY VDP_TEXT12 IS
         DOTSTATE                    : IN    STD_LOGIC_VECTOR(  1 DOWNTO 0 );
         DOTCOUNTERX                 : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
         DOTCOUNTERY                 : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
+        DOTCOUNTERYP                : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
 
         VDPMODETEXT1                : IN    STD_LOGIC;
+        VDPMODETEXT1Q               : IN    STD_LOGIC;
         VDPMODETEXT2                : IN    STD_LOGIC;
 
         -- REGISTERS
@@ -175,14 +177,14 @@ BEGIN
     ----------------------------------------------------------------
     TXCHARCOUNTER       <=  TXCHARCOUNTERSTARTOFLINE + TXCHARCOUNTERX;
 
-    LOGICALVRAMADDRNAM  <=  (REG_R2_PT_NAM_ADDR & TXCHARCOUNTER(9 DOWNTO 0)) WHEN( VDPMODETEXT1 = '1' )ELSE
+    LOGICALVRAMADDRNAM  <=  (REG_R2_PT_NAM_ADDR & TXCHARCOUNTER(9 DOWNTO 0)) WHEN( VDPMODETEXT1 = '1' OR VDPMODETEXT1Q = '1' )ELSE
                             (REG_R2_PT_NAM_ADDR(6 DOWNTO 2) & TXCHARCOUNTER);
 
     LOGICALVRAMADDRGEN  <=  REG_R4_PT_GEN_ADDR & PATTERNNUM & DOTCOUNTERY(2 DOWNTO 0);
 
     LOGICALVRAMADDRCOL  <=  REG_R10R3_COL_ADDR(10 DOWNTO 3) & TXCHARCOUNTER(11 DOWNTO 3);
 
-    TXVRAMREADEN        <=  ITXVRAMREADEN                   WHEN( VDPMODETEXT1 = '1' )ELSE
+    TXVRAMREADEN        <=  ITXVRAMREADEN                   WHEN( VDPMODETEXT1 = '1' OR VDPMODETEXT1Q = '1' )ELSE
                             ITXVRAMREADEN OR ITXVRAMREADEN2 WHEN( VDPMODETEXT2 = '1' )ELSE
                             '0';
 
@@ -306,10 +308,10 @@ BEGIN
                 WHEN "00" =>
                     IF( DOTCOUNTERX = 11) THEN
                         TXCHARCOUNTERX <= (OTHERS => '0');
-                        IF( DOTCOUNTERY = 0 )   THEN
+                        IF( DOTCOUNTERYP = 0 )  THEN
                             TXCHARCOUNTERSTARTOFLINE <= (OTHERS => '0');
                         END IF;
-                    ELSIF( (DOTCOUNTERX = 240+11) AND (DOTCOUNTERY(2 DOWNTO 0) = "111") ) THEN
+                    ELSIF( (DOTCOUNTERX = 240+11) AND (DOTCOUNTERYP(2 DOWNTO 0) = "111") ) THEN
                             TXCHARCOUNTERSTARTOFLINE <= TXCHARCOUNTERSTARTOFLINE + TXCHARCOUNTERX;
                     END IF;
                 WHEN "01" =>
@@ -407,7 +409,7 @@ BEGIN
     --------------------------------------------------------------------------
     W_BLINK_CNT_MAX <=  REG_R13_BLINK_PERIOD( 3 DOWNTO 0 )  WHEN( FF_BLINK_STATE = '0' )ELSE
                         REG_R13_BLINK_PERIOD( 7 DOWNTO 4 );
-    W_BLINK_SYNC    <=  '1' WHEN( (DOTCOUNTERX = 0) AND (DOTCOUNTERY = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '0') )ELSE
+    W_BLINK_SYNC    <=  '1' WHEN( (DOTCOUNTERX = 0) AND (DOTCOUNTERYP = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '0') )ELSE
                         '1' WHEN( (DOTCOUNTERX = 0) AND (DOTSTATE = "00") AND (REG_R1_BL_CLKS = '1') )ELSE
                         '0';
 

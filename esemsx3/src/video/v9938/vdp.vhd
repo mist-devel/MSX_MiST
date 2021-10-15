@@ -80,14 +80,14 @@
 -- 25th,December,2010 modified by KdL
 --   - OSD Debug Window disabled.
 --
--- 13th,April,2008 modified by KdL
+-- 13rd,April,2008 modified by KdL
 --   - Forced VGA mode to 60Hz.
 --
 -- 29th,October,2006 modified by Kunihiko Ohnaka
 --   - Insert the license text.
 --   - Add the document part below.
 --
--- 3rd,Sep,2006 modified by Kunihiko Ohnaka
+-- 03rd,Sep,2006 modified by Kunihiko Ohnaka
 --  - fix several UNKNOWN REALITY problems
 --    - Horizontal Sprites problem
 --    - Overscan problem
@@ -132,10 +132,10 @@
 -- JP: パターンネームテーブルのマスクを実装→ANMAデモ対応
 -- JP: MultiColorMode(SCREEN3)実装→マジラビデモ対応
 --
--- 12th,September,2004 modified by Kazuhiro Tsujikawa
+-- 12nd,September,2004 modified by Kazuhiro Tsujikawa
 -- JP: VdpR0DispNum等をライン単位で反映→スペースマンボウでのチラツキ対策
 --
--- 11th,September,2004 modified by Kazuhiro Tsujikawa
+-- 11st,September,2004 modified by Kazuhiro Tsujikawa
 -- JP: 水平帰線割り込み修正→MGSEL(テンポ早送り)対策
 --
 -- 22nd,August,2004 modified by Kazuhiro Tsujikawa
@@ -144,10 +144,10 @@
 -- 21st,August,2004 modified by Kazuhiro Tsujikawa
 -- JP: R1/IE0(垂直帰線割り込み許可)の動作を修正→GALAGA対策
 --
--- 2nd,August,2004 modified by Kazuhiro Tsujikawa
+-- 02nd,August,2004 modified by Kazuhiro Tsujikawa
 -- JP: Screen7/8でのスプライト読み込みアドレスを修正→Snatcher対策
 --
--- 31th,July,2004 modified by Kazuhiro Tsujikawa
+-- 31st,July,2004 modified by Kazuhiro Tsujikawa
 -- JP: Screen7/8でのVRAM読み込みアドレスを修正→Snatcher対策
 --
 -- 24th,July,2004 modified by Kazuhiro Tsujikawa
@@ -170,7 +170,7 @@
 -- JP: R1/IE0(垂直帰線割り込み許可)の動作を修正
 -- JP: Ys2でバノアの家に入れる様になった
 --
--- 13th,June,2004 modified by Kazuhiro Tsujikawa
+-- 13rd,June,2004 modified by Kazuhiro Tsujikawa
 -- JP: 拡大スプライトが右に1ドットずれる不具合を修正
 -- JP: SCREEN5でスプライト右端32ドットが表示されない不具合を修正
 -- JP: SCREEN5で211ライン(最下)のスプライトが表示されない不具合を修正
@@ -186,7 +186,7 @@
 -- JP: VDPコマンドの実装を開始
 -- JP: HMMC,HMMM,YMMM,HMMV,LMMC,LMMM,LMMVを実装.まだ不具合あり.
 --
--- 12th,January,2004 modified by Kunihiko Ohnaka
+-- 12nd,January,2004 modified by Kunihiko Ohnaka
 -- JP: コメントの修正
 --
 -- 30th,December,2003 modified by Kazuhiro Tsujikawa
@@ -203,7 +203,7 @@
 -- JP: きたつもりだったが，少し収まりが悪い部分があり，あまりきれいな
 -- JP: 対応になっていない部分もあります．
 --
--- 13th,October,2003 modified by Kunihiko Ohnaka
+-- 13rd,October,2003 modified by Kunihiko Ohnaka
 -- JP: ESE-MSX基板では 2S300Eを複数用いる事ができるようにり，VDP単体で
 -- JP: 2S300Eや SRAMを占有する事が可能となった．
 -- JP: これに伴い以下のような変更を行う．

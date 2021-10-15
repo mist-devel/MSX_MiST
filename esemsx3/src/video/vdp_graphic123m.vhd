@@ -63,7 +63,7 @@
 -------------------------------------------------------------------------------
 -- Revision History
 --
--- 12th,August,2006 created by Kunihiko Ohnaka
+-- 12nd,August,2006 created by Kunihiko Ohnaka
 -- JP: VDPのコアの実装とスクリーンモードの実装を分離した
 --
 -- 29th,October,2006 modified by Kunihiko Ohnaka
@@ -95,6 +95,7 @@ ENTITY VDP_GRAPHIC123M IS
         DOTCOUNTERY                 : IN    STD_LOGIC_VECTOR(  8 DOWNTO 0 );
 
         VDPMODEMULTI                : IN    STD_LOGIC;
+        VDPMODEMULTIQ               : IN    STD_LOGIC;
         VDPMODEGRAPHIC1             : IN    STD_LOGIC;
         VDPMODEGRAPHIC2             : IN    STD_LOGIC;
         VDPMODEGRAPHIC3             : IN    STD_LOGIC;
@@ -141,7 +142,7 @@ BEGIN
                             (REG_R4_PT_GEN_ADDR(5 DOWNTO 2) & DOTCOUNTERY(7 DOWNTO 6) & FF_PAT_NUM & DOTCOUNTERY(2 DOWNTO 0) ) AND
                             ("1111" & REG_R4_PT_GEN_ADDR(1 DOWNTO 0) & "11111111" & "111");
 
-    REQ_PAT_COL_TBL_ADDR <= (REG_R4_PT_GEN_ADDR & FF_PAT_NUM & DOTCOUNTERY(4 DOWNTO 2)) WHEN( VDPMODEMULTI = '1' )ELSE
+    REQ_PAT_COL_TBL_ADDR <= (REG_R4_PT_GEN_ADDR & FF_PAT_NUM & DOTCOUNTERY(4 DOWNTO 2)) WHEN( VDPMODEMULTI = '1' OR VDPMODEMULTIQ = '1' )ELSE
                             (REG_R10R3_COL_ADDR & '0' & FF_PAT_NUM( 7 DOWNTO 3 ))           WHEN( VDPMODEGRAPHIC1 = '1' )ELSE
                             (REG_R10R3_COL_ADDR(10 DOWNTO 7) & DOTCOUNTERY(7 DOWNTO 6) & FF_PAT_NUM & DOTCOUNTERY(2 DOWNTO 0)) AND
                             ("1111" & REG_R10R3_COL_ADDR(6 DOWNTO 0) & "111111" );
@@ -161,7 +162,7 @@ BEGIN
         FF_REQ_ADDR             WHEN OTHERS;
 
     -- GENERATE PIXEL COLOR NUMBER
-    COL_HL_SEL  <=  NOT EIGHTDOTSTATE(2)        WHEN( VDPMODEMULTI = '1' )ELSE
+    COL_HL_SEL  <=  NOT EIGHTDOTSTATE(2)        WHEN( VDPMODEMULTI = '1' OR VDPMODEMULTIQ = '1' )ELSE
                     FF_PAT_GEN(7);
     COL_CODE    <=  FF_PAT_COL( 7 DOWNTO 4 )    WHEN( COL_HL_SEL = '1' )ELSE
                     FF_PAT_COL( 3 DOWNTO 0 );
