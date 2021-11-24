@@ -121,7 +121,7 @@ wire        mouse_strobe;
 
 wire [63:0] rtc;
 
-user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(1500)) user_io
+user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(100)) user_io
 (
         .clk_sys(clk_sys),
         .clk_sd(clk_sys),
