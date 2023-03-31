@@ -30,7 +30,7 @@
 -- ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 ---------------------------------------------------------------------------------
--- OCM-PLD Pack v3.9 by KdL (2021.08.23) / MSX2+ Stable Release for 1chipMSX
+-- OCM-PLD Pack v3.9.1 by KdL (2022.09.24) / MSX2+ Stable Release for 1chipMSX
 -- Special thanks to t.hara, caro, mygodess & all MRC users (http://www.msx.org)
 ---------------------------------------------------------------------------------
 -- Setup for XTAL 21.47727MHz
@@ -72,24 +72,24 @@ entity emsx_top is
         pSltM1_n        : inout std_logic;
         pSltMerq_n      : inout std_logic;
 
-        pSltRsv5        : out   std_logic;                          -- Reserved
-        pSltRsv16       : out   std_logic;                          -- Reserved (w/ external pull-up)
+        pSltRsv5        : inout std_logic;                                      -- Reserved
+        pSltRsv16       : inout std_logic;                                      -- Reserved (w/ external pull-up)
         pSltSw1         : inout std_logic;                          -- Reserved (w/ external pull-up)
         pSltSw2         : inout std_logic;                          -- Reserved
 
-        -- SD-RAM ports
-        --pMemClk         : out   std_logic;                          -- SD-RAM Clock
-        pMemCke         : out   std_logic;                          -- SD-RAM Clock enable
-        pMemCs_n        : out   std_logic;                          -- SD-RAM Chip select
-        pMemRas_n       : out   std_logic;                          -- SD-RAM Row/RAS
-        pMemCas_n       : out   std_logic;                          -- SD-RAM /CAS
-        pMemWe_n        : out   std_logic;                          -- SD-RAM /WE
-        pMemUdq         : out   std_logic;                          -- SD-RAM UDQM
-        pMemLdq         : out   std_logic;                          -- SD-RAM LDQM
-        pMemBa1         : out   std_logic;                          -- SD-RAM Bank select address 1
-        pMemBa0         : out   std_logic;                          -- SD-RAM Bank select address 0
-        pMemAdr         : out   std_logic_vector( 12 downto 0 );    -- SD-RAM Address
-        pMemDat         : inout std_logic_vector( 15 downto 0 );    -- SD-RAM Data
+        -- SDRAM ports
+        --pMemClk         : out   std_logic;                          -- SDRAM Clock
+        pMemCke         : out   std_logic;                          -- SDRAM Clock enable
+        pMemCs_n        : out   std_logic;                          -- SDRAM Chip select
+        pMemRas_n       : out   std_logic;                          -- SDRAM Row/RAS
+        pMemCas_n       : out   std_logic;                          -- SDRAM /CAS
+        pMemWe_n        : out   std_logic;                          -- SDRAM /WE
+        pMemUdq         : out   std_logic;                          -- SDRAM UDQM
+        pMemLdq         : out   std_logic;                          -- SDRAM LDQM
+        pMemBa1         : out   std_logic;                          -- SDRAM Bank select address 1
+        pMemBa0         : out   std_logic;                          -- SDRAM Bank select address 0
+        pMemAdr         : out   std_logic_vector( 12 downto 0 );    -- SDRAM Address
+        pMemDat         : inout std_logic_vector( 15 downto 0 );    -- SDRAM Data
 
         -- PS/2 keyboard ports
         pPs2Clk         : inout std_logic;
@@ -201,19 +201,14 @@ architecture RTL of emsx_top is
         port(
             clk21m  : in    std_logic;
             reset   : in    std_logic;
-            clkena  : in    std_logic;
             req     : in    std_logic;
-            ack     : out   std_logic;
             wrt     : in    std_logic;
             adr     : in    std_logic_vector( 15 downto 0 );
-            dbi     : out   std_logic_vector(  7 downto 0 );
             dbo     : in    std_logic_vector(  7 downto 0 );
 
             ramreq  : out   std_logic;
             ramwrt  : out   std_logic;
             ramadr  : out   std_logic_vector( 19 downto 0 );
-            ramdbi  : in    std_logic_vector(  7 downto 0 );
-            ramdbo  : out   std_logic_vector(  7 downto 0 );
 
             mmcdbi  : out   std_logic_vector(  7 downto 0 );
             mmcena  : out   std_logic;
@@ -228,9 +223,11 @@ architecture RTL of emsx_top is
             epc_cs  : out   std_logic;
             epc_oe  : out   std_logic;
             epc_di  : out   std_logic;
-            epc_do  : in    std_logic
+            epc_do  : in    std_logic;
+
+            debug   : out   std_logic_vector(  7 downto 0 )
         );
-    end component;
+    end component;    -- MEGA-SD (SD controller)
 
     -- ASMI (Altera specific component)
     component cyclone_asmiblock
@@ -343,9 +340,9 @@ architecture RTL of emsx_top is
             pRamDbi         : in    std_logic_vector( 15 downto 0 );
             pRamDbo         : out   std_logic_vector(  7 downto 0 );
 
-            VdpSpeedMode    : in    std_logic;                          -- for V9958 MSX2+/tR VDP
-            RatioMode       : in    std_logic_vector(  2 downto 0 );    -- for V9958 MSX2+/tR VDP
-            centerYJK_R25_n : in    std_logic;                          -- for V9958 MSX2+/tR VDP
+            VdpSpeedMode    : in    std_logic;                          -- for TH9958 VDP core
+            RatioMode       : in    std_logic_vector(  2 downto 0 );    -- for TH9958 VDP core
+            centerYJK_R25_n : in    std_logic;                          -- for TH9958 VDP core
 
             -- Video Output
             pVideoR         : out   std_logic_vector(  5 downto 0 );
@@ -361,14 +358,18 @@ architecture RTL of emsx_top is
             BLANK_o         : out   std_logic;
 
             -- CXA1645(RGB->NTSC encoder) signals
---          pVideoSC        : out   std_logic;                          -- for V9938 MSX2 VDP
---          pVideoSYNC      : out   std_logic;                          -- for V9938 MSX2 VDP
+--          pVideoSC        : out   std_logic;                          -- for V9938 VDP core
+--          pVideoSYNC      : out   std_logic;                          -- for V9938 VDP core
 
             -- Display resolution (0=15kHz, 1=31kHz)
             DispReso        : in    std_logic;
+
             ntsc_pal_type   : in    std_logic;
             forced_v_mode   : in    std_logic;
-            legacy_vga      : in    std_logic
+            legacy_vga      : in    std_logic;
+
+            VDP_ID          : in    std_logic_vector(  4 downto 0 );
+            OFFSET_Y        : in    std_logic_vector(  6 downto 0 )
         );
     end component;
 
@@ -533,6 +534,7 @@ architecture RTL of emsx_top is
         port(
             clk21m          : in    std_logic;
             reset           : in    std_logic;
+            power_on_reset  : in    std_logic;
             req             : in    std_logic;
             ack             : out   std_logic;
             wrt             : in    std_logic;
@@ -553,10 +555,10 @@ architecture RTL of emsx_top is
             tMegaSD         : inout std_logic;                              -- Turbo on MegaSD access   :   3.58MHz to 5.37MHz autoselection
             tPanaRedir      : inout std_logic;                              -- tPana Redirection switch
             VdpSpeedMode    : inout std_logic;                              -- VDP Speed Mode           :   0=Normal, 1=Fast
-            V9938_n         : inout std_logic;                              -- V9938 Status             :   0=V9938, 1=V9958
-            Mapper_req      : inout std_logic;                              -- Mapper req               :   Warm or Cold Reset are necessary to complete the request
+            V9938_n         : inout std_logic;                              -- VDP core installed       :   0=V9938, 1=TH9958
+            Mapper_req      : inout std_logic;                              -- Mapper req               :   Warm Reset is required to complete the request
             Mapper_ack      : out   std_logic;                              -- Current Mapper state
-            MegaSD_req      : inout std_logic;                              -- MegaSD req               :   Warm or Cold Reset are necessary to complete the request
+            MegaSD_req      : inout std_logic;                              -- MegaSD req               :   Warm Reset is required to complete the request
             MegaSD_ack      : out   std_logic;                              -- Current MegaSD state
             io41_id008_n    : inout std_logic;                              -- $41 ID008 BIT-0 state    :   0=5.37MHz, 1=3.58MHz (write_n only)
             swioKmap        : inout std_logic;                              -- Keyboard layout selector
@@ -594,6 +596,7 @@ architecture RTL of emsx_top is
             JIS2_ena        : inout std_logic;                              -- JIS2 enabler             :   0=JIS1 only (BIOS 384 kB), 1=JIS1+JIS2 (BIOS 512 kB)
             portF4_mode     : inout std_logic;                              -- Port F4 mode             :   0=F4 Device Inverted (MSX2+), 1=F4 Device Normal (MSXtR)
             ff_ldbios_n     : in    std_logic;                                  -- OCM-BIOS loading status
+            bios_reload_ack : out   std_logic;                                  -- OCM-BIOS Reloading ack
             -- 'SPECIAL' group
             RatioMode       : inout std_logic_vector(  2 downto 0 );        -- Pixel Ratio 1:1 for LED Display (default is 0) (range 0-7) (60Hz only)
             centerYJK_R25_n : inout std_logic;                              -- Centering YJK Modes/R25 Mask (0=centered, 1=shifted to the right)
@@ -603,7 +606,14 @@ architecture RTL of emsx_top is
             Slot0_req       : inout std_logic;                                  -- Slot0 Primary Mode req   :   Warm Reset is necessary to complete the request
             Slot0Mode       : inout std_logic;                                  -- Current Slot0 state      :   0=Primary, 1=Expanded
             vga_scanlines   : inout std_logic_vector(  1 downto 0 );            -- VGA Scanlines 0%, 25%, 50% or 75% (default is 0%)
-            btn_scan        : in    std_logic                                   -- Scanlines button
+            btn_scan        : in    std_logic;                                  -- Scanlines button
+            Mapper0_req     : inout std_logic;                                  -- Extra-Mapper req         :   Warm Reset is required to complete the request
+            Mapper0_ack     : out   std_logic;                                  -- Current Extra-Mapper state
+            iPsg2_ena       : inout std_logic;                                  -- Internal PSG2 enabler
+            -- 'VARIABLES' group
+            SdrSize         : in    std_logic_vector(  1 downto 0 );
+            VDP_ID          : out   std_logic_vector(  4 downto 0 );
+            OFFSET_Y        : out   std_logic_vector(  6 downto 0 )
         );
     end component;
 
@@ -665,6 +675,7 @@ architecture RTL of emsx_top is
     signal  WarmMSXlogo     : std_logic;                                    -- here to reduce LEs
     signal  JIS2_ena        : std_logic;
     signal  portF4_mode     : std_logic;
+    signal  bios_reload_ack : std_logic := '0';
     signal  RatioMode       : std_logic_vector(  2 downto 0 ) := (others => '0');
     signal  centerYJK_R25_n : std_logic;
     signal  legacy_sel      : std_logic;
@@ -674,6 +685,9 @@ architecture RTL of emsx_top is
     signal  Slot0Mode       : std_logic;
     signal  vga_scanlines   : std_logic_vector(  1 downto 0 ) := "00";
     signal  btn_scan        : std_logic := '1';
+    signal  Mapper0_req     : std_logic;                                            -- here to reduce LEs
+    signal  Mapper0_ack     : std_logic;
+    signal  iPsg2_ena       : std_logic;
 
     -- System timer (S1990)
     signal  systim_req      : std_logic;
@@ -685,15 +699,16 @@ architecture RTL of emsx_top is
     signal  DisplayMode     : std_logic_vector(  1 downto 0 ) := "10";
     signal  Slot1Mode       : std_logic;
     signal  Slot2Mode       : std_logic_vector(  1 downto 0 );
-    alias   FullRAM         : std_logic is Mapper_ack;                      -- '0': 2048 kB RAM     '1': 4096 kB RAM
+    signal  iSlt0_1         : std_logic := '0';                                     -- '0': disable Slot0-1 '1': enable Slot0-1
+    alias   FullRAM         : std_logic is Mapper_ack;                              -- '0': 2048 kB RAM     '1': 4096 kB RAM
     alias   MmcMode         : std_logic is MegaSD_ack;                      -- '0': disable SD/MMC  '1': enable SD/MMC
 
     -- Clock, Reset control signals
 --    signal  clk21m          : std_logic;
 --    signal  memclk          : std_logic;
-    signal  cpuclk          : std_logic;
-    signal  clkena          : std_logic;
-    signal  clkdiv          : std_logic_vector(  1 downto 0 );
+    signal  cpuclk          : std_logic := '1';
+    signal  clkena          : std_logic := '0';
+    signal  clkdiv          : std_logic_vector(  1 downto 0 ) := "10";              -- 5.37MHz sync
     signal  ff_clksel       : std_logic;
     signal  ff_clksel5m_n   : std_logic;
     signal  hybridclk_n     : std_logic;
@@ -703,7 +718,7 @@ architecture RTL of emsx_top is
     signal  RstSeq          : std_logic_vector(  4 downto 0 ) := (others => '0');
     signal  FreeCounter     : std_logic_vector( 15 downto 0 ) := (others => '0');
     signal  HardRst_cnt     : std_logic_vector(  3 downto 0 ) := (others => '0');
-    signal  LogoRstCnt      : std_logic_vector(  4 downto 0 ) := (others => '0');
+    signal  LogoRstCnt      : std_logic_vector(  5 downto 0 ) := (others => '0');
     signal  logo_timeout    : std_logic_vector(  1 downto 0 );
     signal  iCpuClk         : std_logic;
     signal  power_on_reset  : std_logic := '0';
@@ -745,6 +760,7 @@ architecture RTL of emsx_top is
 
     -- Slot decode signals
     signal  iSltBot         : std_logic;
+    signal  iSltMap0        : std_logic := '0';
     signal  iSltMap         : std_logic;
     signal  jSltMem         : std_logic;
     signal  iSltScc1        : std_logic;
@@ -851,6 +867,8 @@ architecture RTL of emsx_top is
     signal  ntsc_pal_type   : std_logic;
     signal  forced_v_mode   : std_logic;
     signal  legacy_vga      : std_logic;
+    signal  VDP_ID          : std_logic_vector(  4 downto 0 );
+    signal  OFFSET_Y        : std_logic_vector(  6 downto 0 );
 
     -- Video signals
     signal  VideoR          : std_logic_vector( 5 downto 0 );               -- RGB Red
@@ -911,23 +929,22 @@ architecture RTL of emsx_top is
     signal  RamReq          : std_logic;
     signal  RamAck          : std_logic;
     signal  RamDbi          : std_logic_vector(  7 downto 0 );
-    signal  ClrAdr          : std_logic_vector( 17 downto 0 );
-    signal  CpuAdr          : std_logic_vector( 22 downto 0 );
+    signal  CpuAdr          : std_logic_vector( 24 downto 0 );
 
     -- SD-RAM control signals
     signal  SdrSta          : std_logic_vector(  2 downto 0 );
     signal  SdrCmd          : std_logic_vector(  3 downto 0 );
-    signal  SdrBa0          : std_logic;
-    signal  SdrBa1          : std_logic;
+    signal  SdrBa           : std_logic_vector(  1 downto 0 ) := "00";
     signal  SdrUdq          : std_logic;
     signal  SdrLdq          : std_logic;
-    signal  SdrAdr          : std_logic_vector( 12 downto 0 );
+    signal  SdrAdr          : std_logic_vector( 12 downto 0 ) := (others => '0');
     signal  SdrDat          : std_logic_vector( 15 downto 0 );
+    signal  SdrSize         : std_logic_vector(  1 downto 0 ) := "11";
 
     constant SdrCmd_de      : std_logic_vector(  3 downto 0 ) := "1111";    -- deselect
     constant SdrCmd_pr      : std_logic_vector(  3 downto 0 ) := "0010";    -- precharge all
     constant SdrCmd_re      : std_logic_vector(  3 downto 0 ) := "0001";    -- refresh
-    constant SdrCmd_ms      : std_logic_vector(  3 downto 0 ) := "0000";    -- mode regiser set
+    constant SdrCmd_ms      : std_logic_vector(  3 downto 0 ) := "0000";    -- mode register set
 
     constant SdrCmd_xx      : std_logic_vector(  3 downto 0 ) := "0111";    -- no operation
     constant SdrCmd_ac      : std_logic_vector(  3 downto 0 ) := "0011";    -- activate
@@ -1060,9 +1077,9 @@ begin
     process( reset, clk21m )
     begin
         if( reset = '1' )then
-            clkdiv  <= "10";                                                            -- 5.37 MHz sync
+            clkdiv <= "10";                                                            -- 5.37 MHz sync
         elsif( clk21m'event and clk21m = '1' )then
-            clkdiv  <=  clkdiv - 1;
+            clkdiv <=  clkdiv - 1;
         end if;
     end process;
 
@@ -1070,13 +1087,13 @@ begin
     process( reset, clk21m )
     begin
         if( reset = '1' )then
-            hybstartcnt <=  (others => '0');
+            hybstartcnt <= (others => '0');
         elsif( clk21m'event and clk21m = '1' )then
             if( ff_clk21m_cnt( 16 downto 0 ) = "00000000000000000" )then
                 if( mmcena = '0' )then
-                    hybstartcnt <=  "111";                                              -- begin after 48ms
+                    hybstartcnt <= "111";                                              -- begin after 48ms
                 elsif( hybstartcnt /= "000" )then
-                    hybstartcnt <=  hybstartcnt - 1;
+                    hybstartcnt <= hybstartcnt - 1;
                 end if;
             end if;
         end if;
@@ -1113,21 +1130,28 @@ begin
     end process;
 
     -- logo speed limiter
-    process( clk21m )
-    begin
-        if( clk21m'event and clk21m = '1' )then
-            if( ff_ldbios_n = '0' )then
+    process( reset, clk21m )
+        constant lsl_mode : std_logic := '1';                                           -- lsl_mode = '0' : logo only
+    begin                                                                               -- lsl_mode = '1' : logo + beep sound (default)
+        if( reset = '1' )then
+            logo_timeout <= "00";
+        elsif( clk21m'event and clk21m = '1' )then                                      -- times change depending on the mappers installed, and
+            if( ff_ldbios_n = '0' )then                                                 -- the current configuration has only one external mapper
                 if( LastRst_sta = portF4_mode )then
-                    LogoRstCnt <= "11111";                                                  -- 3100ms
-                    logo_timeout <= "00";
+                    if( lsl_mode = '0' )then
+                        LogoRstCnt <= "100110";                                         -- 3800ms  <= '0' : OCM-BIOS begins
+                    else
+                        LogoRstCnt <= "110001";                                         -- 4900ms  <= '1' : OCM-BIOS begins
+                    end if;
                 end if;
-            elsif( w_10hz = '1' and LogoRstCnt /= "00000" )then
+            elsif( w_10hz = '1' and LogoRstCnt /= "000000" )then
                 LogoRstCnt <= LogoRstCnt - 1;
-                if( LogoRstCnt = "10010" )then -- 1800ms
+                if( (LogoRstCnt = "011000" and lsl_mode = '0') or                       -- 2400ms  <= '0' : MSX2+ animation starts here w/o external mapper
+                    (LogoRstCnt = "100011" and lsl_mode = '1') )then                    -- 3500ms  <= '1' : MSX2+ animation starts here w/o external mapper
                     logo_timeout <= "01";
                 end if;
-            elsif( LogoRstCnt = "00000" )then -- 0ms
-                logo_timeout <= "10";
+            elsif( LogoRstCnt = "000000" )then                                          -- 0ms     <= '0' : MSX2+ logo ends
+                logo_timeout <= "10";                                                   --         or '1' : BEEP sound ends
             end if;
         end if;
     end process;
@@ -1137,7 +1161,7 @@ begin
     begin
         if( clk21m'event and clk21m = '0' )then
             if( cpuclk = '0' and clkdiv = "00" and wait_n_s = '0' )then
-                if( ff_ldbios_n = '0' or logo_timeout = "00" )then                      -- ultra-fast boot
+                if( logo_timeout = "00" )then                                           -- ultra-fast boot
                         ff_clksel5m_n   <=  '1';
                         ff_clksel       <=  '1';
                     elsif( logo_timeout = "10" )then
@@ -1160,7 +1184,7 @@ begin
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
-            Kmap <= swioKmap;                                                           -- keyboard layout assignment
+            Kmap              <=  swioKmap;                                             -- keyboard layout assignment
             CmtScro           <=  swioCmt;
             DisplayMode(1)    <=  io42_id212(1);
             DisplayMode(0)    <=  io42_id212(2);
@@ -1257,7 +1281,7 @@ begin
                     if( ff_reload_n = '0' )then
                         HardRst_cnt <= "0010";                                          -- 100ms to timeout
             else
-                        HardRst_cnt <= "1100";                                          -- short click < 1000ms
+                        HardRst_cnt <= "1110";                                          -- short click < 800ms (the delay of M51953BFP is about 500ms)
                     end if;
                 elsif( w_10hz = '1' and HardRst_cnt /= "0001" )then                     -- timeout
                     HardRst_cnt <= HardRst_cnt - 1;
@@ -1274,7 +1298,7 @@ begin
     process( memclk )
     begin
         if( memclk'event and memclk = '1' )then
-            if( HardRst_cnt = "0010" )then                                              -- long click > 1000ms
+            if( HardRst_cnt = "0010" or bios_reload_ack = '1' )then                     -- long click > 800ms
                 RstSeq <= "00000";                                                      -- RstSeq is required
                 ff_reload_n <= '0';                                                     -- OCM-BIOS is partial
 			elsif( ff_mem_seq = "00" and FreeCounter = X"FFFF" and RstSeq /= "11111" )then
@@ -1302,7 +1326,7 @@ begin
                 reset <= not (iSltRst_n and swioRESET_n);                               -- global reset
             else
                 -- RstSeq is in progress
-                reset <= '1';                                                           -- SD-RAM integrity protection
+                reset <= '1';                                                           -- SDRAM integrity protection
             end if;
         end if;
     end process;
@@ -1493,7 +1517,8 @@ begin
                     (others => 'Z');
 
     pSltRsv5    <= 'Z';
-    pSltRsv16   <=  (not reset) and power_on_reset;                     -- can perform RESET_n lock on Cyclone I machine slot pins by applying a hardware patch
+    pSltRsv16   <= 'Z';
+--    pSltRsv16   <=  (not reset) and power_on_reset;                     -- can perform RESET_n lock on Cyclone I machine slot pins by applying a hardware patch
     pSltSw1     <= 'Z';
     pSltSw2     <= 'Z';
 
@@ -1532,9 +1557,9 @@ begin
                 end if;
             elsif( pSltIorq_n = '0' and jSltIorq_n = '1' )then          -- wait for external bus
                 if( ff_clksel = '1' )then
-                    count := "0011";
+                    count := "0110";                                    -- "0011" = original value, "0110" = better reading the pull-up states at 10.74MHz
                 elsif( ff_clksel5m_n = '0' )then
-                    count := "0110";
+                    count := "0110";                                    -- "0110" = calibrated to properly access the ADPCM unit (NMS-1205) at 5.37 MHz
                 end if;
             elsif( count /= "0000" )then                                -- countdown timer
                 count := count - 1;
@@ -1618,10 +1643,10 @@ begin
                 dlydbi <= KanDbi;
             elsif( mem = '0' and adr(  7 downto 1 ) = "1101100" )then                           -- Kanji-data (JIS1 only)
                 dlydbi <= KanDbi;
-            elsif( mem = '0' and adr(  7 downto 2 ) = "111111" and FullRAM = '0' )then          -- Memory-mapper 2048 kB
-                dlydbi <= "1" & MapDbi(  6 downto 0 );
-            elsif( mem = '0' and adr(  7 downto 2 ) = "111111" )then                            -- Memory-mapper 4096 kB
+            elsif( mem = '0' and adr(  7 downto 2 ) = "111111" and (FullRAM or iSlt0_1) = '1' )then         -- Memory-mapper 4096 kB | Extra-mapper 4096 kB
                 dlydbi <= MapDbi;
+            elsif( mem = '0' and adr(  7 downto 2 ) = "111111" )then                                        -- Memory-mapper 2048 kB
+                dlydbi <= "1" & MapDbi(  6 downto 0 );
             elsif( mem = '0' and adr(  7 downto 1 ) = "1011010" )then                           -- RTC (RP-5C01)
                 dlydbi <= RtcDbi;
             elsif( mem = '0' and adr(  7 downto 1 ) = "1110011" )then                           -- System timer (S1990)
@@ -1691,7 +1716,7 @@ begin
                 else                                                    -- disable SD/MMC drive
                     jSltMem <= '0';
                 end if;
-            elsif( mem = '1' and ((iSltMap or rom_main or rom_opll or rom_extd or rom_xbas or rom_free or iSltLin1 or iSltLin2) = '1') )then
+            elsif( mem = '1' and ((iSltMap0 or iSltMap or rom_main or rom_opll or rom_extd or rom_xbas or rom_free or iSltLin1 or iSltLin2) = '1') )then
                     jSltMem <= '1';
             else
                     jSltMem <= '0';
@@ -1900,6 +1925,8 @@ begin
     -- Slot0-X
     rom_main    <=  mem when( (w_prislt_dec(0) and (w_expslt0_dec(0) or (not Slot0Mode)) and (w_page_dec(0) or w_page_dec(1))) = '1'  )else     -- 0-0 (0000-7FFFh)    32 kB  MSX2P   .ROM / MSXTR   .ROM
                     '0';
+    iSltMap0    <=  mem when( (w_prislt_dec(0) and w_expslt0_dec(1) and Slot0Mode and iSlt0_1 ) = '1' and adr /= X"FFFF" and SdrSize /= "00"    )else   -- 0-1 (0000-FFFEh)  4096 kB  Extra-Mapper
+                    '0';
     rom_opll    <=  mem when( (w_prislt_dec(0) and w_expslt0_dec(2) and Slot0Mode and  w_page_dec(1)) = '1'                           )else     -- 0-2 (4000-7FFFh)    16 kB  MSX2PMUS.ROM / MSXTRMUS.ROM
                     '0';
     rom_free    <=  mem when( (w_prislt_dec(0) and w_expslt0_dec(3) and Slot0Mode and  w_page_dec(1)) = '1'                           )else     -- 0-3 (4000-7FFFh)    16 kB  FREE16KB.ROM / MSXTROPT.ROM
@@ -1933,46 +1960,46 @@ begin
     RamReq  <=  Scc1Ram or Scc2Ram or ErmRam or MapRam or RomReq or KanRom;
 
     -- access request to component
-    VdpReq  <=  req when( mem = '0' and adr(7 downto 2) = "100110"  )else '0';                      -- I/O:98-9Bh   / VDP (V9938/V9958)
-    PsgReq  <=  req when( mem = '0' and adr(7 downto 2) = "101000"  )else '0';                      -- I/O:A0-A3h   / PSG (AY-3-8910)
-    PpiReq  <=  req when( mem = '0' and adr(7 downto 2) = "101010"  )else '0';                      -- I/O:A8-ABh   / PPI (8255)
-    OpllReq <=  req when( mem = '0' and adr(7 downto 1) = "0111110" and Slot0Mode = '1' )else '0';  -- I/O:7C-7Dh   / OPLL (YM2413)
-    KanReq  <=  req when( mem = '0' and adr(7 downto 2) = "110110"  )else '0';                      -- I/O:D8-DBh   / Kanji-data
-    RomReq  <=  req when( (rom_main or rom_opll or rom_extd or rom_xbas or rom_free or iSltLin1 or iSltLin2) = '1')else '0';
-    MapReq  <=  req when( mem = '0' and adr(7 downto 2) = "111111"  )else                           -- I/O:FC-FFh   / Memory-mapper
-                req when(               iSltMap = '1'               )else '0';                      -- MEM:         / Memory-mapper
-    Scc1Req <=  req when(               iSltScc1 = '1'              )else '0';                      -- MEM:         / ESE-SCC1
-    Scc2Req <=  req when(               iSltScc2 = '1'              )else '0';                      -- MEM:         / ESE-SCC2
-    ErmReq  <=  req when(               iSltErm = '1'               )else '0';                      -- MEM:         / ESE-RAM, MegaSD
-    RtcReq  <=  req when( mem = '0' and adr(7 downto 1) = "1011010" )else '0';                      -- I/O:B4-B5h   / RTC (RP-5C01)
-    systim_req  <=  req when( mem = '0' and adr(7 downto 1) = "1110011" )else '0';                  -- I/O:E6-E7h   / System timer (S1990)
-    swio_req    <=  req when( mem = '0' and adr(7 downto 4) = "0100" )else '0';                     -- I/O:40-4Fh   / Switched I/O ports
-    portF2_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110010" )else '0';                 -- I/O:F2h      / Port F2 device (ESP8266 BIOS)
-    portF4_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110100" )else '0';                 -- I/O:F4h      / Port F4 device
-    tr_pcm_req  <=  req when( mem = '0' and adr(7 downto 1) = "1010010" )else '0';                  -- I/O:A4h-A5h  / turboR PCM device
+    VdpReq      <=  req when( mem = '0' and adr(7 downto 2) = "100110"                                                  )else '0';  -- I/O:98-9Bh / VDP (V9938/V9958)
+    PsgReq      <=  req when( mem = '0' and adr(7 downto 2) = "101000"                                                  )else '0';  -- I/O:A0-A3h / PSG (AY-3-8910)
+    PpiReq      <=  req when( mem = '0' and adr(7 downto 2) = "101010"                                                  )else '0';  -- I/O:A8-ABh / PPI (8255)
+    OpllReq     <=  req when( mem = '0' and adr(7 downto 1) = "0111110" and Slot0Mode = '1'                             )else '0';  -- I/O:7C-7Dh / OPLL (YM2413)
+    KanReq      <=  req when( mem = '0' and adr(7 downto 2) = "110110"                                                  )else '0';  -- I/O:D8-DBh / Kanji-data
+    RomReq      <=  req when( (rom_main or rom_opll or rom_extd or rom_xbas or rom_free or iSltLin1 or iSltLin2) = '1'  )else '0';
+    MapReq      <=  req when( mem = '0' and adr(7 downto 2) = "111111"                                                  )else       -- I/O:FC-FFh / Memory-mapper
+                    req when( iSltMap0 = '1' or iSltMap  = '1'                                                          )else '0';  -- MEM:       / Extra-mapper, Memory-mapper
+    Scc1Req     <=  req when( iSltScc1 = '1'                                                                            )else '0';  -- MEM:       / ESE-SCC1
+    Scc2Req     <=  req when( iSltScc2 = '1'                                                                            )else '0';  -- MEM:       / ESE-SCC2
+    ErmReq      <=  req when( iSltErm  = '1'                                                                            )else '0';  -- MEM:       / ESE-RAM, MegaSD
+    RtcReq      <=  req when( mem = '0' and adr(7 downto 1) = "1011010"                                                 )else '0';  -- I/O:B4-B5h / RTC (RP-5C01)
+--  systim_req  <=  req when( mem = '0' and adr(7 downto 1) = "1110011"                                                 )else '0';  -- I/O:E6-E7h / System timer (S1990)
+    swio_req    <=  req when( mem = '0' and adr(7 downto 4) = "0100"                                                    )else '0';  -- I/O:40-4Fh / Switched I/O ports
+    portF2_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110010"                                                )else '0';  -- I/O:F2h    / Port F2 device (ESP8266 BIOS)
+    portF4_req  <=  req when( mem = '0' and adr(7 downto 0) = "11110100"                                                )else '0';  -- I/O:F4h    / Port F4 device
+    tr_pcm_req  <=  req when( mem = '0' and adr(7 downto 1) = "1010010"                                                 )else '0';  -- I/O:A4-A5h / turboR PCM device
 
-    BusDir  <=  '1' when( pSltAdr(7 downto 2) = "100110"                         )else  -- I/O:98-9Bh / VDP (V9938/V9958)
-                '1' when( pSltAdr(7 downto 2) = "101000"                         )else  -- I/O:A0-A3h / PSG (AY-3-8910)
-                '1' when( pSltAdr(7 downto 2) = "101010"                         )else  -- I/O:A8-ABh / PPI (8255)
-                '1' when( pSltAdr(7 downto 2) = "110110" and JIS2_ena = '1'      )else  -- I/O:D8-DBh / Kanji-data (JIS1+JIS2)
-                '1' when( pSltAdr(7 downto 1) = "1101100"                        )else  -- I/O:D8-D9h / Kanji-data (JIS1 only)
-                '1' when( pSltAdr(7 downto 2) = "111111"                         )else  -- I/O:FC-FFh / Memory-mapper
-                '1' when( pSltAdr(7 downto 1) = "1011010"                        )else  -- I/O:B4-B5h / RTC (RP-5C01)
-                '1' when( pSltAdr(7 downto 1) = "1110011"                        )else  -- I/O:E6-E7h / System timer (S1990)
-                '1' when( pSltAdr(7 downto 4) = "0100" and io40_n /= "11111111"  )else  -- I/O:40-4Fh / Switched I/O ports
-                '1' when( pSltAdr(7 downto 0) = "10100111" and portF4_mode = '1' )else  -- I/O:A7h    / Pause R800 (read only)
-                '1' when( pSltAdr(7 downto 0) = "11110010"                       )else  -- I/O:F2h    / Port F2 device (ESP8266 BIOS)
-                '1' when( pSltAdr(7 downto 0) = "11110100"                       )else  -- I/O:F4h    / Port F4 device
-                '1' when( pSltAdr(7 downto 1) = "1010010"                        )else  -- I/O:A4-A5h / turboR PCM device
-                '1' when( pSltAdr(7 downto 1) = "0000011"                        )else  -- I/O:06-07h / ESP
-                '1' when( pSltAdr(7 downto 0) = "11101001"                       )else  -- I/O:E9h    / MIDI
+    BusDir  <=  '1' when( pSltAdr(7 downto 2) = "100110"                                        )else   -- I/O:98-9Bh / VDP (V9938/V9958)
+                '1' when( pSltAdr(7 downto 2) = "101000"                                        )else   -- I/O:A0-A3h / PSG (AY-3-8910)
+                '1' when( pSltAdr(7 downto 2) = "101010"                                        )else   -- I/O:A8-ABh / PPI (8255)
+                '1' when( pSltAdr(7 downto 2) = "110110" and JIS2_ena = '1'                     )else   -- I/O:D8-DBh / Kanji-data (JIS1+JIS2)
+                '1' when( pSltAdr(7 downto 1) = "1101100"                                       )else   -- I/O:D8-D9h / Kanji-data (JIS1 only)
+                '1' when( pSltAdr(7 downto 2) = "111111"                                        )else   -- I/O:FC-FFh / Memory-mapper
+                '1' when( pSltAdr(7 downto 1) = "1011010"                                       )else   -- I/O:B4-B5h / RTC (RP-5C01)
+--              '1' when( pSltAdr(7 downto 1) = "1110011"                                       )else   -- I/O:E6-E7h / System timer (S1990)
+                '1' when( pSltAdr(7 downto 4) = "0100" and io40_n /= "11111111"                 )else   -- I/O:40-4Fh / Switched I/O ports
+                '1' when( pSltAdr(7 downto 0) = "10100111" and portF4_mode = '1'                )else   -- I/O:A7h    / Pause R800 (read only)
+                '1' when( pSltAdr(7 downto 0) = "11110010"                                      )else   -- I/O:F2h    / Port F2 device (ESP8266 BIOS)
+                '1' when( pSltAdr(7 downto 0) = "11110100"                                      )else   -- I/O:F4h    / Port F4 device
+                '1' when( pSltAdr(7 downto 1) = "1010010"                                       )else   -- I/O:A4-A5h / turboR PCM device
+                '1' when( pSltAdr(7 downto 1) = "0000011"                                       )else   -- I/O:06-07h / ESP
+                '1' when( pSltAdr(7 downto 0) = "11101001"                                      )else   -- I/O:E9h    / MIDI
                 '0';
 
     ----------------------------------------------------------------
     -- Video output
     ----------------------------------------------------------------
---  V9938_n <= '0';         -- '0' is V9938 MSX2 VDP
-    V9938_n <= '1';         -- '1' is V9958 MSX2+/tR VDP
+--  V9938_n <= '0';         -- '0' is V9938 VDP core
+    V9938_n <= '1';         -- '1' is TH9958 VDP core
 
     process (clk21m)
     begin
@@ -2190,59 +2217,69 @@ begin
     process( clk21m )
     begin
         if( clk21m'event and clk21m = '1' )then
-            ff_Scro     <= Scro;
+            ff_Scro <= Scro;
         end if;
     end process;
 
-    ----------------------------------------------------------------
+    -----------------------------------------------------------------
     -- External memory access
-    ----------------------------------------------------------------
-    -- Slot map / SD-RAM memory map
+    -----------------------------------------------------------------
+    -- Slot map / SDRAM memory map      (SDRAM 8 MB or higher)
     --
-    -- Slot 0-0 : MainROM               620000-627FFF (  32 kB)
-    -- Slot 3-3 : XBASIC                628000-62BFFF (  16 kB)
-    -- Slot 0-2 : FM-BIOS               62C000-62FFFF (  16 kB)
-    -- Slot 0-3 : rom_free(OPT)         63C000-63FFFF (  16 kB)
+    -- Slot 0-0 : MainROM               [ D ]020000-027FFF (  32 kB)
+    -- Slot 3-3 : XBASIC                [ D ]028000-02BFFF (  16 kB)
+    -- Slot 0-2 : FM-BIOS               [ D ]02C000-02FFFF (  16 kB)
+    -- Slot 0-3 : rom_free(OPT)         [ D ]03C000-03FFFF (  16 kB)
     -- Slot 1   : (EXTERNAL-SLOT)
-    --            / ESE-SCC1            500000-5FFFFF (1024 kB) <= shared w/ the 2nd half of ESE-SCC2
-    --            / Linear(1)           500000-50FFFF (  64 kB) <= shared w/ ESE-SCC1
+    --            / ESE-SCC1            [ C ]100000-1FFFFF (1024 kB) <= shared with the 2nd half of ESE-SCC2
+    --            / Linear(1)           [ C ]100000-10FFFF (  64 kB) <= shared with ESE-SCC1
     -- Slot 2   : (EXTERNAL-SLOT)
-    --            / ESE-SCC2            400000-5FFFFF (2048 kB)
-    --            / Linear(2)           400000-40FFFF (  64 kB) <= shared w/ ESE-SCC2
-    -- Slot 3-0 : Mapper                000000-3FFFFF (4096 kB)
-    -- Slot 3-1 : ExtROM + KanjiROM     630000-63BFFF (  48 kB)
-    -- Slot 3-2 : MegaSDHC / NEXTOR     600000-61FFFF ( 128 kB)
-    --            EseRAM                600000-67FFFF (BIOS: 512 kB)
-    --            RAMDISK(unused)       680000-6FFFFF (FREE: 512 kB) <= not implemented because it slows down the startup
-    -- Slot 3-3 : IPL-ROM               (blockRAM: 1 kB, see IPLROM*.ASM) <= shared w/ XBASIC
-    -- VRAM     : VRAM                  700000-7FFFFF (1024 kB)
-    -- I/O      : Kanji-data            640000-67FFFF ( 256 kB)
+    --            / ESE-SCC2            [ C ]000000-1FFFFF (2048 kB)
+    --            / Linear(2)           [ C ]000000-00FFFF (  64 kB) <= shared with ESE-SCC2
+    -- Slot 3-0 : Mapper                [A+B]000000-1FFFFF (4096 kB)
+    -- Slot 3-1 : ExtROM + KanjiROM     [ D ]030000-03BFFF (  48 kB)
+    -- Slot 3-2 : MegaSDHC / NEXTOR     [ D ]000000-01FFFF ( 128 kB)
+    --            ESE-RAM               [ D ]000000-07FFFF (BIOS: 512 kB)
+    --            RAMDISK(unused)       [ D ]080000-0FF3FF (FREE: 509 kB)
+    --            IPL-ROM(hex)          [ D ]0FF400-0FFFFF (the last 3 kB can be used to extended IPL-ROM in some firmware)
+    -- Slot 3-3 : IPL-ROM(preloader)                       (blockRAM: < 3 kB, see IPLROM*.ASM) <= swapped with XBASIC at boot time
+    -- VRAM     : VRAM                  [ D ]100000-1FFFFF (1024 kB)
+    -- I/O      : Kanji-data            [ D ]040000-07FFFF ( 256 kB)
+    -----------------------------------------------------------------
+    -- Slot map / SDRAM memory map      (SDRAM 16 MB or higher)
+    --
+    -- Slot 0-1 : Extra-Mapper          [A+B]200000-3FFFFF (4096 kB)
+    -----------------------------------------------------------------
+    -- Memo: SdrAdr(12 downto 11) <= CpuAdr(24 downto 23);
+    --       SdrBa ( 1 downto  0) <= CpuAdr(22 downto 21);
+    -----------------------------------------------------------------
+    CpuAdr(24 downto 20) <= "01" & "0"  & MapAdr(21 downto 20)  when( iSltMap0 = '1' and iSlt0_1 = '1' )else    -- [A+B]2xxxxx => 4096 kB Extra-RAM
+                            "00" & "0"  & MapAdr(21 downto 20)  when( iSltMap  = '1' and FullRAM = '1' )else    -- [A+B]0xxxxx => 4096 kB Main-RAM
+                            "00" & "00" & MapAdr(20)            when( iSltMap  = '1' )else                      -- [ A ]0xxxxx => 2048 kB Main-RAM
+                            "00" & "100"                        when( iSltLin2 = '1' )else                      -- [ C ]0xxxxx =>   64 kB Linear over ESE-SCC2
+                            "00" & "10" & Scc2Adr(20)           when( iSltScc2 = '1' )else                      -- [ C ]0xxxxx => 2048 kB ESE-SCC2
+                            "00" & "101"                        when( iSltLin1 = '1' or iSltScc1 = '1' )else    -- [ C ]1xxxxx =>   64 kB Linear over ESE-SCC1
+                                                                                                                -- [ C ]1xxxxx => 1024 kB ESE-SCC1
+                            "00" & "110";                                                                       -- [ D ]0xxxxx => 1024 kB ESE-RAM
+--                          "00" & "111";                                                                       -- [ D ]1xxxxx => 1024 kB VRAM
 
-    CpuAdr(22 downto 20) <= "0" & MapAdr(21 downto 20)  when( iSltMap  = '1' and FullRAM = '1' )else        -- 0xxxxx => 4096 kB Mapped RAM
-                            "00" & MapAdr(20)           when( iSltMap  = '1' )else                          -- 0xxxxx => 2048 kB Mapped RAM
-                            "100"                       when( iSltLin2 = '1' )else                          -- 4xxxxx =>   64 kB Linear over ESE-SCC2
-                            "10" & Scc2Adr(20)          when( iSltScc2 = '1' )else                      -- 4xxxxx => 2048 kB ESE-SCC2
-                            "101"                       when( iSltLin1 = '1' or iSltScc1 = '1' )else        -- 5xxxxx =>   64 kB Linear over ESE-SCC1
-                                                                                                            -- 5xxxxx => 1024 kB ESE-SCC1
-                            "110";                                                                      -- 6xxxxx => 1024 kB ESE-RAM
---                          "111";                                                                      -- 7xxxxx => 1024 kB Video RAM
-
-    CpuAdr(19 downto 0)  <= MapAdr(19 downto  0)            when( iSltMap  = '1' )else                      -- 000000-3FFFFF (4096 kB)  Internal Slot3-0
-                            "0000"   & adr(15 downto  0)    when( iSltLin1 = '1' or iSltLin2 = '1' )else    -- 400000-40FFFF (  64 kB)  Internal Slot2 Linear
-                                                                                                            -- 500000-50FFFF (  64 kB)  Internal Slot1 Linear
-                            Scc2Adr(19 downto  0)           when( iSltScc2 = '1' )else                      -- 400000-5FFFFF (2048 kB)  Internal Slot2
-                            Scc1Adr(19 downto  0)           when( iSltScc1 = '1' )else                      -- 500000-5FFFFF (1024 kB)  Internal Slot1
-                            "0"      & ErmAdr(18 downto  0) when( iSltErm  = '1' )else                      -- 600000-67FFFF ( 512 kB)  Internal Slot3-2
-                            "00100"  & adr(14 downto  0)    when( rom_main = '1' )else                      -- 620000-627FFF (  32 kB)  Internal Slot0-0
-                            "001010" & adr(13 downto  0)    when( rom_xbas = '1' )else                      -- 628000-62BFFF (  16 kB)  Internal Slot3-3
-                            "001011" & adr(13 downto  0)    when( rom_opll = '1' )else                      -- 62C000-62FFFF (  16 kB)  Internal Slot0-2
-                            "0011"   & adr(15 downto  0)    when( rom_extd = '1' )else                      -- 630000-63BFFF (  48 kB)  Internal Slot3-1
-                            "001111" & adr(13 downto  0)    when( rom_free = '1' )else                      -- 63C000-63FFFF (  16 kB)  Internal Slot0-3
-                            "01"     & KanAdr(17 downto  0) when( rom_kanj = '1' )else      -- 640000-67FFFF ( 256 kB)  Kanji-data (JIS1+JIS2)
+    CpuAdr(19 downto  0) <= MapAdr(19 downto  0)                when( iSltMap0 = '1' or iSltMap  = '1' )else    -- [A+B]200000-3FFFFF (4096 kB) Internal Slot0-1
+                                                                                                                -- [A+B]000000-1FFFFF (4096 kB) Internal Slot3-0
+                            "0000"   & adr(15 downto  0)        when( iSltLin1 = '1' or iSltLin2 = '1' )else    -- [ C ]000000-00FFFF (  64 kB) Internal Slot2 Linear
+                                                                                                                -- [ C ]100000-10FFFF (  64 kB) Internal Slot1 Linear
+                            Scc2Adr(19 downto  0)               when( iSltScc2 = '1' )else                      -- [ C ]000000-1FFFFF (2048 kB) Internal Slot2
+                            Scc1Adr(19 downto  0)               when( iSltScc1 = '1' )else                      -- [ C ]100000-1FFFFF (1024 kB) Internal Slot1
+                            "0"      & ErmAdr(18 downto  0)     when( iSltErm  = '1' )else                      -- [ D ]000000-07FFFF ( 512 kB) Internal Slot3-2
+                            "00100"  & adr(14 downto  0)        when( rom_main = '1' )else                      -- [ D ]020000-027FFF (  32 kB) Internal Slot0-0
+                            "001010" & adr(13 downto  0)        when( rom_xbas = '1' )else                      -- [ D ]028000-02BFFF (  16 kB) Internal Slot3-3
+                            "001011" & adr(13 downto  0)        when( rom_opll = '1' )else                      -- [ D ]02C000-02FFFF (  16 kB) Internal Slot0-2
+                            "0011"   & adr(15 downto  0)        when( rom_extd = '1' )else                      -- [ D ]030000-03BFFF (  48 kB) Internal Slot3-1
+                            "001111" & adr(13 downto  0)        when( rom_free = '1' )else                      -- [ D ]03C000-03FFFF (  16 kB) Internal Slot0-3
+                            "01"     & KanAdr(17 downto  0)     when( rom_kanj = '1' )else                      -- [ D ]040000-07FFFF ( 256 kB) Kanji-data (JIS1+JIS2)
                             (others => '0');
 
     ----------------------------------------------------------------
-    -- SD-RAM access
+    -- SDRAM access
     ----------------------------------------------------------------
     --   SdrSta = "000" => idle
     --   SdrSta = "001" => precharge all
@@ -2257,6 +2294,7 @@ begin
                         (Scc1Wrt and iSltScc1 ) or
                         (Scc2Wrt and iSltScc2 ) or
                         (ErmWrt  and iSltErm  ) or
+                        (MapWrt  and iSltMap0 ) or
                         (MapWrt  and iSltMap  )));
 
     process( memclk )
@@ -2360,45 +2398,82 @@ begin
         end if;
     end process;
 
+    -----------------------------------------------------------------------
+    -- SDRAM controller compatible with 8 MB, 16 MB and 32 MB single chip
+    -- STABLE VERSION 2022.08.24 by KdL  [ USE AT YOUR OWN RISK!! ]
+    -----------------------------------------------------------------------
+    -- * ClrAdr counter has been removed.
+    -- * Other SDRAM processes are unchanged.
+    -----------------------------------------------------------------------
+    -- Memo: SdrAdr(12 downto 11) <= CpuAdr(24 downto 23);
+    --       SdrBa ( 1 downto  0) <= CpuAdr(22 downto 21);
+    -----------------------------------------------------------------------
     process( memclk )
     begin
         if( memclk'event and memclk = '1' )then
             case ff_sdr_seq is
                 when "000" =>
-                    if( SdrSta(2) = '0' )then
-                        --  single  CL=2 WT=0(seq) BL=1
-                        SdrAdr <= "00010" & "0" & "010" & "0" & "000";
-                    else
-                        if( RstSeq(4 downto 3) /= "11" )then
-                            SdrAdr <= ClrAdr(12 downto 0);      -- clear memory (VRAM, MainRAM)
+                    if( SdrSta(2) = '0' )then                                       -- set [command mode]
+                        --           WBL=single TM=off CL=2 WT=0(seq) BL=1
+                        SdrAdr <= "00" & "010" & "0" & "010" & "0" & "000";
+                        SdrBa  <= "00";                                             -- bank A
+                    else                                                            -- set [row address]
+                        if( RstSeq(4 downto 2) = "011" and warmRESET /= '1' )then
+                            SdrAdr <= (others => '0');                              -- clear "AB" mark (ESE-SCC2 >> ESE-SCC1 >> ESE-RAM)
+                            SdrBa  <= "1" & RstSeq(1);                              -- bank C+D
                         elsif( VideoDLClk = '0' )then
-                            SdrAdr <= CpuAdr(13 downto 1);      -- cpu read/write
+                            SdrAdr <= CpuAdr(24 downto 23) & CpuAdr(11 downto 1);   -- cpu read/write
+                            SdrBa  <= CpuAdr(22 downto 21);                         -- bank A+B+C+D
                         else
-                            SdrAdr <= VdpAdr(12 downto 0);      -- vdp read/write
+                            SdrAdr <= "00" & VdpAdr(10 downto 0);                   -- vdp read/write
+                            SdrBa  <= "11";                                         -- bank D
                         end if;
                     end if;
-                when "010" =>
-                    SdrAdr(12 downto 9) <= "0010";                                  -- A10=1 => enable auto precharge
-                    if( RstSeq(4 downto 2) = "010" )then
-                        SdrAdr(8 downto 0) <= "111" & "000" & "0" & ClrAdr(14 downto 13);   -- clear VRAM     (16 kB * 4)   =>  start adr 700000h
-                    elsif( RstSeq(4 downto 1) = "0110" )then
-                        SdrAdr(8 downto 0) <= "110" & "000" & "00" & ClrAdr(13);            -- clear ERAM     (16 kB * 2)   =>  start adr 600000h
-                    elsif( RstSeq(4 downto 0) = "01110" )then
-                        SdrAdr(8 downto 0) <= "101" & "000" & "000";                        -- clear ESE-SCC1 (16 kB * 1)   =>  start adr 500000h
-                    elsif( RstSeq(4 downto 0) = "01111" )then
-                        SdrAdr(8 downto 0) <= "100" & "000" & "000";                        -- clear ESE-SCC2 (16 kB * 1)   =>  start adr 400000h
-                    elsif( RstSeq(4 downto 3) = "10" )then
-                        SdrAdr(8 downto 0) <= "000" & "000" & ClrAdr(15 downto 13);         -- clear MainRAM  (16 kB * 8)   =>  start adr 000000h
+                when "010" =>                                                                               -- set [column address]
+                    SdrAdr(10 downto 9) <= "10";                                                            -- A10=1 => enable auto precharge
+                    -- when A10=1, SdrBa is ignored and all banks are selected
+                    -- be careful not to assign SdrBa during auto precharge, otherwise it will cause instability
+                    if( RstSeq(4 downto 1) = "0110" and warmRESET /= '1' )then
+                        SdrAdr(12 downto 11) <= CpuAdr(24 downto 23);
+                        SdrAdr(8 downto 0) <= RstSeq(0) & "00000000";                                       -- clear ESE-SCC2 >> ESE-SCC1
+                    elsif( RstSeq(4 downto 1) = "0111" and warmRESET /= '1' )then
+                        SdrAdr(12 downto 11) <= CpuAdr(24 downto 23);
+                        SdrAdr(8 downto 0) <= (others => '0');                                              -- clear ESE-RAM
                     elsif( VideoDLClk = '0' )then
-                        SdrAdr(8 downto 0) <= CpuAdr(22 downto 14);
+                        SdrAdr(12 downto 11) <= CpuAdr(24 downto 23);
+                        SdrAdr(8 downto 0) <= CpuAdr(20 downto 12);                                         -- cpu read/write
                     elsif( VdpAdr(15) = '0' )then
-                        SdrAdr(8 downto 0) <= "111" & vram_page(3 downto 0) & VdpAdr(14 downto 13);
+                        SdrAdr(12 downto 11) <= "00";
+                        SdrAdr(8 downto 0) <= "1" & vram_page(3 downto 0) & VdpAdr(14 downto 11);           -- vdp read/write (even)
                     else
-                        SdrAdr(8 downto 0) <= "111" & vram_page(7 downto 4) & VdpAdr(14 downto 13);
+                        SdrAdr(12 downto 11) <= "00";
+                        SdrAdr(8 downto 0) <= "1" & vram_page(7 downto 4) & VdpAdr(14 downto 11);           -- vdp read/write (odd)
                     end if;
                 when others =>
                     null;
             end case;
+        end if;
+    end process;
+
+    -- SDRAM size : "00" = 8 MB, "01" = 16 MB, "10" = 32 MB (default), "11" = Reserved (pre-boot state)
+    process( memclk )
+    begin
+        if( memclk'event and memclk = '1' )then
+            if( ff_ldbios_n = '1' )then
+                SdrSize <= "10";                                -- 32768 kB
+            end if;
+        end if;
+    end process;
+
+    -- SDRAM constraints
+    process( memclk )
+    begin
+        if( memclk'event and memclk = '1' )then
+            if( SdrSize /= "00" )then
+                iSlt0_1 <= Mapper0_ack;
+            else
+                iSlt0_1 <= '0';
+            end if;
         end if;
     end process;
 
@@ -2421,20 +2496,6 @@ begin
                 end if;
             else
                 SdrDat <= (others => 'Z');
-            end if;
-        end if;
-    end process;
-
-    -- Clear address for DRAM initialization
-    process( memclk )
-    begin
-        if( memclk'event and memclk = '1' )then
-            if( ff_sdr_seq = "010" )then
-                if( RstSeq(4 downto 3) /= "11" )then
-                    ClrAdr <= (others => '0');
-                else
-                    ClrAdr <= ClrAdr + 1;
-                end if;
             end if;
         end if;
     end process;
@@ -2510,8 +2571,8 @@ begin
 
     pMemUdq     <= SdrUdq;
     pMemLdq     <= SdrLdq;
-    pMemBa1     <= '0';
-    pMemBa0     <= '0';
+    pMemBa1     <= SdrBa(1);
+    pMemBa0     <= SdrBa(0);
 
     pMemAdr     <= SdrAdr;
     pMemDat     <= SdrDat;
@@ -2560,11 +2621,32 @@ begin
         port map(clk21m, adr, RomDbi);
 
     U03 : megasd
-        port map(clk21m, reset, clkena, ErmReq, open, wrt, adr, open, dbo,
-                        ErmRam, ErmWrt, ErmAdr, RamDbi, open,
-                        MmcDbi, MmcEna, MmcAct, pSd_Ck, pSd_Dt(3), pSd_Cm, pSd_Dt(0),
-                        EPC_CK, EPC_CS, EPC_OE, EPC_DI, EPC_DO);
-        pSd_Dt(2 downto 0) <= (others => 'Z');
+        port map(
+            clk21m      => clk21m              ,
+            reset       => reset               ,
+            req         => ErmReq              ,
+            wrt         => wrt                 ,
+            adr         => adr                 ,
+            dbo         => dbo                 ,
+            ramreq      => ErmRam              ,
+            ramwrt      => ErmWrt              ,
+            ramadr      => ErmAdr              ,
+            mmcdbi      => MmcDbi              ,
+            mmcena      => MmcEna              ,
+            mmcact      => MmcAct              ,
+            mmc_ck      => pSd_Ck              ,
+            mmc_cs      => pSd_Dt(3)           ,
+            mmc_di      => pSd_Cm              ,
+            mmc_do      => pSd_Dt(0)           ,
+            epc_ck      => EPC_CK              ,
+            epc_cs      => EPC_CS              ,
+            epc_oe      => EPC_OE              ,
+            epc_di      => EPC_DI              ,
+            epc_do      => EPC_DO              ,
+            debug       => open
+        );
+
+    pSd_Dt(  2 downto 0 ) <= (others => 'Z');
 
 --    U04 : cyclone_asmiblock
 --        port map(EPC_CK, EPC_CS, EPC_DI, EPC_OE, EPC_DO);
@@ -2587,16 +2669,16 @@ begin
                         KanRom, KanAdr, RamDbi, open);
 
     U20 : vdp
-        -- V9938 MSX2 VDP
+        -- V9938 VDP core
 --      port map(clk21m, reset, VdpReq, open, wrt, adr, VdpDbi, dbo, pVdpInt_n,
 --                      open, WeVdp_n, VdpAdr, VrmDbi, VrmDbo,
 --                      VideoR, VideoG, VideoB, VideoHS_n, VideoVS_n, VideoCS_n,
 --                      VideoDHClk, VideoDLClk, open, open, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga);
-        -- V9958 MSX2+/tR VDP
+        -- TH9958 VDP core
         port map(clk21m, reset, VdpReq, open, wrt, adr, VdpDbi, dbo, pVdpInt_n,
                         open, WeVdp_n, VdpAdr, VrmDbi, VrmDbo, VdpSpeedMode or (not hybridclk_n), RatioMode, centerYJK_R25_n,
                         VideoR, VideoG, VideoB, VideoHS_n, VideoVS_n, VideoCS_n,
-                        VideoDHClk, VideoDLClk, open, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga);
+                        VideoDHClk, VideoDLClk, open, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga, VDP_ID, OFFSET_Y);
 
     U21 : vencode
         port map(clk21m, reset, VideoR, VideoG, videoB, VideoHS_n, VideoVS_n,
@@ -2634,36 +2716,36 @@ begin
 --      end if;
 --  end process;
 
-    u_interpo: interpo
-    generic map (
-        msbi    => DACin'high
-    )
-    port map (
-        clk21m  => clk21m       ,
-        reset   => reset        ,
-        clkena  => clkena       ,
-        idata   => DACin        ,
-        odata   => lpf1_wave
-    );
+    u_interpo : interpo
+        generic map(
+            msbi    => DACin'high
+        )
+        port map(
+            clk21m  => clk21m               ,
+            reset   => not power_on_reset   ,
+            clkena  => clkena               ,
+            idata   => DACin                ,
+            odata   => lpf1_wave
+        );
 
     --  low pass filter
 --  w_lpf2ena <= '1' when( ff_lpf_div(         0) = '1'    and clkena = '1' ) else '0';     -- sccic
 
-    u_lpf2: lpf2
-    generic map (
-        msbi    => DACin'high
-    )
-    port map (
-        clk21m  => clk21m       ,
-        reset   => reset        ,
---      clkena  => w_lpf2ena    ,   -- sccic
-        clkena  => clkena       ,   -- no sccic
-        idata   => lpf1_wave    ,
-        odata   => lpf5_wave
-    );
+    u_lpf2 : lpf2
+        generic map(
+            msbi    => DACin'high
+        )
+        port map(
+            clk21m  => clk21m               ,
+            reset   => not power_on_reset   ,
+--          clkena  => w_lpf2ena            ,   -- sccic
+            clkena  => clkena               ,   -- no sccic
+            idata   => lpf1_wave            ,
+            odata   => lpf5_wave
+        );
 
     U33: esepwm
-        generic map(DAC_msbi) port map(clk21m, reset, lpf5_wave, DACout);
+        generic map(DAC_msbi) port map(clk21m, not power_on_reset, lpf5_wave, DACout);
 
     U34 : system_timer
         port map(
@@ -2677,82 +2759,91 @@ begin
             dbo     => dbo
         );
 
-    U35: switched_io_ports
-    port map (
-        clk21m          => clk21m           ,
-        reset           => reset            ,
-        req             => swio_req         ,
+    U35 : switched_io_ports
+        port map(
+            clk21m          => clk21m           ,
+            reset           => reset            ,
+            power_on_reset  => power_on_reset   ,
+            req             => swio_req         ,
             ack             => open             ,
-        wrt             => wrt              ,
-        adr             => adr              ,
-        dbi             => swio_dbi         ,
-        dbo             => dbo              ,
+            wrt             => wrt              ,
+            adr             => adr              ,
+            dbi             => swio_dbi         ,
+            dbo             => dbo              ,
 
-        io40_n          => io40_n           ,
-        io41_id212_n    => io41_id212_n     ,   -- here to reduce LEs
-        io42_id212      => io42_id212       ,
-        io43_id212      => io43_id212       ,
-        io44_id212      => io44_id212       ,
-        OpllVol         => OpllVol          ,
-        SccVol          => SccVol           ,
-        PsgVol          => PsgVol           ,
-        MstrVol         => MstrVol          ,
-        CustomSpeed     => CustomSpeed      ,
-        tMegaSD         => tMegaSD          ,
-        tPanaRedir      => tPanaRedir       ,   -- here to reduce LEs
-        VdpSpeedMode    => VdpSpeedMode     ,
-        V9938_n         => V9938_n          ,
-        Mapper_req      => Mapper_req       ,   -- here to reduce LEs
-        Mapper_ack      => Mapper_ack       ,
-        MegaSD_req      => MegaSD_req       ,   -- here to reduce LEs
-        MegaSD_ack      => MegaSD_ack       ,
-        io41_id008_n    => io41_id008_n     ,
-        swioKmap        => swioKmap         ,
-        CmtScro         => CmtScro          ,
-        swioCmt         => swioCmt          ,
-        LightsMode      => LightsMode       ,
-        Red_sta         => Red_sta          ,
-        LastRst_sta     => LastRst_sta      ,
-        RstReq_sta      => RstReq_sta       ,   -- here to reduce LEs
-        Blink_ena       => Blink_ena        ,
-        pseudoStereo    => pseudoStereo     ,
-        extclk3m        => extclk3m         ,
-        ntsc_pal_type   => ntsc_pal_type    ,
-        forced_v_mode   => forced_v_mode    ,
-        right_inverse   => right_inverse    ,
-        vram_slot_ids   => vram_slot_ids    ,
-        DefKmap         => DefKmap          ,   -- here to reduce LEs
+            io40_n          => io40_n           ,
+            io41_id212_n    => io41_id212_n     ,   -- here to reduce LEs
+            io42_id212      => io42_id212       ,
+            io43_id212      => io43_id212       ,
+            io44_id212      => io44_id212       ,
+            OpllVol         => OpllVol          ,
+            SccVol          => SccVol           ,
+            PsgVol          => PsgVol           ,
+            MstrVol         => MstrVol          ,
+            CustomSpeed     => CustomSpeed      ,
+            tMegaSD         => tMegaSD          ,
+            tPanaRedir      => tPanaRedir       ,   -- here to reduce LEs
+            VdpSpeedMode    => VdpSpeedMode     ,
+            V9938_n         => V9938_n          ,
+            Mapper_req      => Mapper_req       ,   -- here to reduce LEs
+            Mapper_ack      => Mapper_ack       ,
+            MegaSD_req      => MegaSD_req       ,   -- here to reduce LEs
+            MegaSD_ack      => MegaSD_ack       ,
+            io41_id008_n    => io41_id008_n     ,
+            swioKmap        => swioKmap         ,
+            CmtScro         => CmtScro          ,
+            swioCmt         => swioCmt          ,
+            LightsMode      => LightsMode       ,
+            Red_sta         => Red_sta          ,
+            LastRst_sta     => LastRst_sta      ,
+            RstReq_sta      => RstReq_sta       ,   -- here to reduce LEs
+            Blink_ena       => Blink_ena        ,
+            pseudoStereo    => pseudoStereo     ,
+            extclk3m        => extclk3m         ,
+            ntsc_pal_type   => ntsc_pal_type    ,
+            forced_v_mode   => forced_v_mode    ,
+            right_inverse   => right_inverse    ,
+            vram_slot_ids   => vram_slot_ids    ,
+            DefKmap         => DefKmap          ,   -- here to reduce LEs
 
-        ff_dip_req      => ff_dip_req       ,
-        ff_dip_ack      => ff_dip_ack       ,   -- here to reduce LEs
+            ff_dip_req      => ff_dip_req       ,
+            ff_dip_ack      => ff_dip_ack       ,   -- here to reduce LEs
 
-        Scro            => Scro             ,
-        ff_Scro         => ff_Scro          ,
-        Reso            => Reso             ,
-        ff_Reso         => ff_Reso          ,
-        FKeys           => FKeys            ,
-        vFKeys          => vFKeys           ,
-        LevCtrl         => LevCtrl          ,
-        GreenLvEna      => GreenLvEna       ,
+            Scro            => Scro             ,
+            ff_Scro         => ff_Scro          ,
+            Reso            => Reso             ,
+            ff_Reso         => ff_Reso          ,
+            FKeys           => FKeys            ,
+            vFKeys          => vFKeys           ,
+            LevCtrl         => LevCtrl          ,
+            GreenLvEna      => GreenLvEna       ,
 
-        swioRESET_n     => swioRESET_n      ,
-        warmRESET       => warmRESET        ,
-        WarmMSXlogo     => WarmMSXlogo      ,   -- here to reduce LEs
+            swioRESET_n     => swioRESET_n      ,
+            warmRESET       => warmRESET        ,
+            WarmMSXlogo     => WarmMSXlogo      ,   -- here to reduce LEs
 
-        JIS2_ena        => JIS2_ena         ,
-        portF4_mode     => portF4_mode      ,
-        ff_ldbios_n     => ff_ldbios_n      ,
+            JIS2_ena        => JIS2_ena         ,
+            portF4_mode     => portF4_mode      ,
+            ff_ldbios_n     => ff_ldbios_n      ,
+            bios_reload_ack => bios_reload_ack  ,
 
-        RatioMode       => RatioMode        ,
-        centerYJK_R25_n => centerYJK_R25_n  ,
-        legacy_sel      => legacy_sel       ,
+            RatioMode       => RatioMode        ,
+            centerYJK_R25_n => centerYJK_R25_n  ,
+            legacy_sel      => legacy_sel       ,
             iSlt1_linear    => iSlt1_linear     ,
             iSlt2_linear    => iSlt2_linear     ,
-        Slot0_req       => Slot0_req        ,   -- here to reduce LEs
+            Slot0_req       => Slot0_req        ,   -- here to reduce LEs
             Slot0Mode       => Slot0Mode        ,
             vga_scanlines   => vga_scanlines    ,
-            btn_scan        => '1'
-    );
+            btn_scan        => '1'              ,
+            Mapper0_req     => Mapper0_req      ,   -- here to reduce LEs
+            Mapper0_ack     => Mapper0_ack      ,
+            iPsg2_ena       => iPsg2_ena        ,
+
+            SdrSize         => SdrSize          ,
+            VDP_ID          => VDP_ID           ,
+            OFFSET_Y        => OFFSET_Y
+        );
 
     U40 : tr_pcm
         port map(clk21m, reset, tr_pcm_req, open, wrt, adr(0), tr_pcm_dbi, dbo,
