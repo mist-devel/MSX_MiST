@@ -59,6 +59,7 @@ assign LED  = ~leds[0];
 `include "build_id.v"
 parameter CONF_STR = {
 	"MSX;;",
+	"S0,VHD,Mount;",
 	"O2,CPU Clock,Normal,Turbo;",
 	"O3,Slot1,Empty,MegaSCC+ 1MB;",
 	"O45,Slot2,Empty,MegaSCC+ 2MB,MegaRAM 1MB,MegaRAM 2MB;",    
@@ -142,6 +143,8 @@ user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(100)) user_io
         .joystick_0(joy_0),
         .joystick_1(joy_1),
 
+        .img_mounted(img_mounted),
+        .img_size(img_size),
         .sd_conf(sd_conf),
         .sd_ack(sd_ack),
         .sd_ack_conf(sd_ack_conf),
@@ -210,9 +213,12 @@ reg  [7:0] dipsw;
 wire [7:0] leds;
 
 reg reset;
-wire resetW = status[0] | buttons[1];
+reg  [27:0] img_reset_cnt = 0;
+wire resetW = status[0] | buttons[1] | img_reset_cnt != 0;
 
 always @(posedge clk_sys) begin
+	if (img_reset_cnt != 0) img_reset_cnt <= img_reset_cnt - 1'd1;
+	if (img_mounted) img_reset_cnt <= 28'h2000000;
 	reset <= resetW;
 	dipsw <= {1'b0, ~status[6], ~status[5:4], ~status[3], ~scandoubler_disable & status[8], scandoubler_disable, ~status[2]};
 end
