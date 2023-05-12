@@ -2856,9 +2856,9 @@ begin
             clk_i           => clk21m,
             wait_o          => esp_wait_s,
             reset_i         => xSltRst_n,           -- swioRESET_n was purposely excluded here
-            iorq_i          => pSltIorq_n,
-            wrt_i           => pSltWr_n,
-            rd_i            => pSltRd_n,
+            iorq_i          => iSltIorq_n,
+            wrt_i           => xSltWr_n,
+            rd_i            => xSltRd_n,
             tx_i            => esp_tx_i,
             rx_o            => esp_rx_o,
             adr_i           => adr,
@@ -2873,9 +2873,9 @@ begin
         port map(
             clk_i           => clk21m,
             reset_i         => (not reset),
-            iorq_i          => pSltIorq_n,
-            wrt_i           => pSltWr_n,
-            rd_i            => pSltRd_n,
+            iorq_i          => iSltIorq_n,
+            wrt_i           => xSltWr_n,
+            rd_i            => xSltRd_n,
             tx_i            => '0',
             rx_o            => midi_o,              -- module output pin
             adr_i           => adr,
