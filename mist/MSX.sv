@@ -67,10 +67,12 @@ parameter CONF_STR = {
 	"O7,Swap joysticks,No,Yes;",
 	"O8,VGA Output,CRT,LCD;",
 	"O9,Tape sound,OFF,ON;",
+	"OA,UART TX,MIDI,WiFi;",
 	"T0,Reset;",
 	"V,v1.0.",`BUILD_DATE
 };
 
+wire uart_sel = status[10];
 
 ////////////////////   CLOCKS   ///////////////////
 
@@ -281,6 +283,13 @@ end
 
 wire  [5:0] Dac_SL, Dac_SR;
 wire        Cmt_Out;
+wire        esp_tx, midi_tx;
+reg         rx, rxD;
+always @(posedge clk_sys) begin
+	rxD <= UART_RX;
+	rx <= rxD;
+	UART_TX <= uart_sel ? esp_tx : midi_tx;
+end
 
 emsx_top emsx
 (
@@ -322,7 +331,7 @@ emsx_top emsx
         .pLed       (leds),
 
 //        -- Video, Audio/CMT ports
-        .CmtIn      (UART_RX),
+        .CmtIn      (rx),
         .CmtOut     (Cmt_Out),
         .pDac_VR    (R_O),      // RGB_Red / Svideo_C
         .pDac_VG    (G_O),      // RGB_Grn / Svideo_Y
@@ -334,7 +343,9 @@ emsx_top emsx
         .pDac_SR    (Dac_SR),
 
         .iRTC       (rtc),
-		.oMidi      (UART_TX)
+        .oMidi      (midi_tx),
+        .pUsbP1     (rx),
+        .pUsbN1     (esp_tx)
 );
 
 assign AUDIO_L = Dac_SL[0];
