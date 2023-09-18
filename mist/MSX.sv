@@ -18,45 +18,109 @@
 
 module MSX
 (
-    input         CLOCK_27[0],   // Input clock 27 MHz
+	input         CLOCK_27,
 
-    output  [5:0] VGA_R,
-    output  [5:0] VGA_G,
-    output  [5:0] VGA_B,
-    output        VGA_HS,
-    output        VGA_VS,
+	output        LED,
+	output [VGA_BITS-1:0] VGA_R,
+	output [VGA_BITS-1:0] VGA_G,
+	output [VGA_BITS-1:0] VGA_B,
+	output        VGA_HS,
+	output        VGA_VS,
 
-    output        LED,
+	input         SPI_SCK,
+	inout         SPI_DO,
+	input         SPI_DI,
+	input         SPI_SS2,
+	input         SPI_SS3,
+	input         CONF_DATA0,
 
-    output        AUDIO_L,
-    output        AUDIO_R,
+`ifdef USE_QSPI
+	input         QSCK,
+	input         QCSn,
+	inout   [3:0] QDAT,
+`endif
+`ifndef NO_DIRECT_UPLOAD
+	input         SPI_SS4,
+`endif
 
-    input         UART_RX,
-	output        UART_TX,
+	output [12:0] SDRAM_A,
+	inout  [15:0] SDRAM_DQ,
+	output        SDRAM_DQML,
+	output        SDRAM_DQMH,
+	output        SDRAM_nWE,
+	output        SDRAM_nCAS,
+	output        SDRAM_nRAS,
+	output        SDRAM_nCS,
+	output  [1:0] SDRAM_BA,
+	output        SDRAM_CLK,
+	output        SDRAM_CKE,
 
-    input         SPI_SCK,
-    output        SPI_DO,
-    input         SPI_DI,
-    input         SPI_SS2,
-    input         SPI_SS3,
-    input         CONF_DATA0,
+`ifdef DUAL_SDRAM
+	output [12:0] SDRAM2_A,
+	inout  [15:0] SDRAM2_DQ,
+	output        SDRAM2_DQML,
+	output        SDRAM2_DQMH,
+	output        SDRAM2_nWE,
+	output        SDRAM2_nCAS,
+	output        SDRAM2_nRAS,
+	output        SDRAM2_nCS,
+	output  [1:0] SDRAM2_BA,
+	output        SDRAM2_CLK,
+	output        SDRAM2_CKE,
+`endif
 
-    output [12:0] SDRAM_A,
-    inout  [15:0] SDRAM_DQ,
-    output        SDRAM_DQML,
-    output        SDRAM_DQMH,
-    output        SDRAM_nWE,
-    output        SDRAM_nCAS,
-    output        SDRAM_nRAS,
-    output        SDRAM_nCS,
-    output  [1:0] SDRAM_BA,
-    output        SDRAM_CLK,
-    output        SDRAM_CKE
+	output        AUDIO_L,
+	output        AUDIO_R,
+`ifdef I2S_AUDIO
+	output        I2S_BCK,
+	output        I2S_LRCK,
+	output        I2S_DATA,
+`endif
+
+	input         UART_RX,
+	output        UART_TX
 );
+
+
+`ifdef NO_DIRECT_UPLOAD
+localparam bit DIRECT_UPLOAD = 0;
+wire SPI_SS4 = 1;
+`else
+localparam bit DIRECT_UPLOAD = 1;
+`endif
+
+`ifdef USE_QSPI
+localparam bit QSPI = 1;
+assign QDAT = 4'hZ;
+`else
+localparam bit QSPI = 0;
+`endif
+
+`ifdef VGA_8BIT
+localparam VGA_BITS = 8;
+`else
+localparam VGA_BITS = 6;
+`endif
+
+// remove this if the 2nd chip is actually used
+`ifdef DUAL_SDRAM
+assign SDRAM2_A = 13'hZZZZ;
+assign SDRAM2_BA = 0;
+assign SDRAM2_DQML = 0;
+assign SDRAM2_DQMH = 0;
+assign SDRAM2_CKE = 0;
+assign SDRAM2_CLK = 0;
+assign SDRAM2_nCS = 1;
+assign SDRAM2_DQ = 16'hZZZZ;
+assign SDRAM2_nCAS = 0;
+assign SDRAM2_nRAS = 0;
+assign SDRAM2_nWE = 0;
+`endif
+
+`include "build_id.v" 
 
 assign LED  = ~leds[0];
 
-`include "build_id.v"
 parameter CONF_STR = {
 	"MSX;;",
 	"S0,VHD,Mount;",
@@ -82,7 +146,7 @@ wire memclk;
 
 pll pll
 (
-	.inclk0(CLOCK_27[0]),
+	.inclk0(CLOCK_27),
 	.c0(clk_sys),
 	.c1(memclk),
 	.locked(locked)
@@ -291,6 +355,11 @@ always @(posedge clk_sys) begin
 	UART_TX <= uart_sel ? esp_tx : midi_tx;
 end
 
+wire  [5:0] R_O;
+wire  [5:0] G_O;
+wire  [5:0] B_O;
+wire        HSync, VSync;
+
 emsx_top emsx
 (
 //        -- Clock, Reset ports
@@ -352,22 +421,29 @@ assign AUDIO_L = Dac_SL[0];
 assign AUDIO_R = status[9] ? Cmt_Out : Dac_SR[0];
 
 //////////////////   VIDEO   //////////////////
-wire  [5:0] R_O;
-wire  [5:0] G_O;
-wire  [5:0] B_O;
-wire        HSync, VSync;
 
-wire [5:0] osd_r_o, osd_g_o, osd_b_o;
+wire [VGA_BITS-1:0] osd_r_i, osd_g_i, osd_b_i;
+wire [VGA_BITS-1:0] osd_r_o, osd_g_o, osd_b_o;
 
-osd osd
+`ifdef VGA_8BIT
+assign osd_r_i = {R_O, R_O[5:4]};
+assign osd_g_i = {G_O, G_O[5:4]};
+assign osd_b_i = {B_O, B_O[5:4]};
+`else
+assign osd_r_i = R_O;
+assign osd_g_i = G_O;
+assign osd_b_i = B_O;
+`endif
+
+osd #(.OUT_COLOR_DEPTH(VGA_BITS)) osd
 (
     .clk_sys(clk_sys),
     .SPI_DI(SPI_DI),
     .SPI_SCK(SPI_SCK),
     .SPI_SS3(SPI_SS3),
-    .R_in(R_O),
-    .G_in(G_O),
-    .B_in(B_O),
+    .R_in(osd_r_i),
+    .G_in(osd_g_i),
+    .B_in(osd_b_i),
     .HSync(HSync),
     .VSync(VSync),
     .R_out(osd_r_o),
@@ -375,10 +451,10 @@ osd osd
     .B_out(osd_b_o)
     );
 
-wire [5:0] r, g, b;
+wire [VGA_BITS-1:0] r, g, b;
 wire       cs, hs, vs;
 
-RGBtoYPbPr #(6) RGBtoYPbPr
+RGBtoYPbPr #(VGA_BITS) RGBtoYPbPr
 (
 	.clk      ( clk_sys ),
 	.ena      ( ypbpr   ),
