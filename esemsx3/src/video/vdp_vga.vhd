@@ -147,9 +147,16 @@ ARCHITECTURE RTL OF VDP_VGA IS
 
     SIGNAL FF_HSYNC_N   : STD_LOGIC;
     SIGNAL FF_VSYNC_N   : STD_LOGIC;
+    SIGNAL HSYNC_ON     : STD_LOGIC;
+    SIGNAL HSYNC_HALF_ON: STD_LOGIC;
+    SIGNAL HSYNC_OFF    : STD_LOGIC;
+    SIGNAL HSYNC_HALF_OFF: STD_LOGIC;
 
     -- VIDEO OUTPUT ENABLE
+    SIGNAL HDE_ON       : STD_LOGIC;
+    SIGNAL HDE_OFF      : STD_LOGIC;
     SIGNAL VIDEOOUTX    : STD_LOGIC;
+    SIGNAL VIDEOOUTY    : STD_LOGIC;
 
     -- DOUBLE BUFFER SIGNAL
     SIGNAL XPOSITIONW   : STD_LOGIC_VECTOR(  9 DOWNTO 0 );
@@ -224,15 +231,20 @@ BEGIN
         END IF;
     END PROCESS;
 
+    HSYNC_ON  <= '1' when (HCOUNTERIN = 0) OR (HCOUNTERIN = (CLOCKS_PER_LINE/2)) else '0';
+    HSYNC_OFF <= '1' when (HCOUNTERIN = 40) OR (HCOUNTERIN = (CLOCKS_PER_LINE/2) + 40) else '0';
+    HSYNC_HALF_ON  <= '1' when (HCOUNTERIN = CLOCKS_PER_LINE/4) OR (HCOUNTERIN = (CLOCKS_PER_LINE/2 + CLOCKS_PER_LINE/4)) else '0';
+    HSYNC_HALF_OFF  <= '1' when (HCOUNTERIN = (CLOCKS_PER_LINE/4 + 40)) OR (HCOUNTERIN = (CLOCKS_PER_LINE/2 + CLOCKS_PER_LINE/4) + 40) else '0';
+
     -- GENERATE H-SYNC SIGNAL
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
             FF_HSYNC_N <= '1';
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
-            IF( (HCOUNTERIN = 0) OR (HCOUNTERIN = (CLOCKS_PER_LINE/2)) )THEN
+            IF( HSYNC_ON = '1' )THEN
                 FF_HSYNC_N <= '0';
-            ELSIF( (HCOUNTERIN = 40) OR (HCOUNTERIN = (CLOCKS_PER_LINE/2) + 40) )THEN
+            ELSIF( HSYNC_OFF = '1' )THEN
                 FF_HSYNC_N <= '1';
             END IF;
         END IF;
@@ -248,29 +260,29 @@ BEGIN
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
             IF( PALMODE = '0' )THEN
                 IF( INTERLACEMODE = '0' )THEN
-                    IF( (VCOUNTERIN = 3*2 + CENTER_Y) OR (VCOUNTERIN = 524 + 3*2 + CENTER_Y) )THEN
+                    IF( ((VCOUNTERIN = 3*2 + CENTER_Y) OR (VCOUNTERIN = 524 + 3*2 + CENTER_Y)) AND HSYNC_ON = '1' )THEN
                         FF_VSYNC_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y) OR (VCOUNTERIN = 524 + 6*2 + CENTER_Y) )THEN
+                    ELSIF( ((VCOUNTERIN = 6*2 + CENTER_Y + 1) OR (VCOUNTERIN = 524 + 6*2 + CENTER_Y + 1)) AND HSYNC_OFF = '1' )THEN
                         FF_VSYNC_N <= '1';
                     END IF;
                 ELSE
-                    IF( (VCOUNTERIN = 3*2 + CENTER_Y) OR (VCOUNTERIN = 525 + 3*2 + CENTER_Y) )THEN
+                    IF( ((VCOUNTERIN = 3*2 + CENTER_Y AND HSYNC_HALF_ON = '1') OR (VCOUNTERIN = 524 + 3*2 + CENTER_Y AND HSYNC_HALF_ON = '1')) )THEN
                         FF_VSYNC_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y) OR (VCOUNTERIN = 525 + 6*2 + CENTER_Y) )THEN
+                    ELSIF( ((VCOUNTERIN = 6*2 + CENTER_Y + 1 AND HSYNC_HALF_ON = '1') OR (VCOUNTERIN = 524 + 6*2 + CENTER_Y + 1 AND HSYNC_HALF_ON = '1')) )THEN
                         FF_VSYNC_N <= '1';
                     END IF;
                 END IF;
             ELSE
                 IF( INTERLACEMODE = '0' )THEN
-                    IF( (VCOUNTERIN = 3*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 3*2 + CENTER_Y + 6) )THEN
+                    IF( ((VCOUNTERIN = 3*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 3*2 + CENTER_Y + 6)) AND HSYNC_ON = '1' )THEN
                         FF_VSYNC_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 6*2 + CENTER_Y + 6) )THEN
+                    ELSIF( ((VCOUNTERIN = 6*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 6*2 + CENTER_Y + 6)) AND HSYNC_OFF = '1' )THEN
                         FF_VSYNC_N <= '1';
                     END IF;
                 ELSE
-                    IF( (VCOUNTERIN = 3*2 + CENTER_Y + 6) OR (VCOUNTERIN = 625 + 3*2 + CENTER_Y + 6) )THEN
+                    IF( ((VCOUNTERIN = 3*2 + CENTER_Y + 6 AND HSYNC_HALF_ON = '1') OR (VCOUNTERIN = 626 + 3*2 + CENTER_Y + 6 AND HSYNC_HALF_ON = '1')) )THEN
                         FF_VSYNC_N <= '0';
-                    ELSIF( (VCOUNTERIN = 6*2 + CENTER_Y + 6) OR (VCOUNTERIN = 625 + 6*2 + CENTER_Y + 6) )THEN
+                    ELSIF( ((VCOUNTERIN = 6*2 + CENTER_Y + 6 AND HSYNC_HALF_ON = '1') OR (VCOUNTERIN = 626 + 6*2 + CENTER_Y + 6 AND HSYNC_HALF_ON = '1')) )THEN
                         FF_VSYNC_N <= '1';
                     END IF;
                 END IF;
@@ -293,18 +305,42 @@ BEGIN
         END IF;
     END PROCESS;
 
+    --HDE_ON  <= '1' when (HCOUNTERIN = DISP_START_X) OR ((HCOUNTERIN = DISP_START_X + (CLOCKS_PER_LINE/2)) AND INTERLACEMODE = '0') else '0';
+    HDE_ON  <= '1' when (HCOUNTERIN = DISP_START_X) OR (HCOUNTERIN = DISP_START_X + (CLOCKS_PER_LINE/2)) else '0';
+    HDE_OFF <= '1' when (HCOUNTERIN = DISP_START_X + DISP_WIDTH) OR (HCOUNTERIN = DISP_START_X + DISP_WIDTH + (CLOCKS_PER_LINE/2)) else '0';
+
     -- GENERATE VIDEO OUTPUT TIMING
     PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
             VIDEOOUTX <= '0';
         ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
-            IF( (HCOUNTERIN = DISP_START_X) OR
-                    ((HCOUNTERIN = DISP_START_X + (CLOCKS_PER_LINE/2)) AND INTERLACEMODE = '0') )THEN
+            IF( HDE_ON = '1' )THEN
                 VIDEOOUTX <= '1';
-            ELSIF( (HCOUNTERIN = DISP_START_X + DISP_WIDTH) OR
-                    (HCOUNTERIN = DISP_START_X + DISP_WIDTH + (CLOCKS_PER_LINE/2)) )THEN
+            ELSIF( HDE_OFF = '1' )THEN
                 VIDEOOUTX <= '0';
+            END IF;
+        END IF;
+    END PROCESS;
+
+    PROCESS( RESET, CLK21M )
+        CONSTANT CENTER_Y       : INTEGER := 12;                                -- based on HDMI AV output
+    BEGIN
+        IF( RESET = '1' )THEN
+            VIDEOOUTY <= '0';
+        ELSIF( CLK21M'EVENT AND CLK21M = '1' )THEN
+            IF( PALMODE = '0' )THEN
+                IF( ((VCOUNTERIN = CENTER_Y) OR (VCOUNTERIN = 524 + CENTER_Y)) AND HDE_OFF = '1' )THEN
+                    VIDEOOUTY <= '0';
+                ELSIF( ((VCOUNTERIN = 10*2 + CENTER_Y + 1) OR (VCOUNTERIN = 524 + 10*2 + CENTER_Y + 1)) AND HDE_ON = '1' )THEN
+                    VIDEOOUTY <= '1';
+                END IF;
+            ELSE
+                IF( ((VCOUNTERIN = CENTER_Y + 6) OR (VCOUNTERIN = 626 + CENTER_Y + 6)) AND HDE_OFF = '1' )THEN
+                    VIDEOOUTY <= '0';
+                ELSIF( ((VCOUNTERIN = 10*2 + CENTER_Y + 6) OR (VCOUNTERIN = 626 + 10*2 + CENTER_Y + 6)) AND HDE_ON = '1' )THEN
+                    VIDEOOUTY <= '1';
+                END IF;
             END IF;
         END IF;
     END PROCESS;
@@ -313,6 +349,6 @@ BEGIN
     VIDEOVSOUT_N <= FF_VSYNC_N;
 
     -- HDMI SUPPORT
-    BLANK_O <= '1' WHEN( VIDEOOUTX = '0' OR FF_VSYNC_N = '0' )ELSE '0';
+    BLANK_O <= '1' WHEN( VIDEOOUTX = '0' OR VIDEOOUTY = '0' )ELSE '0';
 
 END RTL;

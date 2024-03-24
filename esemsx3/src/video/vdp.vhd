@@ -287,7 +287,7 @@ ENTITY VDP IS
         PVIDEODHCLK         : OUT   STD_LOGIC;
         PVIDEODLCLK         : OUT   STD_LOGIC;
 
-        BLANK_O             : OUT   STD_LOGIC;
+        PVIDEOBLANK         : OUT   STD_LOGIC;
 
         -- DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
         DISPRESO            : IN    STD_LOGIC;
@@ -1071,7 +1071,7 @@ BEGIN
         VIDEOBOUT           => IVIDEOB_VGA,
         VIDEOHSOUT_N        => IVIDEOHS_N_VGA,
         VIDEOVSOUT_N        => IVIDEOVS_N_VGA,
-        BLANK_O             => BLANK_O,
+        BLANK_O             => PVIDEOBLANK,
         RATIOMODE           => RATIOMODE
     );
 

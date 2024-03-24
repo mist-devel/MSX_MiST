@@ -110,6 +110,7 @@ entity emsx_top is
         pDip            : in    std_logic_vector(  7 downto 0);     -- 0=On, 1=Off (default on shipment)
         pLed            : out   std_logic_vector(  7 downto 0);     -- 0=Off, 1=On (green)
         pLedPwr         : out   std_logic;                          -- 0=Off, 1=On (red)
+        pMSXAudio       : in    std_logic := '0';
 
         -- Video, Audio/CMT ports
         pDac_VR         : inout std_logic_vector(  5 downto 0);     -- RGB_Red / Svideo_C
@@ -120,9 +121,12 @@ entity emsx_top is
 
         pVideoHS_n      : out   std_logic;                          -- Csync(RGB15K), HSync(VGA31K)
         pVideoVS_n      : out   std_logic;                          -- Audio(RGB15K), VSync(VGA31K)
+        pVideoBlank     : out   std_logic;
 
         pVideoClk       : out   std_logic;                          -- (Reserved)
         pVideoDat       : out   std_logic;                          -- (Reserved)
+
+        audio_o         : out   std_logic_vector( 13 downto 0 );
 
         -- CMT
         CmtIn           :  in   std_logic;
@@ -355,7 +359,7 @@ architecture RTL of emsx_top is
 
             pVideoDHClk     : out   std_logic;
             pVideoDLClk     : out   std_logic;
-            BLANK_o         : out   std_logic;
+            pVideoBlank     : out   std_logic;
 
             -- CXA1645(RGB->NTSC encoder) signals
 --          pVideoSC        : out   std_logic;                          -- for V9938 VDP core
@@ -859,6 +863,7 @@ architecture RTL of emsx_top is
     signal  VideoSC         : std_logic;
     signal  VideoDLClk      : std_logic;
     signal  VideoDHClk      : std_logic;
+    signal  VideoBlank      : std_logic;
     signal  WeVdp_n         : std_logic;
     signal  VdpAdr          : std_logic_vector( 16 downto 0 );
     signal  VrmDbo          : std_logic_vector(  7 downto 0 );
@@ -2004,6 +2009,7 @@ begin
     process (clk21m)
     begin
         if( clk21m'event and clk21m = '1' )then
+            pVideoBlank <= VideoBlank;
             case DisplayMode is
             when "00" =>                                            -- TV 15KHz
                 pDac_VR     <= videoC;                              -- Chrominance of S-Video Out
@@ -2171,7 +2177,7 @@ begin
     begin
         if( clk21m'event and clk21m = '1' )then
 
-		      -- ff_pre_dacin assignment
+            -- ff_pre_dacin assignment
             ff_pre_dacin <= (not ff_psg) + ff_scc + ff_opll + ff_tr_pcm;
 
             -- amplitude limiter
@@ -2678,7 +2684,7 @@ begin
         port map(clk21m, reset, VdpReq, open, wrt, adr, VdpDbi, dbo, pVdpInt_n,
                         open, WeVdp_n, VdpAdr, VrmDbi, VrmDbo, VdpSpeedMode or (not hybridclk_n), RatioMode, centerYJK_R25_n,
                         VideoR, VideoG, VideoB, VideoHS_n, VideoVS_n, VideoCS_n,
-                        VideoDHClk, VideoDLClk, open, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga, VDP_ID, OFFSET_Y);
+                        VideoDHClk, VideoDLClk, VideoBlank, Reso_v, ntsc_pal_type, forced_v_mode, legacy_vga, VDP_ID, OFFSET_Y);
 
     U21 : vencode
         port map(clk21m, reset, VideoR, VideoG, videoB, VideoHS_n, VideoVS_n,
@@ -2743,6 +2749,8 @@ begin
             idata   => lpf1_wave            ,
             odata   => lpf5_wave
         );
+
+    audio_o <= lpf5_wave;
 
     U33: esepwm
         generic map(DAC_msbi) port map(clk21m, not power_on_reset, lpf5_wave, DACout);

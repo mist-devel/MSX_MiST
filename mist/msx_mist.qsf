@@ -281,7 +281,7 @@ set_global_assignment -name VHDL_FILE rtc_mist.vhd
 set_global_assignment -name QIP_FILE ../T80/T80.qip
 set_global_assignment -name QIP_FILE "mist-modules/mist.qip"
 set_global_assignment -name VERILOG_FILE "mist-modules/sd_card.v"
-set_global_assignment -name QIP_FILE pll.qip
+set_global_assignment -name QIP_FILE cyc3/pll.qip
 set_global_assignment -name QIP_FILE ../esemsx3/emsx.qip
 set_global_assignment -name QIP_FILE ../esemsx3/src/sound/jtopl/target/quartus/jtopl.qip
 set_global_assignment -name SIGNALTAP_FILE output_files/joy.stp

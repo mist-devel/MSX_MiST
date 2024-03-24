@@ -27,6 +27,19 @@ module MSX
 	output        VGA_HS,
 	output        VGA_VS,
 
+`ifdef USE_HDMI
+	output        HDMI_RST,
+	output  [7:0] HDMI_R,
+	output  [7:0] HDMI_G,
+	output  [7:0] HDMI_B,
+	output        HDMI_HS,
+	output        HDMI_VS,
+	output        HDMI_PCLK,
+	output        HDMI_DE,
+	inout         HDMI_SDA,
+	inout         HDMI_SCL,
+	input         HDMI_INT,
+`endif
 	input         SPI_SCK,
 	inout         SPI_DO,
 	input         SPI_DI,
@@ -68,7 +81,6 @@ module MSX
 	output        SDRAM2_CLK,
 	output        SDRAM2_CKE,
 `endif
-
 	output        AUDIO_L,
 	output        AUDIO_R,
 `ifdef I2S_AUDIO
@@ -76,7 +88,22 @@ module MSX
 	output        I2S_LRCK,
 	output        I2S_DATA,
 `endif
-
+`ifdef I2S_AUDIO_HDMI
+	output        HDMI_MCLK,
+	output        HDMI_BCK,
+	output        HDMI_LRCK,
+	output        HDMI_SDATA,
+`endif
+`ifdef SPDIF_AUDIO
+	output        SPDIF,
+`endif
+`ifdef USE_AUDIO_IN
+	input         AUDIO_IN,
+`endif
+`ifdef USE_MIDI_PINS
+	input         MIDI_IN,
+	output        MIDI_OUT,
+`endif
 	input         UART_RX,
 	output        UART_TX
 );
@@ -100,6 +127,21 @@ localparam bit QSPI = 0;
 localparam VGA_BITS = 8;
 `else
 localparam VGA_BITS = 6;
+`endif
+
+`ifdef USE_HDMI
+localparam bit HDMI = 1;
+assign HDMI_RST = 1'b1;
+`else
+localparam bit HDMI = 0;
+`endif
+
+`ifdef BIG_OSD
+localparam bit BIG_OSD = 1;
+`define SEP "-;",
+`else
+localparam bit BIG_OSD = 0;
+`define SEP
 `endif
 
 // remove this if the 2nd chip is actually used
@@ -131,24 +173,32 @@ parameter CONF_STR = {
 	"O7,Swap joysticks,No,Yes;",
 	"O8,VGA Output,CRT,LCD;",
 	"O9,Tape sound,OFF,ON;",
+`ifndef USE_MIDI_PINS
 	"OA,UART TX,MIDI,WiFi;",
+`endif
 	"T0,Reset;",
 	"V,v1.0.",`BUILD_DATE
 };
 
-wire uart_sel = status[10];
+wire        uart_sel = status[10];
 
 ////////////////////   CLOCKS   ///////////////////
 
 wire locked;
 wire clk_sys;
 wire memclk;
+`ifdef USE_HDMI
+wire hdmiclk;
+`endif
 
 pll pll
 (
 	.inclk0(CLOCK_27),
-	.c0(clk_sys),
-	.c1(memclk),
+	.c0(memclk),
+	.c1(clk_sys),
+`ifdef USE_HDMI
+    .c2(hdmiclk),
+`endif
 	.locked(locked)
 );
 
@@ -188,7 +238,18 @@ wire        mouse_strobe;
 
 wire [63:0] rtc;
 
-user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(100)) user_io
+`ifdef USE_HDMI
+wire        i2c_start;
+wire        i2c_read;
+wire  [6:0] i2c_addr;
+wire  [7:0] i2c_subaddr;
+wire  [7:0] i2c_dout;
+wire  [7:0] i2c_din;
+wire        i2c_ack;
+wire        i2c_end;
+`endif
+
+user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(100), .FEATURES(32'h0 | (BIG_OSD << 13) | (HDMI << 14))) user_io
 (
         .clk_sys(clk_sys),
         .clk_sd(clk_sys),
@@ -205,7 +266,16 @@ user_io #(.STRLEN($size(CONF_STR)>>3), .PS2DIV(100)) user_io
         .no_csync(no_csync),
         .buttons(buttons),
         .rtc(rtc),
-
+`ifdef USE_HDMI
+        .i2c_start      (i2c_start      ),
+        .i2c_read       (i2c_read       ),
+        .i2c_addr       (i2c_addr       ),
+        .i2c_subaddr    (i2c_subaddr    ),
+        .i2c_dout       (i2c_dout       ),
+        .i2c_din        (i2c_din        ),
+        .i2c_ack        (i2c_ack        ),
+        .i2c_end        (i2c_end        ),
+`endif
         .joystick_0(joy_0),
         .joystick_1(joy_1),
 
@@ -352,13 +422,26 @@ reg         rx, rxD;
 always @(posedge clk_sys) begin
 	rxD <= UART_RX;
 	rx <= rxD;
+`ifdef USE_MIDI_PINS
+	UART_TX <= esp_tx;
+	MIDI_OUT <= midi_tx;
+`else
 	UART_TX <= uart_sel ? esp_tx : midi_tx;
+`endif
 end
+
+wire        ear_in;
+`ifdef USE_AUDIO_IN
+assign      ear_in = AUDIO_IN;
+`else
+assign      ear_in = rx;
+`endif
 
 wire  [5:0] R_O;
 wire  [5:0] G_O;
 wire  [5:0] B_O;
-wire        HSync, VSync;
+wire        HSync, VSync, Blank;
+wire [13:0] audio;
 
 emsx_top emsx
 (
@@ -400,13 +483,16 @@ emsx_top emsx
         .pLed       (leds),
 
 //        -- Video, Audio/CMT ports
-        .CmtIn      (rx),
+        .CmtIn      (ear_in),
         .CmtOut     (Cmt_Out),
         .pDac_VR    (R_O),      // RGB_Red / Svideo_C
         .pDac_VG    (G_O),      // RGB_Grn / Svideo_Y
         .pDac_VB    (B_O),      // RGB_Blu / CompositeVideo
         .pVideoHS_n (HSync),    // HSync(RGB15K, VGA31K)
         .pVideoVS_n (VSync),    // VSync(RGB15K, VGA31K)
+        .pVideoBlank(Blank),
+
+        .audio_o    (audio),
 
         .pDac_SL    (Dac_SL),
         .pDac_SR    (Dac_SR),
@@ -422,20 +508,14 @@ assign AUDIO_R = status[9] ? Cmt_Out : Dac_SR[0];
 
 //////////////////   VIDEO   //////////////////
 
-wire [VGA_BITS-1:0] osd_r_i, osd_g_i, osd_b_i;
-wire [VGA_BITS-1:0] osd_r_o, osd_g_o, osd_b_o;
+wire [7:0] osd_r_i, osd_g_i, osd_b_i;
+wire [7:0] osd_r_o, osd_g_o, osd_b_o;
 
-`ifdef VGA_8BIT
 assign osd_r_i = {R_O, R_O[5:4]};
 assign osd_g_i = {G_O, G_O[5:4]};
 assign osd_b_i = {B_O, B_O[5:4]};
-`else
-assign osd_r_i = R_O;
-assign osd_g_i = G_O;
-assign osd_b_i = B_O;
-`endif
 
-osd #(.OUT_COLOR_DEPTH(VGA_BITS)) osd
+osd #(.OUT_COLOR_DEPTH(8), .BIG_OSD(BIG_OSD)) osd
 (
     .clk_sys(clk_sys),
     .SPI_DI(SPI_DI),
@@ -451,10 +531,10 @@ osd #(.OUT_COLOR_DEPTH(VGA_BITS)) osd
     .B_out(osd_b_o)
     );
 
-wire [VGA_BITS-1:0] r, g, b;
-wire       cs, hs, vs;
+wire [7:0] r, g, b;
+wire       cs, hs, vs, bl;
 
-RGBtoYPbPr #(VGA_BITS) RGBtoYPbPr
+RGBtoYPbPr #(8) RGBtoYPbPr
 (
 	.clk      ( clk_sys ),
 	.ena      ( ypbpr   ),
@@ -464,22 +544,84 @@ RGBtoYPbPr #(VGA_BITS) RGBtoYPbPr
 	.hs_in    ( HSync   ),
 	.vs_in    ( VSync   ),
 	.cs_in    ( ~(HSync ^ VSync) ),
+	.hb_in    ( Blank   ),
 	.red_out  ( r       ),
 	.green_out( g       ),
 	.blue_out ( b       ),
 	.hs_out   ( hs      ),
 	.vs_out   ( vs      ),
-	.cs_out   ( cs      )
+	.cs_out   ( cs      ),
+	.hb_out   ( bl      )
 );
 
 always @(posedge clk_sys) begin
-	VGA_R <= r;
-	VGA_G <= g;
-	VGA_B <= b;
+	VGA_R <= r[7:8-VGA_BITS];
+	VGA_G <= g[7:8-VGA_BITS];
+	VGA_B <= b[7:8-VGA_BITS];
 	// a minimig vga->scart cable expects a composite sync signal on the VGA_HS output.
 	// and VCC on VGA_VS (to switch into rgb mode)
 	VGA_HS <= ((~no_csync & scandoubler_disable) || ypbpr)? cs : hs;
 	VGA_VS <= ((~no_csync & scandoubler_disable) || ypbpr)? 1'b1 : vs;
 end
+
+`ifdef USE_HDMI
+i2c_master #(22_000_000) i2c_master (
+	.CLK         (clk_sys),
+	.I2C_START   (i2c_start),
+	.I2C_READ    (i2c_read),
+	.I2C_ADDR    (i2c_addr),
+	.I2C_SUBADDR (i2c_subaddr),
+	.I2C_WDATA   (i2c_dout),
+	.I2C_RDATA   (i2c_din),
+	.I2C_END     (i2c_end),
+	.I2C_ACK     (i2c_ack),
+
+	//I2C bus
+	.I2C_SCL     (HDMI_SCL),
+	.I2C_SDA     (HDMI_SDA)
+);
+
+assign HDMI_PCLK = hdmiclk;
+always @(posedge hdmiclk) begin
+	HDMI_R <= r;
+	HDMI_G <= g;
+	HDMI_B <= b;
+	HDMI_HS <= hs;
+	HDMI_VS <= vs;
+	HDMI_DE <= !bl;
+end
+`endif
+
+`ifdef I2S_AUDIO
+i2s i2s (
+	.reset(1'b0),
+	.clk(clk_sys),
+	.clk_rate(32'd21_480_000),
+	.sclk(I2S_BCK),
+	.lrclk(I2S_LRCK),
+	.sdata(I2S_DATA),
+	.left_chan({1'b0, audio, 1'b0}),
+	.right_chan({1'b0, audio, 1'b0})
+);
+
+`ifdef I2S_AUDIO_HDMI
+assign HDMI_MCLK = 0;
+always @(posedge clk_sys) begin
+	HDMI_BCK <= I2S_BCK;
+	HDMI_LRCK <= I2S_LRCK;
+	HDMI_SDATA <= I2S_DATA;
+end
+`endif
+`endif
+
+`ifdef SPDIF_AUDIO
+spdif spdif (
+	.rst_i(1'b0),
+	.clk_i(clk_sys),
+	.clk_rate_i(32'd21_480_000),
+	.spdif_o(SPDIF),
+	.sample_i({2{1'b0, audio, 1'b0}})
+);
+`endif
 
 endmodule
