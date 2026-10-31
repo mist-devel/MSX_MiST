@@ -64,6 +64,7 @@ entity eseps2 is
     clkena   : in std_logic;
 
     Kmap     : in std_logic;
+    KmapIt   : in std_logic := '0';   -- MSX2 MiST: Italian keyboard table
 
     Caps     : inout std_logic;
     Kana     : inout std_logic;
@@ -108,6 +109,7 @@ architecture RTL of eseps2 is
     port (
       adr : in std_logic_vector(10 downto 0);
       clk : in std_logic;
+      layout_it : in std_logic;
       dbi : out std_logic_vector(7 downto 0)
     );
   end component;
@@ -439,6 +441,6 @@ begin
   pPs2Clk <= 'Z';
 
   U1 : ram    port map( KeyRow, clk21m, KeyWe, iKeyCol, oKeyCol );
-  U2 : keymap port map( MtxIdx, clk21m, MtxPtr );
+  U2 : keymap port map( MtxIdx, clk21m, KmapIt, MtxPtr );
 
 end RTL;

@@ -34,6 +34,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 
+-- 2026: MSX2 MiST - added selectable mapper size (64 kB .. 4 MB).
+--   The unused bits of the page registers read back as '1' and the
+--   memory is mirrored, like on a real memory mapper.
+--   size: "000"=512K "001"=1M "010"=2M "011"=4M "100"=128K "101"=256K
+--         "110"/"111"=64K
+
 entity mapper is
   port(
     clk21m  : in std_logic;
@@ -46,6 +52,8 @@ entity mapper is
     adr     : in std_logic_vector(15 downto 0);
     dbi     : out std_logic_vector(7 downto 0);
     dbo     : in std_logic_vector(7 downto 0);
+
+    size    : in std_logic_vector(2 downto 0);
 
     ramreq  : out std_logic;
     ramwrt  : out std_logic;
@@ -61,12 +69,29 @@ architecture rtl of mapper is
   signal MapBank1    : std_logic_vector(7 downto 0);
   signal MapBank2    : std_logic_vector(7 downto 0);
   signal MapBank3    : std_logic_vector(7 downto 0);
+  signal PageMask    : std_logic_vector(7 downto 0) := X"1F";
+  signal Bank        : std_logic_vector(7 downto 0);
 
 begin
 
-  ----------------------------------------------------------------
-  -- Mapper bank register access
-  ----------------------------------------------------------------
+  -- the size can change only while the machine is in reset
+  process(clk21m)
+  begin
+    if (clk21m'event and clk21m = '1') then
+      if (reset = '1') then
+        case size is
+          when "000"  => PageMask <= X"1F";   --  512 kB
+          when "001"  => PageMask <= X"3F";   -- 1024 kB
+          when "010"  => PageMask <= X"7F";   -- 2048 kB
+          when "011"  => PageMask <= X"FF";   -- 4096 kB
+          when "100"  => PageMask <= X"07";   --  128 kB
+          when "101"  => PageMask <= X"0F";   --  256 kB
+          when others => PageMask <= X"03";   --   64 kB
+        end case;
+      end if;
+    end if;
+  end process;
+
   process(clk21m, reset)
 
   begin
@@ -80,7 +105,6 @@ begin
 
     elsif (clk21m'event and clk21m = '1') then
 
-      -- I/O port access on FC-FFh ... Mapper bank register write
       if (req = '1' and mem = '0' and wrt = '1') then
         case adr(1 downto 0) is
           when "00"   => MapBank0 <= dbo;
@@ -99,16 +123,18 @@ begin
   RamReq <= req when mem = '1' else '0';
   RamWrt <= wrt;
 
-  RamAdr <= MapBank0(7 downto 0) & adr(13 downto 0) when adr(15 downto 14) = "00" else
-            MapBank1(7 downto 0) & adr(13 downto 0) when adr(15 downto 14) = "01" else
-            MapBank2(7 downto 0) & adr(13 downto 0) when adr(15 downto 14) = "10" else
-            MapBank3(7 downto 0) & adr(13 downto 0);
+  Bank   <= MapBank0 when adr(15 downto 14) = "00" else
+            MapBank1 when adr(15 downto 14) = "01" else
+            MapBank2 when adr(15 downto 14) = "10" else
+            MapBank3;
+
+  RamAdr <= (Bank and PageMask) & adr(13 downto 0);
 
   RamDbo <= dbo;
   dbi    <= RamDbi   when mem = '1'              else
-            MapBank0 when adr(1 downto 0) = "00" else
-            MapBank1 when adr(1 downto 0) = "01" else
-            MapBank2 when adr(1 downto 0) = "10" else
-            MapBank3;
+            (MapBank0 or not PageMask) when adr(1 downto 0) = "00" else
+            (MapBank1 or not PageMask) when adr(1 downto 0) = "01" else
+            (MapBank2 or not PageMask) when adr(1 downto 0) = "10" else
+            (MapBank3 or not PageMask);
 
 end rtl;

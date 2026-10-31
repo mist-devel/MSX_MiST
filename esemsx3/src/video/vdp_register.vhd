@@ -363,7 +363,9 @@ BEGIN
         END IF;
     END PROCESS;
 
-    U_PALETTEMEMRB: RAM
+    -- MSX2 MiST: palette memory with the MSX1 colours as initial content
+    U_PALETTEMEMRB: ENTITY WORK.VDP_PALRAM
+    GENERIC MAP( G_TABLE => FALSE )
     PORT MAP(
         ADR         => PALETTEADDR,
         CLK         => CLK21M,
@@ -372,7 +374,8 @@ BEGIN
         DBI         => PALETTEDATARB_OUT
     );
 
-    U_PALETTEMEMG: RAM
+    U_PALETTEMEMG: ENTITY WORK.VDP_PALRAM
+    GENERIC MAP( G_TABLE => TRUE )
     PORT MAP(
         ADR         => PALETTEADDR,
         CLK         => CLK21M,
