@@ -335,6 +335,7 @@ ARCHITECTURE RTL OF VDP IS
             REG_R9_INTERLACE_MODE   : IN    STD_LOGIC;
             REG_R9_Y_DOTS           : IN    STD_LOGIC;
             REG_R18_ADJ             : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
+            REG_R19_HSYNC_INT_LINE  : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );   -- MSX2 MiST: declared to match the entity
             REG_R23_VSTART_LINE     : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
             REG_R25_MSK             : IN    STD_LOGIC;
             REG_R27_H_SCROLL        : IN    STD_LOGIC_VECTOR(  2 DOWNTO 0 );
@@ -1169,6 +1170,7 @@ BEGIN
         REG_R9_INTERLACE_MODE   => REG_R9_INTERLACE_MODE    ,
         REG_R9_Y_DOTS           => REG_R9_Y_DOTS            ,
         REG_R18_ADJ             => REG_R18_ADJ              ,
+        REG_R19_HSYNC_INT_LINE  => REG_R19_HSYNC_INT_LINE   ,
         REG_R23_VSTART_LINE     => REG_R23_VSTART_LINE      ,
         REG_R25_MSK             => REG_R25_MSK              ,
         REG_R27_H_SCROLL        => REG_R27_H_SCROLL         ,
